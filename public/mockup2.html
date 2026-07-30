@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="te">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { background-color: #072459; color: white; text-align: center; font-family: sans-serif; }
+  .img-wrapper {
+    width: 240px; height: 240px;
+    margin: 20px auto;
+    background-color: #072459;
+    border-radius: 50%;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+  }
+  img {
+    width: 100%; height: 100%; object-fit: cover;
+  }
+  .s1 { transform: scale(1.24); object-position: 50% 50%; }
+  .s2 { transform: scale(1.26); object-position: 50% 50%; }
+  .s3 { transform: scale(1.28); object-position: 50% 50%; }
+  .s4 { transform: scale(1.26); object-position: 50% 52%; }
+  .s5 { transform: scale(1.28); object-position: 50% 52%; }
+</style>
+</head>
+<body>
+  <h2>Testing Scales</h2>
+  <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:20px;">
+    <div><h3>1.24 Center</h3><div class="img-wrapper"><img src="/logo-original.jpg" class="s1"></div></div>
+    <div><h3>1.26 Center</h3><div class="img-wrapper"><img src="/logo-original.jpg" class="s2"></div></div>
+    <div><h3>1.28 Center</h3><div class="img-wrapper"><img src="/logo-original.jpg" class="s3"></div></div>
+    <div><h3>1.26 Down 52%</h3><div class="img-wrapper"><img src="/logo-original.jpg" class="s4"></div></div>
+    <div><h3>1.28 Down 52%</h3><div class="img-wrapper"><img src="/logo-original.jpg" class="s5"></div></div>
+  </div>
+</body>
+</html>

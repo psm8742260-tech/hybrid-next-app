@@ -1,0 +1,62 @@
+{
+  "id": "/",
+  "short_name": "Civil Worker Book",
+  "name": "Civil Worker Book",
+  "description": "Civil Worker Customer Relation platform in Telugu.",
+  "icons": [
+    { "src": "/icon-96.png", "type": "image/png", "sizes": "96x96", "purpose": "any" },
+    { "src": "/icon-144.png", "type": "image/png", "sizes": "144x144", "purpose": "any" },
+    { "src": "/icon-192.png", "type": "image/png", "sizes": "192x192", "purpose": "any" },
+    { "src": "/icon-256.png", "type": "image/png", "sizes": "256x256", "purpose": "any" },
+    { "src": "/icon-384.png", "type": "image/png", "sizes": "384x384", "purpose": "any" },
+    { "src": "/icon-512.png", "type": "image/png", "sizes": "512x512", "purpose": "any maskable" }
+  ],
+  "screenshots": [
+    { "src": "/screenshot-desktop.png", "sizes": "1280x720", "type": "image/png", "form_factor": "wide" },
+    { "src": "/screenshot-mobile.png", "sizes": "720x1280", "type": "image/png", "form_factor": "narrow" }
+  ],
+  "prefer_related_applications": false,
+  "categories": ["business", "productivity", "utilities"],
+  "start_url": "/",
+  "background_color": "#082c75",
+  "theme_color": "#082c75",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "orientation": "portrait",
+  "scope": "/",
+  "lang": "te",
+  "dir": "ltr",
+  "shortcuts": [
+    {
+      "name": "Home",
+      "short_name": "Home",
+      "description": "Go to Home",
+      "url": "/",
+      "icons": [{ "src": "/icon-192.png", "type": "image/png", "sizes": "192x192" }]
+    }
+  ],
+  "related_applications": [
+    {
+      "platform": "play",
+      "url": "https://play.google.com/store/apps/details?id=com.cwrb.app",
+      "id": "com.cwrb.app"
+    }
+  ],
+  "iarc_rating_id": "e84b072d-71b3-4d3e-86ae-31a8ce4e53b7",
+  "launch_handler": {
+    "client_mode": "auto"
+  },
+  "scope_extensions": [
+    { "origin": "*.cwrb.app" }
+  ],
+  "file_handlers": [
+    {
+      "action": "/",
+      "accept": {
+        "image/jpeg": [".jpg", ".jpeg"],
+        "image/png": [".png"]
+      }
+    }
+  ],
+  "edge_side_panel": {}
+}

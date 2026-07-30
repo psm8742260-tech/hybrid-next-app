@@ -1,0 +1,6 @@
+{
+  "name": "Civil Worker Book",
+  "description": "Comprehensive hybrid dual-mode (Customer & Civil Worker) platform in Telugu & English featuring Animated Splash Screen, Scheduling, Geofencing, Wallet, Walkie-Talkie, and Master Switchboard Admin Panel.",
+  "requestFramePermissions": ["geolocation", "camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

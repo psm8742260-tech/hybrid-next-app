@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="te">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CWRB Logo - Final Position</title>
+<style>
+  body { background-color: #072459; color: white; text-align: center; font-family: sans-serif; margin: 0; padding: 20px; }
+  .container { display: flex; flex-wrap: wrap; justify-content: center; gap: 30px; margin-top: 20px; padding-bottom: 50px; }
+  .card { background: rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 16px; border: 1px solid rgba(255, 192, 0, 0.3); }
+  
+  .logo-box {
+    width: 240px; height: 240px;
+    margin: 10px auto;
+    background-color: #072459;
+    border-radius: 50%;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+  }
+  
+  img {
+    width: 100%; height: 100%; object-fit: cover;
+  }
+
+  /* Various positions and scales to find the absolute perfect one */
+  .opt1 { transform: scale(1.15); object-position: 50% 50%; }
+  .opt2 { transform: scale(1.15); object-position: 50% 52%; }
+  .opt3 { transform: scale(1.15); object-position: 50% 54%; }
+  
+  .opt4 { transform: scale(1.17); object-position: 50% 50%; }
+  .opt5 { transform: scale(1.17); object-position: 50% 52%; } /* Current applied one */
+  .opt6 { transform: scale(1.17); object-position: 50% 54%; }
+
+  .opt7 { transform: scale(1.19); object-position: 50% 50%; }
+  .opt8 { transform: scale(1.19); object-position: 50% 52%; }
+  .opt9 { transform: scale(1.19); object-position: 50% 54%; }
+</style>
+</head>
+<body>
+  <h2>నమస్కారం అడ్మిన్ గారు 🙏</h2>
+  <p>ఇప్పుడు జూమ్ తగ్గించి, ఇమేజ్ ని కిందకి/పైకి జరిపాను. యాప్‌లో (scale 1.17, 52%) పెట్టాను.</p>
+  <p>మీకు ఇంకా ఏమైనా తేడా అనిపిస్తే, కింది వాటిలో ఏది పర్ఫెక్ట్ గా ఉందో (ఉదా: <b>"N5 ఓకే"</b>) అని చెప్పండి.</p>
+  
+  <div class="container">
+    <div class="card"><h3>N1 <br><span style="font-size:14px">Scale: 1.15, Y: 50%</span></h3><div class="logo-box"><img src="/logo-original.jpg" class="opt1"></div></div>
+    <div class="card"><h3>N2 <br><span style="font-size:14px">Scale: 1.15, Y: 52%</span></h3><div class="logo-box"><img src="/logo-original.jpg" class="opt2"></div></div>
+    <div class="card"><h3>N3 <br><span style="font-size:14px">Scale: 1.15, Y: 54%</span></h3><div class="logo-box"><img src="/logo-original.jpg" class="opt3"></div></div>
+
+    <div class="card"><h3>N4 <br><span style="font-size:14px">Scale: 1.17, Y: 50%</span></h3><div class="logo-box"><img src="/logo-original.jpg" class="opt4"></div></div>
+    <div class="card"><h3 style="color: #FFC000;">N5 (ఇప్పుడు యాప్‌లో ఉన్నది) <br><span style="font-size:14px">Scale: 1.17, Y: 52%</span></h3><div class="logo-box"><img src="/logo-original.jpg" class="opt5"></div></div>
+    <div class="card"><h3>N6 <br><span style="font-size:14px">Scale: 1.17, Y: 54%</span></h3><div class="logo-box"><img src="/logo-original.jpg" class="opt6"></div></div>
+
+    <div class="card"><h3>N7 <br><span style="font-size:14px">Scale: 1.19, Y: 50%</span></h3><div class="logo-box"><img src="/logo-original.jpg" class="opt7"></div></div>
+    <div class="card"><h3>N8 <br><span style="font-size:14px">Scale: 1.19, Y: 52%</span></h3><div class="logo-box"><img src="/logo-original.jpg" class="opt8"></div></div>
+    <div class="card"><h3>N9 <br><span style="font-size:14px">Scale: 1.19, Y: 54%</span></h3><div class="logo-box"><img src="/logo-original.jpg" class="opt9"></div></div>
+  </div>
+</body>
+</html>

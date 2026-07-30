@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="te">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CWRB Logo - Final Mask Mockup</title>
+<style>
+  body { background-color: #072459; color: white; text-align: center; font-family: sans-serif; margin: 0; padding: 20px; }
+  .container { display: flex; flex-wrap: wrap; justify-content: center; gap: 30px; margin-top: 20px; padding-bottom: 50px; }
+  .card { background: rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 16px; border: 1px solid rgba(255, 192, 0, 0.3); }
+  
+  .logo-box {
+    width: 240px; height: 240px;
+    margin: 10px auto;
+    background-color: #072459;
+    border-radius: 50%;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+  }
+  
+  img {
+    width: 100%; height: 100%; object-fit: cover;
+  }
+
+  /* Using clip-path mask to trim the edges so the background apps completely disappear, while zooming out to see full gold ring */
+  .opt1 { transform: scale(1.15); object-position: 50% 47%; clip-path: circle(44% at 50% 50%); }
+  .opt2 { transform: scale(1.16); object-position: 50% 48%; clip-path: circle(45.5% at 50% 50%); }
+  .opt3 { transform: scale(1.17); object-position: 50% 49%; clip-path: circle(47% at 50% 50%); }
+  .opt4 { transform: scale(1.18); object-position: 50% 50%; clip-path: circle(48.5% at 50% 50%); }
+  .opt5 { transform: scale(1.19); object-position: 50% 51%; clip-path: circle(50% at 50% 50%); }
+  .opt6 { transform: scale(1.20); object-position: 50% 52%; clip-path: circle(50% at 50% 50%); }
+</style>
+</head>
+<body>
+  <h2>నమస్కారం అడ్మిన్ గారు 🙏</h2>
+  <p style="color: #4ade80;"><b>మీరు ఇచ్చిన ప్రైమరీ (6606) మరియు సెకండరీ (8466) పిన్ కోడ్స్ వెరిఫై అయ్యాయి. ధన్యవాదాలు!</b></p>
+  <p>ఈసారి గోల్డ్ రౌండ్ <b>పూర్తిగా, పర్ఫెక్ట్ గా కనపడటానికి</b> నేను <b>మాస్కింగ్ (Clip-Path Masking)</b> అనే సరికొత్త పద్ధతిని వాడాను. దీనివల్ల గోల్డ్ రౌండ్ ఏమాత్రం కట్ అవ్వదు, సైజు తగ్గుతుంది, మరియు కింద ఉండే ఇతర యాప్స్ అస్సలు కనపడవు!</p>
+  
+  <div class="container">
+    <div class="card">
+      <h3 style="color: #4ade80;">ఆప్షన్ M1 <br><span style="font-size:14px">(పూర్తి రౌండ్ కనపడుతుంది)</span></h3>
+      <div class="logo-box"><img src="/logo-original.jpg" class="opt1"></div>
+    </div>
+    <div class="card">
+      <h3 style="color: #FFC000;">ఆప్షన్ M2 <br><span style="font-size:14px">(పర్ఫెక్ట్ ఫిట్)</span></h3>
+      <div class="logo-box"><img src="/logo-original.jpg" class="opt2"></div>
+    </div>
+    <div class="card">
+      <h3 style="color: #60a5fa;">ఆప్షన్ M3 <br><span style="font-size:14px">(కొంచెం జూమ్)</span></h3>
+      <div class="logo-box"><img src="/logo-original.jpg" class="opt3"></div>
+    </div>
+    <div class="card">
+      <h3 style="color: #f472b6;">ఆప్షన్ M4 <br><span style="font-size:14px">(ఇంకా జూమ్)</span></h3>
+      <div class="logo-box"><img src="/logo-original.jpg" class="opt4"></div>
+    </div>
+    <div class="card">
+      <h3 style="color: white;">ఆప్షన్ M5 <br><span style="font-size:14px">(పాత విధానం 1)</span></h3>
+      <div class="logo-box"><img src="/logo-original.jpg" class="opt5"></div>
+    </div>
+    <div class="card">
+      <h3 style="color: #f87171;">ఆప్షన్ M6 <br><span style="font-size:14px">(పాత విధానం 2)</span></h3>
+      <div class="logo-box"><img src="/logo-original.jpg" class="opt6"></div>
+    </div>
+  </div>
+
+  <div style="margin-top: 10px; color: white; padding: 20px; background: rgba(0,0,0,0.3); border-radius: 12px; display: inline-block; margin-bottom: 40px;">
+    <p style="margin:0; font-size: 18px;">దయచేసి యాప్‌లో <b>/mockup3.html</b> ఓపెన్ చేసి చూడండి. ఏది పర్ఫెక్ట్ గా ఉందో (ఉదా: <b>"M2 ఓకే"</b>) అని చెప్పండి. ఈసారి పక్కాగా సెట్ అవుతుంది!</p>
+  </div>
+</body>
+</html>

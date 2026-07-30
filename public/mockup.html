@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="te">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CWRB Logo Perfect Adjuster</title>
+<style>
+  body {
+    background-color: #072459;
+    color: #FFC000;
+    font-family: system-ui, -apple-system, sans-serif;
+    text-align: center;
+    padding: 20px 10px;
+    margin: 0;
+  }
+  .preview-card {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 20px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 192, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 300px;
+    margin: 20px auto;
+  }
+  
+  .img-wrapper {
+    width: 240px; 
+    height: 240px;
+    margin: 15px auto 0 auto;
+    background-color: #072459;
+    border-radius: 50%; /* Perfect Circle */
+    overflow: hidden; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+  }
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; 
+    transform: scale(1.15);
+    object-position: 50% 50%;
+  }
+
+  .controls {
+    margin-top: 20px;
+    width: 100%;
+    text-align: left;
+    color: white;
+  }
+  .control-group {
+    margin-bottom: 15px;
+  }
+  .control-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 14px;
+  }
+  input[type="range"] {
+    width: 100%;
+  }
+  .value-display {
+    color: #FFC000;
+    font-weight: bold;
+    float: right;
+  }
+  .result-box {
+    margin-top: 20px;
+    padding: 10px;
+    background: #000;
+    border: 1px dashed #4ade80;
+    color: #4ade80;
+    font-family: monospace;
+    font-size: 16px;
+    border-radius: 8px;
+  }
+</style>
+</head>
+<body>
+  <h2>నమస్కారం అడ్మిన్ గారు 🙏</h2>
+  <p>దయచేసి కింద ఉన్న స్లైడర్స్ (లైన్స్) జరుపుతూ మీకు కావలసిన విధంగా గోల్డ్ రౌండ్ సెట్ చేసుకోండి. <b>కరెక్ట్ గా సెట్ అయ్యాక, కింద ఉన్న ఆకుపచ్చ రంగు బాక్స్‌లోని నెంబర్లను నాకు చెప్పండి.</b></p>
+  
+  <div class="preview-card">
+    <div class="img-wrapper">
+      <img id="logo-img" src="/logo-original.jpg">
+    </div>
+
+    <div class="controls">
+      <div class="control-group">
+        <label>Zoom (సైజు పెంచడం/తగ్గించడం) <span class="value-display" id="val-scale">1.15</span></label>
+        <input type="range" id="slider-scale" min="1.0" max="1.5" step="0.01" value="1.15">
+      </div>
+      
+      <div class="control-group">
+        <label>Vertical Position (పైకి/కిందకి) <span class="value-display" id="val-y">50%</span></label>
+        <input type="range" id="slider-y" min="30" max="70" step="0.5" value="50">
+      </div>
+      
+      <div class="control-group">
+        <label>Horizontal Position (ఎడమ/కుడి) <span class="value-display" id="val-x">50%</span></label>
+        <input type="range" id="slider-x" min="30" max="70" step="0.5" value="50">
+      </div>
+    </div>
+    
+    <div class="result-box" id="result-box">
+      Scale: 1.15 <br> X: 50% <br> Y: 50%
+    </div>
+  </div>
+
+  <script>
+    const img = document.getElementById('logo-img');
+    const sliderScale = document.getElementById('slider-scale');
+    const sliderY = document.getElementById('slider-y');
+    const sliderX = document.getElementById('slider-x');
+    
+    const valScale = document.getElementById('val-scale');
+    const valY = document.getElementById('val-y');
+    const valX = document.getElementById('val-x');
+    const resultBox = document.getElementById('result-box');
+
+    function updateImage() {
+      const scale = sliderScale.value;
+      const x = sliderX.value;
+      const y = sliderY.value;
+      
+      img.style.transform = `scale(${scale})`;
+      img.style.objectPosition = `${x}% ${y}%`;
+      
+      valScale.innerText = scale;
+      valX.innerText = x + '%';
+      valY.innerText = y + '%';
+      
+      resultBox.innerHTML = `Scale: ${scale} <br> X: ${x}% <br> Y: ${y}%`;
+    }
+
+    sliderScale.addEventListener('input', updateImage);
+    sliderY.addEventListener('input', updateImage);
+    sliderX.addEventListener('input', updateImage);
+  </script>
+</body>
+</html>
