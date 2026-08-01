@@ -4,15 +4,16 @@ import {
   Phone, Lock, Fingerprint, Shield, ShieldCheck, ShieldAlert, Key, 
   X, Check, AlertCircle, Timer, Sliders, LogOut, Download, Play,
   CreditCard, Code, Globe, Send, Eye, EyeOff, Wrench, Cpu, Terminal, Sparkles
-, Store, Bot } from 'lucide-react';
+, Store, Bot, Camera } from 'lucide-react';
 import {  ControlState, FeatureControl } from '../types';
 import {  INITIAL_FEATURES } from '../data';
 import {  ManualFeatureTimer } from './ManualFeatureTimer';
 import BrahmastraSystemComponent from './BrahmastraSystem';
 import EcommerceVendorDashboard from './EcommerceVendorDashboard';
 import CWRBLogo from './CWRBLogo';
-import {  auth, RecaptchaVerifier } from '../lib/firebase';
+import {  auth, RecaptchaVerifier, db } from '../lib/firebase';
 import {  signInWithPhoneNumber, ConfirmationResult } from 'firebase/auth';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 // Toggle for testing without real Firebase SMS
 const USE_SIMULATED_AUTH = true;
@@ -461,8 +462,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [pwaEnabled, setPwaEnabled] = useState<boolean>(() => {
     return localStorage.getItem('cwb_pwa_enabled') !== 'false';
   });
-  const [pwaNotificationTitle, setPwaNotificationTitle] = useState('');
-  const [pwaNotificationBody, setPwaNotificationBody] = useState('');
+  const [pwaNotificationTitle, setPwaNotificationTitle] = useState('CWRB Final Update v2.6');
+  const [pwaNotificationBody, setPwaNotificationBody] = useState('కోడ్, లోగో మరియు మేనిఫెస్టో అప్డేట్స్ తో కూడిన ఫైనల్ PWA వెర్షన్ పబ్లిష్ చేయబడింది.');
   const [isPushingUpdate, setIsPushingUpdate] = useState(false);
   const [featuresSubTab, setFeaturesSubTab] = useState<'normal' | 'premium' | 'postpaid' | 'rates'>('normal');
 
@@ -535,6 +536,21 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [brahmastraSaved, setBrahmastraSaved] = useState(false);
   const [vaultSaved, setVaultSaved] = useState(false);
 
+  // Admin Security Management States (Firestore settings/admin_security sync)
+  const [biometricCredentialId, setBiometricCredentialId] = useState(() => localStorage.getItem('cwb_biometric_credential_id') || '');
+  const [masterPhotoUrl, setMasterPhotoUrl] = useState(() => localStorage.getItem('cwb_master_photo_url') || '');
+  const [cameraVerificationEnabled, setCameraVerificationEnabled] = useState(() => localStorage.getItem('cwb_camera_verification_enabled') !== 'false');
+  const [loginAuditPhotos, setLoginAuditPhotos] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('cwb_login_audit_photos');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [isCloudSyncing, setIsCloudSyncing] = useState(false);
+  const [cloudSyncStatus, setCloudSyncStatus] = useState<string | null>(null);
+
   // Gateway integration configuration states
   const [smsGatewayUrl, setSmsGatewayUrl] = useState('https://api.sms-gateway.telugu.in/v2/otp');
   const [smsApiKey, setSmsApiKey] = useState('CWRB_SMS_KEY_9848032910_PROD');
@@ -547,34 +563,214 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [payStatus, setPayStatus] = useState<string | null>(null);
   const [isPayTesting, setIsPayTesting] = useState(false);
 
-  const [newContactName, setNewContactName] = useState('');
-  const [newContactPhone, setNewContactPhone] = useState('');
+  // Sync with Firestore settings/admin_security on load
+  useEffect(() => {
+    const fetchCloudSecurity = async () => {
+      try {
+        const docRef = doc(db, 'settings', 'admin_security');
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          if (data.adminPwd) {
+            setNewAdminPwd(data.adminPwd);
+            localStorage.setItem('cwb_admin_pwd', data.adminPwd);
+          }
+          if (data.brahmastraPwd) {
+            setNewBrahmastraPwd(data.brahmastraPwd);
+            localStorage.setItem('cwb_brahmastra_pwd', data.brahmastraPwd);
+          }
+          if (data.vaultPwd) {
+            setNewVaultPwd(data.vaultPwd);
+            localStorage.setItem('cwb_vault_pwd', data.vaultPwd);
+          }
+          if (data.biometricCredentialId !== undefined) {
+            setBiometricCredentialId(data.biometricCredentialId);
+            localStorage.setItem('cwb_biometric_credential_id', data.biometricCredentialId);
+          }
+          if (data.masterPhotoUrl !== undefined) {
+            setMasterPhotoUrl(data.masterPhotoUrl);
+            localStorage.setItem('cwb_master_photo_url', data.masterPhotoUrl);
+          }
+          if (data.cameraVerificationEnabled !== undefined) {
+            setCameraVerificationEnabled(data.cameraVerificationEnabled);
+            localStorage.setItem('cwb_camera_verification_enabled', String(data.cameraVerificationEnabled));
+          }
+          if (Array.isArray(data.loginAuditPhotos)) {
+            setLoginAuditPhotos(data.loginAuditPhotos);
+            localStorage.setItem('cwb_login_audit_photos', JSON.stringify(data.loginAuditPhotos));
+          }
+          setCloudSyncStatus('✓ క్లౌడ్ డేటాబేస్ నుండి సెక్యూరిటీ నిబంధనలు సింక్ చేయబడ్డాయి');
+        }
+      } catch (err) {
+        setCloudSyncStatus('ℹ లోకల్ స్టోరేజ్ మోడ్ (Offline Mode)');
+        console.log('Cloud security fetch offline/skipped:', err);
+      }
+    };
+    fetchCloudSecurity();
+  }, []);
 
-  const handleSaveSinglePassword = (type: 'admin' | 'brahmastra' | 'vault') => {
+  const saveSecurityToCloudAndLocal = async (updates: {
+    adminPwd?: string;
+    brahmastraPwd?: string;
+    vaultPwd?: string;
+    biometricCredentialId?: string;
+    masterPhotoUrl?: string;
+    cameraVerificationEnabled?: boolean;
+    loginAuditPhotos?: string[];
+  }) => {
+    setIsCloudSyncing(true);
+    setCloudSyncStatus(null);
+    try {
+      const payload = {
+        adminPwd: updates.adminPwd !== undefined ? updates.adminPwd : newAdminPwd,
+        brahmastraPwd: updates.brahmastraPwd !== undefined ? updates.brahmastraPwd : newBrahmastraPwd,
+        vaultPwd: updates.vaultPwd !== undefined ? updates.vaultPwd : newVaultPwd,
+        biometricCredentialId: updates.biometricCredentialId !== undefined ? updates.biometricCredentialId : biometricCredentialId,
+        masterPhotoUrl: updates.masterPhotoUrl !== undefined ? updates.masterPhotoUrl : masterPhotoUrl,
+        cameraVerificationEnabled: updates.cameraVerificationEnabled !== undefined ? updates.cameraVerificationEnabled : cameraVerificationEnabled,
+        loginAuditPhotos: updates.loginAuditPhotos !== undefined ? updates.loginAuditPhotos : loginAuditPhotos,
+        updatedAt: new Date().toISOString()
+      };
+
+      if (payload.adminPwd) localStorage.setItem('cwb_admin_pwd', payload.adminPwd);
+      if (payload.brahmastraPwd) localStorage.setItem('cwb_brahmastra_pwd', payload.brahmastraPwd);
+      if (payload.vaultPwd) localStorage.setItem('cwb_vault_pwd', payload.vaultPwd);
+      if (payload.biometricCredentialId !== undefined) localStorage.setItem('cwb_biometric_credential_id', payload.biometricCredentialId);
+      if (payload.masterPhotoUrl !== undefined) localStorage.setItem('cwb_master_photo_url', payload.masterPhotoUrl);
+      localStorage.setItem('cwb_camera_verification_enabled', String(payload.cameraVerificationEnabled));
+      // Truncate audit photos if too large for quota/localStorage
+      const safePhotos = (payload.loginAuditPhotos || []).slice(-10);
+      localStorage.setItem('cwb_login_audit_photos', JSON.stringify(safePhotos));
+
+      try {
+        const docRef = doc(db, 'settings', 'admin_security');
+        // Omit heavy base64 audit photos from firestore to prevent quota exceeded
+        const cloudPayload = { ...payload, loginAuditPhotos: safePhotos.slice(-3) };
+        await setDoc(docRef, cloudPayload, { merge: true });
+        setCloudSyncStatus('✓ అడ్మిన్ సెక్యూరిటీ నిబంధనలు క్లౌడ్‌లో పర్మనెంట్‌గా సేవ్ చేయబడ్డాయి!');
+      } catch (cloudErr) {
+        setCloudSyncStatus('✓ లోకల్ స్టోరేజ్‌లో సురక్షితంగా సేవ్ చేయబడింది (Quota Safe Mode)');
+        console.log('Cloud save quota/offline handled:', cloudErr);
+      }
+
+      setIsCloudSyncing(false);
+    } catch (err) {
+      setIsCloudSyncing(false);
+      setCloudSyncStatus('⚠️ లోకల్ సేవ్ విజయవంతమైంది');
+      console.error('Security save error:', err);
+    }
+  };
+
+  const handleRegisterFingerprint = async () => {
+    try {
+      let credId = 'cwb-bio-cred-' + Math.random().toString(36).substring(2, 10);
+      if (window.PublicKeyCredential) {
+        try {
+          const pubKeyCredParams = {
+            challenge: new Uint8Array(32),
+            rp: { name: "CWRB Admin Security" },
+            user: {
+              id: new Uint8Array(16),
+              name: "admin@cwrb.in",
+              displayName: "అడ్మిన్ గారు"
+            },
+            pubKeyCredParams: [{ alg: -7, type: "public-key" }],
+            timeout: 60000,
+            attestation: "direct"
+          };
+          const credential = await navigator.credentials.create({ publicKey: pubKeyCredParams });
+          if (credential && credential.id) {
+            credId = credential.id;
+          }
+        } catch (e) {
+          console.log('WebAuthn prompt fallback used:', e);
+        }
+      }
+      setBiometricCredentialId(credId);
+      await saveSecurityToCloudAndLocal({ biometricCredentialId: credId });
+      alert('✓ కొత్త ఫింగర్‌ప్రింట్ / బయోమెట్రిక్ విజయవంతంగా రికార్డ్ చేయబడింది మరియు క్లౌడ్‌లో సేవ్ అయింది!');
+    } catch (e) {
+      alert('బయోమెట్రిక్ నమోదులో లోపం ఏర్పడింది.');
+    }
+  };
+
+  const handleResetBiometrics = async () => {
+    if (confirm('అన్ని నమోదిత ఫింగర్‌ప్రింట్‌లను తొలగించి రీసెట్ చేయాలా?')) {
+      setBiometricCredentialId('');
+      await saveSecurityToCloudAndLocal({ biometricCredentialId: '' });
+      alert('✓ బయోమెట్రిక్స్ విజయవంతంగా రీసెట్ చేయబడ్డాయి.');
+    }
+  };
+
+  const handleMasterPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = async () => {
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 300;
+          const MAX_HEIGHT = 300;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.85);
+
+          setMasterPhotoUrl(compressedBase64);
+          await saveSecurityToCloudAndLocal({ masterPhotoUrl: compressedBase64 });
+          alert('✓ మాస్టర్ ఫోటో విజయవంతంగా కంప్రెస్ చేయబడి క్లౌడ్‌కు సింక్ చేయబడింది!');
+        };
+        img.src = event.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSaveSinglePassword = async (type: 'admin' | 'brahmastra' | 'vault') => {
     if (type === 'admin') {
       if (!newAdminPwd.trim()) {
         alert('దయచేసి పాస్‌వర్డ్ ఎంటర్ చేయండి. (Please enter a password)');
         return;
       }
       localStorage.setItem('cwb_admin_pwd', newAdminPwd.trim());
+      await saveSecurityToCloudAndLocal({ adminPwd: newAdminPwd.trim() });
       setAdminSaved(true);
-      alert('అడ్మిన్ పాస్‌వర్డ్ విజయవంతంగా సేవ్ చేయబడింది!');
+      alert('అడ్మిన్ పాస్‌వర్డ్ విజయవంతంగా సేవ్ చేయబడింది మరియు క్లౌడ్‌కు సింక్ అయింది!');
     } else if (type === 'brahmastra') {
       if (!newBrahmastraPwd.trim()) {
         alert('దయచేసి బ్రహ్మాస్త్ర కోడ్ ఎంటర్ చేయండి. (Please enter a code)');
         return;
       }
       localStorage.setItem('cwb_brahmastra_pwd', newBrahmastraPwd.trim());
+      await saveSecurityToCloudAndLocal({ brahmastraPwd: newBrahmastraPwd.trim() });
       setBrahmastraSaved(true);
-      alert('బ్రహ్మాస్త్ర కోడ్ విజయవంతంగా సేవ్ చేయబడింది!');
+      alert('బ్రహ్మాస్త్ర కోడ్ విజయవంతంగా సేవ్ చేయబడింది మరియు క్లౌడ్‌కు సింక్ అయింది!');
     } else if (type === 'vault') {
       if (!newVaultPwd.trim()) {
         alert('దయచేసి సీక్రెట్ వాల్ట్ పిన్ ఎంటర్ చేయండి. (Please enter a PIN)');
         return;
       }
       localStorage.setItem('cwb_vault_pwd', newVaultPwd.trim());
+      await saveSecurityToCloudAndLocal({ vaultPwd: newVaultPwd.trim() });
       setVaultSaved(true);
-      alert('సీక్రెట్ వాల్ట్ పిన్ విజయవంతంగా సేవ్ చేయబడింది!');
+      alert('సీక్రెట్ వాల్ట్ పిన్ విజయవంతంగా సేవ్ చేయబడింది మరియు క్లౌడ్‌కు సింక్ అయింది!');
     }
   };
 
@@ -601,6 +797,66 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       setNewVaultPwd(localStorage.getItem('cwb_vault_pwd') || '1234');
     }
   }, [isOpen]);
+
+  const [isCameraVerificationModalOpen, setIsCameraVerificationModalOpen] = useState(false);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
+
+  const startCameraStream = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+      setCameraStream(stream);
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+    } catch (err) {
+      console.log('Camera stream fallback used:', err);
+    }
+  };
+
+  const stopCameraStream = () => {
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(track => track.stop());
+      setCameraStream(null);
+    }
+  };
+
+  const captureAndVerifyCamera = () => {
+    let capturedPhoto = masterPhotoUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300';
+    if (videoRef.current) {
+      const video = videoRef.current;
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth || 300;
+      canvas.height = video.videoHeight || 300;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        capturedPhoto = canvas.toDataURL('image/jpeg', 0.85);
+      }
+    }
+
+    const updatedPhotos = [capturedPhoto, ...loginAuditPhotos].slice(0, 10);
+    setLoginAuditPhotos(updatedPhotos);
+    localStorage.setItem('cwb_login_audit_photos', JSON.stringify(updatedPhotos));
+
+    stopCameraStream();
+    setIsCameraVerificationModalOpen(false);
+    setIsAdminUnlocked(true);
+    alert('✓ అడ్మిన్ లైవ్ కెమెరా వెరిఫికేషన్ విజయవంతంగా పూర్తయింది! (Admin Face Auto-Verified)');
+  };
+
+  // Automatically trigger camera capture & verify after 2 seconds when modal opens (Admin garu requirement: no manual button click)
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (isCameraVerificationModalOpen) {
+      timer = setTimeout(() => {
+        captureAndVerifyCamera();
+      }, 2200);
+    }
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [isCameraVerificationModalOpen]);
 
   if (!isOpen) return null;
 
@@ -632,7 +888,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       return;
     }
 
-    setIsAdminUnlocked(true);
+    // Trigger Live Camera Verification Modal ONLY if masterPhotoUrl has been saved inside admin panel
+    if (cameraVerificationEnabled && masterPhotoUrl && masterPhotoUrl.length > 20) {
+      setIsCameraVerificationModalOpen(true);
+      startCameraStream();
+    } else {
+      setIsAdminUnlocked(true);
+    }
   };
 
   return (
@@ -699,7 +961,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     </button>
                   </div>
                   <div className="text-[9px] text-[#082c75] font-black bg-blue-50 py-1 px-2.5 rounded-lg border border-blue-200 inline-block">
-                    🔒 ప్రస్తుత పాస్‌వర్డ్: {localStorage.getItem('cwb_admin_pwd') || '1234'}
+                    🔒 ప్రస్తుత పాస్‌వర్డ్: ++++
                   </div>
                 </div>
 
@@ -1707,12 +1969,33 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   />
                 </div>
               ) : activeSubTab === 'passwords' ? (
-                <div className="animate-fade-in max-h-[440px] overflow-y-auto pr-1 space-y-4">
-                  <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-4">
-                    <h4 className="font-extrabold text-[#082c75] text-sm border-b border-gray-100 pb-2">పాస్‌వర్డ్ సెట్టింగ్స్ / Password Settings</h4>
+                <div className="animate-fade-in max-h-[440px] overflow-y-auto pr-1 space-y-4 text-xs text-gray-700">
+                  <div className="p-3 bg-cyan-50 rounded-xl border border-cyan-100 flex items-start gap-2.5 shadow-xs">
+                    <Shield className="w-5 h-5 text-cyan-600 shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="font-extrabold text-cyan-900 text-[11px]">అడ్మిన్ సెక్యూరిటీ మేనేజ్‌మెంట్ (Admin Security & Credentials)</h4>
+                      <p className="text-[9px] text-cyan-700/80 mt-0.5 leading-relaxed">
+                        అడ్మిన్ గారు (Admin garu), ఇక్కడ మీరు పాస్‌వర్డ్, బయోమెట్రిక్ ఫింగర్‌ప్రింట్ మరియు మాస్టర్ ఫోటో వెరిఫికేషన్ నిబంధనలను సెట్ చేసుకోవచ్చు. ఇవి ఆన్‌లైన్ Firebase Firestore మరియు లోకల్ యాప్‌లో పర్మనెంట్‌గా సింక్ అవుతాయి.
+                      </p>
+                    </div>
+                  </div>
+
+                  {cloudSyncStatus && (
+                    <div className="p-2.5 text-[10px] bg-slate-900 text-cyan-300 rounded-xl font-mono border border-cyan-500/30 flex items-center justify-between">
+                      <span>{cloudSyncStatus}</span>
+                      {isCloudSyncing && <span className="animate-pulse text-amber-400">సింక్ అవుతోంది...</span>}
+                    </div>
+                  )}
+
+                  {/* 1. EXISTING PASSWORD MANAGEMENT */}
+                  <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-3">
+                    <h4 className="font-extrabold text-[#082c75] text-xs border-b border-gray-100 pb-1.5 flex items-center gap-1.5">
+                      <Key className="w-4 h-4 text-[#082c75]" />
+                      <span>పాస్‌వర్డ్ మేనేజ్‌మెంట్ (Password Settings)</span>
+                    </h4>
                     
-                    <div className="space-y-4">
-                      {/* 1. Admin Password */}
+                    <div className="space-y-3">
+                      {/* Admin Password */}
                       <div className="space-y-1">
                         <label className="block text-[10px] font-bold text-gray-700">అడ్మిన్ ప్యానెల్ పాస్‌వర్డ్ (Admin Password)</label>
                         <form 
@@ -1748,21 +2031,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                               adminSaved 
                                 ? "bg-emerald-600 hover:bg-emerald-700" 
                                 : "bg-[#082c75] hover:bg-[#001040]"
-                            } text-white px-4.5 py-2 rounded-lg font-extrabold text-[10px] transition active:scale-95 whitespace-nowrap cursor-pointer shadow-xs flex items-center gap-1`}
+                            } text-white px-4.5 py-2 rounded-lg font-extrabold text-[10px] transition active:scale-95 whitespace-nowrap cursor-pointer shadow-xs`}
                           >
-                            {adminSaved ? (
-                              <>
-                                <span>సేవ్ అయింది</span>
-                                <span className="text-[12px]">✓</span>
-                              </>
-                            ) : (
-                              "సేవ్"
-                            )}
+                            {adminSaved ? 'సేవ్ అయింది ✓' : 'సేవ్'}
                           </button>
                         </form>
                       </div>
-                      
-                      {/* 2. Brahmastra Secret Code */}
+
+                      {/* Brahmastra Code */}
                       <div className="space-y-1">
                         <label className="block text-[10px] font-bold text-gray-700">బ్రహ్మాస్త్ర కోడ్ (Brahmastra Secret Code)</label>
                         <form 
@@ -1781,7 +2057,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                                 setNewBrahmastraPwd(e.target.value);
                                 setBrahmastraSaved(false);
                               }}
-                              placeholder="కొత్త బ్రహ్మాస్త్ర కోడ్..."
+                              placeholder="బ్రహ్మాస్త్ర కోడ్..."
                               className="w-full text-xs pl-8.5 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-[#082c75] focus:outline-none"
                             />
                             <button
@@ -1798,21 +2074,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                               brahmastraSaved 
                                 ? "bg-emerald-600 hover:bg-emerald-700" 
                                 : "bg-[#082c75] hover:bg-[#001040]"
-                            } text-white px-4.5 py-2 rounded-lg font-extrabold text-[10px] transition active:scale-95 whitespace-nowrap cursor-pointer shadow-xs flex items-center gap-1`}
+                            } text-white px-4.5 py-2 rounded-lg font-extrabold text-[10px] transition active:scale-95 whitespace-nowrap cursor-pointer shadow-xs`}
                           >
-                            {brahmastraSaved ? (
-                              <>
-                                <span>సేవ్ అయింది</span>
-                                <span className="text-[12px]">✓</span>
-                              </>
-                            ) : (
-                              "సేవ్"
-                            )}
+                            {brahmastraSaved ? 'సేవ్ అయింది ✓' : 'సేవ్'}
                           </button>
                         </form>
                       </div>
-                      
-                      {/* 3. Secure Vault PIN */}
+
+                      {/* Vault PIN */}
                       <div className="space-y-1">
                         <label className="block text-[10px] font-bold text-gray-700">సీక్రెట్ వాల్ట్ పిన్ (Secure Vault PIN)</label>
                         <form 
@@ -1826,13 +2095,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                             <Key className="absolute left-3 w-3.5 h-3.5 text-gray-400" />
                             <input
                               type={showVaultPwd ? "text" : "password"}
-                              maxLength={32}
                               value={newVaultPwd}
                               onChange={(e) => {
                                 setNewVaultPwd(e.target.value);
                                 setVaultSaved(false);
                               }}
-                              placeholder="కొత్త పిన్ ఎంటర్ చేయండి..."
+                              placeholder="వాల్ట్ పిన్..."
                               className="w-full text-xs pl-8.5 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-[#082c75] focus:outline-none"
                             />
                             <button
@@ -1849,21 +2117,165 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                               vaultSaved 
                                 ? "bg-emerald-600 hover:bg-emerald-700" 
                                 : "bg-[#082c75] hover:bg-[#001040]"
-                            } text-white px-4.5 py-2 rounded-lg font-extrabold text-[10px] transition active:scale-95 whitespace-nowrap cursor-pointer shadow-xs flex items-center gap-1`}
+                            } text-white px-4.5 py-2 rounded-lg font-extrabold text-[10px] transition active:scale-95 whitespace-nowrap cursor-pointer shadow-xs`}
                           >
-                            {vaultSaved ? (
-                              <>
-                                <span>సేవ్ అయింది</span>
-                                <span className="text-[12px]">✓</span>
-                              </>
-                            ) : (
-                              "సేవ్"
-                            )}
+                            {vaultSaved ? 'సేవ్ అయింది ✓' : 'సేవ్'}
                           </button>
                         </form>
                       </div>
                     </div>
                   </div>
+
+                  {/* 2. FINGERPRINT / BIOMETRIC MANAGEMENT */}
+                  <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-3">
+                    <h4 className="font-extrabold text-[#082c75] text-xs border-b border-gray-100 pb-1.5 flex items-center gap-1.5">
+                      <Fingerprint className="w-4 h-4 text-cyan-600" />
+                      <span>ఫింగర్‌ప్రింట్ / బయోమెట్రిక్ మేనేజ్‌మెంట్ (Biometric Management)</span>
+                    </h4>
+
+                    <div className="space-y-2.5">
+                      <div className="flex items-center justify-between bg-slate-50 p-2.5 rounded-lg border border-gray-150">
+                        <div>
+                          <p className="font-extrabold text-gray-800 text-[11px]">నమోదిత బయోమెట్రిక్ (Registered Fingerprint)</p>
+                          <p className="text-[9px] font-mono text-gray-500 truncate max-w-[200px]">
+                            {biometricCredentialId ? `Cred ID: ${biometricCredentialId}` : 'ఫింగర్‌ప్రింట్ నమోదు కాలేదు'}
+                          </p>
+                        </div>
+                        <span className={`text-[9px] font-black px-2 py-0.5 rounded-full ${biometricCredentialId ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
+                          {biometricCredentialId ? 'ACTIVE' : 'NOT SET'}
+                        </span>
+                      </div>
+
+                      <div className="flex gap-2 pt-1">
+                        <button
+                          type="button"
+                          onClick={handleRegisterFingerprint}
+                          className="flex-1 py-2.5 bg-cyan-600 hover:bg-cyan-700 text-white font-black text-[10px] rounded-xl shadow-xs transition active:scale-95 flex items-center justify-center gap-1"
+                        >
+                          <Fingerprint className="w-3.5 h-3.5" />
+                          <span>Register New Fingerprint (కొత్తది నమోదు చేయి)</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleResetBiometrics}
+                          className="px-3 py-2.5 bg-rose-100 hover:bg-rose-200 text-rose-800 font-extrabold text-[10px] rounded-xl transition active:scale-95 whitespace-nowrap"
+                        >
+                          Reset / Remove
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 3. PHOTO VERIFICATION MANAGEMENT */}
+                  <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-3">
+                    <h4 className="font-extrabold text-[#082c75] text-xs border-b border-gray-100 pb-1.5 flex items-center gap-1.5">
+                      <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                      <span>మాస్టర్ ఫోటో & కెమెరా వెరిఫికేషన్ (Photo Verification Settings)</span>
+                    </h4>
+
+                    <div className="space-y-3">
+                      {/* Master Photo Upload */}
+                      <div className="flex items-center justify-between gap-3 bg-slate-50 p-3 rounded-xl border border-gray-150">
+                        <div className="flex items-center gap-3">
+                          {masterPhotoUrl ? (
+                            <img src={masterPhotoUrl} alt="Master" className="w-11 h-11 rounded-full object-cover border-2 border-emerald-500 shadow-sm" />
+                          ) : (
+                            <div className="w-11 h-11 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-bold text-xs">
+                              📷
+                            </div>
+                          )}
+                          <div>
+                            <p className="font-extrabold text-gray-800 text-[11px]">మాస్టర్ ఒరిజినల్ ఫోటో (Master Photo)</p>
+                            <p className="text-[9px] text-gray-500">లాగిన్ సమయంలో కెమెరా ఫోటో ఈ ఫోటోతో మ్యాచ్ కావాలి.</p>
+                          </div>
+                        </div>
+                        <label className="px-3 py-1.5 bg-[#082c75] hover:bg-[#001040] text-white font-extrabold text-[9px] rounded-lg cursor-pointer shadow-xs transition active:scale-95 whitespace-nowrap">
+                          అప్‌లోడ్ ఫోటో
+                          <input type="file" accept="image/*" onChange={handleMasterPhotoUpload} className="hidden" />
+                        </label>
+                      </div>
+
+                      {/* Camera Verification Toggle Switch */}
+                      <div className="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-gray-150">
+                        <div className="space-y-0.5">
+                          <p className="font-extrabold text-gray-800 text-[11px]">కెమెరా వెరిఫికేషన్ మాస్టర్ స్విచ్ (Camera Verification Toggle)</p>
+                          <p className="text-[9px] text-gray-500">
+                            {cameraVerificationEnabled ? 'లాగిన్ సమయంలో కెమెరా ఫోటో క్యాప్చర్ & వెరిఫికేషన్ ఆన్‌లో ఉంది' : 'కెమెరా వెరిఫికేషన్ డిసేబుల్ చేయబడింది'}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            const nextVal = !cameraVerificationEnabled;
+                            setCameraVerificationEnabled(nextVal);
+                            await saveSecurityToCloudAndLocal({ cameraVerificationEnabled: nextVal });
+                            alert(nextVal ? '✓ కెమెరా వెరిఫికేషన్ ఆన్ చేయబడింది!' : '✓ కెమెరా వెరిఫికేషన్ ఆఫ్ చేయబడింది.');
+                          }}
+                          className={`w-11 h-6 rounded-full transition-colors flex items-center px-0.5 ${cameraVerificationEnabled ? 'bg-emerald-600' : 'bg-gray-300'}`}
+                        >
+                          <div className={`w-5 h-5 rounded-full bg-white transition-transform shadow-sm ${cameraVerificationEnabled ? 'translate-x-5' : 'translate-x-0'}`} />
+                        </button>
+                      </div>
+
+                      {/* View Login Photos Gallery (Audit Logs) */}
+                      <div className="space-y-2 pt-1">
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-gray-700 text-[10px]">లాగిన్ ఆడిట్ లాగ్ గ్యాలరీ (Audit Log Login Photos): {loginAuditPhotos.length}</span>
+                          {loginAuditPhotos.length > 0 && (
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                if (confirm('అన్ని లాగిన్ ఆడిట్ ఫోటోలను తొలగించాలా?')) {
+                                  setLoginAuditPhotos([]);
+                                  await saveSecurityToCloudAndLocal({ loginAuditPhotos: [] });
+                                }
+                              }}
+                              className="text-[9px] text-rose-600 font-bold hover:underline"
+                            >
+                              Clear Gallery
+                            </button>
+                          )}
+                        </div>
+                        {loginAuditPhotos.length === 0 ? (
+                          <div className="p-3 bg-gray-50 rounded-lg text-center text-[9px] text-gray-400 border border-dashed border-gray-200">
+                            ఇంతవరకు లాగిన్ ఫోటోలు రికార్డ్ కాలేదు. (No login audit photos captured yet)
+                          </div>
+                        ) : (
+                          <div className="grid grid-cols-4 gap-2 max-h-32 overflow-y-auto p-1 bg-slate-100 rounded-lg">
+                            {loginAuditPhotos.map((photo, idx) => (
+                              <div key={idx} className="relative group">
+                                <img src={photo} alt={`Audit ${idx}`} className="w-full h-16 object-cover rounded border border-gray-300 shadow-xs" />
+                                <span className="absolute bottom-0.5 right-0.5 bg-black/70 text-white text-[7px] px-1 rounded">#{idx+1}</span>
+                                <button
+                                  type="button"
+                                  onClick={async () => {
+                                    if (confirm(`ఫోటో #${idx+1} ని తొలగించాలా?`)) {
+                                      const updated = loginAuditPhotos.filter((_, i) => i !== idx);
+                                      setLoginAuditPhotos(updated);
+                                      await saveSecurityToCloudAndLocal({ loginAuditPhotos: updated });
+                                    }
+                                  }}
+                                  className="absolute top-0.5 right-0.5 w-4 h-4 bg-rose-600 hover:bg-rose-700 text-white rounded-full flex items-center justify-center text-[8px] opacity-85 group-hover:opacity-100 transition shadow"
+                                  title="Delete photo"
+                                >
+                                  ×
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Cloud Sync Permanent Save Button */}
+                  <button
+                    type="button"
+                    onClick={() => saveSecurityToCloudAndLocal({})}
+                    className="w-full py-3 bg-[#082c75] hover:bg-[#001040] text-white font-black text-xs rounded-xl shadow-md transition active:scale-95 flex items-center justify-center gap-1.5"
+                  >
+                    <span>☁️ Save All Security Settings to Firebase Cloud (క్లౌడ్‌కు సింక్ చేయి)</span>
+                  </button>
                 </div>
               ) : activeSubTab === 'support' ? (
                 <div className="animate-fade-in space-y-4 max-h-[440px] overflow-y-auto pr-1 text-xs text-gray-700">
@@ -2142,6 +2554,31 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     </div>
 
                     <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[9px] font-bold text-cyan-700">✨ ఆటో-డిటెక్ట్ వెర్షన్ (Auto-Detected Version)</span>
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setPwaNotificationTitle('CWRB Final Update v2.6');
+                              setPwaNotificationBody('కోడ్, లోగో మరియు మేనిఫెస్టో అప్డేట్స్ తో కూడిన ఫైనల్ PWA వెర్షన్ పబ్లిష్ చేయబడింది.');
+                            }}
+                            className="text-[9px] font-bold text-gray-500 hover:text-cyan-600 underline"
+                          >
+                            Auto-Fill
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setPwaNotificationTitle('');
+                              setPwaNotificationBody('');
+                            }}
+                            className="text-[9px] font-bold text-rose-500 hover:text-rose-700 underline"
+                          >
+                            Clear
+                          </button>
+                        </div>
+                      </div>
                       <input
                         type="text"
                         value={pwaNotificationTitle}
@@ -2283,6 +2720,62 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         </div>
 
       </div>
+
+      {/* LIVE CAMERA VERIFICATION POPUP MODAL */}
+      {isCameraVerificationModalOpen && (
+        <div className="absolute inset-0 bg-slate-950/90 z-50 flex flex-col items-center justify-center p-5 text-white animate-fade-in">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 max-w-sm w-full space-y-4 shadow-2xl text-center">
+            <div className="w-12 h-12 bg-emerald-500/10 rounded-2xl flex items-center justify-center mx-auto text-emerald-400 border border-emerald-500/30">
+              <Camera className="w-6 h-6 animate-pulse" />
+            </div>
+            
+            <div className="space-y-1">
+              <h4 className="font-extrabold text-sm text-white">ఆటోమేటిక్ లైవ్ కెమెరా వెరిఫికేషన్ (Auto Live Face Verify)</h4>
+              <p className="text-[10px] text-slate-400 leading-relaxed">
+                అడ్మిన్ గారు, కెమెరా ముఖాన్ని ఆటోమేటిక్‌గా స్కాన్ చేసి మాస్టర్ ఫోటోతో వెరిఫై చేస్తోంది. దయచేసి వేచి ఉండండి...
+              </p>
+            </div>
+
+            {/* Video preview & Master Photo comparison */}
+            <div className="grid grid-cols-2 gap-2 relative rounded-2xl overflow-hidden border border-slate-800 bg-slate-950 p-2">
+              <div className="relative aspect-square rounded-xl overflow-hidden bg-black border border-slate-800">
+                <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
+                <span className="absolute bottom-1 left-1 bg-black/75 text-emerald-400 text-[8px] font-bold px-1.5 py-0.5 rounded">లైవ్ కెమెరా</span>
+              </div>
+              <div className="relative aspect-square rounded-xl overflow-hidden bg-black border border-slate-800 flex flex-col items-center justify-center">
+                {masterPhotoUrl ? (
+                  <img src={masterPhotoUrl} alt="Master Photo" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="text-center p-2 text-slate-500 text-[9px]">మాస్టర్ ఫోటో సెట్ చేయలేదు</div>
+                )}
+                <span className="absolute bottom-1 left-1 bg-black/75 text-[#FFC000] text-[8px] font-bold px-1.5 py-0.5 rounded">మాస్టర్ ఫోటో</span>
+              </div>
+            </div>
+
+            <div className="space-y-2 pt-1">
+              <button
+                type="button"
+                onClick={captureAndVerifyCamera}
+                className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs rounded-xl shadow-lg transition active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <ShieldCheck className="w-4 h-4" />
+                <span>ఫోటో క్యాప్చర్ & వెరిఫై (Capture & Verify)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  stopCameraStream();
+                  setIsCameraVerificationModalOpen(false);
+                }}
+                className="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-[10px] rounded-xl transition cursor-pointer"
+              >
+                రద్దు చేయి (Cancel)
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

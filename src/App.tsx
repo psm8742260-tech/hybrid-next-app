@@ -476,6 +476,70 @@ export default function App() {
     }
   };
 
+  // Clock widget state & live time sync
+  const [clockHour, setClockHour] = useState<number>(() => {
+    const saved = localStorage.getItem('cwb_clock_hour');
+    return saved ? parseInt(saved, 10) : 9;
+  });
+  const [clockMinute, setClockMinute] = useState<number>(() => {
+    const saved = localStorage.getItem('cwb_clock_minute');
+    return saved ? parseInt(saved, 10) : 41;
+  });
+  const [clockAmPm, setClockAmPm] = useState<string>(() => {
+    const saved = localStorage.getItem('cwb_clock_ampm');
+    return saved || 'AM';
+  });
+  const [isLiveTime, setIsLiveTime] = useState<boolean>(() => {
+    return localStorage.getItem('cwb_clock_islive') === 'true';
+  });
+
+  // Alarm state & logic
+  const [alarmHour, setAlarmHour] = useState<number>(() => {
+    const saved = localStorage.getItem('cwb_alarm_hour');
+    return saved ? parseInt(saved, 10) : 9;
+  });
+  const [alarmMinute, setAlarmMinute] = useState<number>(() => {
+    const saved = localStorage.getItem('cwb_alarm_minute');
+    return saved ? parseInt(saved, 10) : 45;
+  });
+  const [alarmAmPm, setAlarmAmPm] = useState<string>(() => {
+    const saved = localStorage.getItem('cwb_alarm_ampm');
+    return saved || 'AM';
+  });
+  const [alarmEnabled, setAlarmEnabled] = useState<boolean>(() => {
+    return localStorage.getItem('cwb_alarm_enabled') === 'true';
+  });
+  const [alarmTriggered, setAlarmTriggered] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (!alarmEnabled) return;
+    if (clockHour === alarmHour && clockMinute === alarmMinute && clockAmPm === alarmAmPm) {
+      if (!alarmTriggered) {
+        setAlarmTriggered(true);
+      }
+    } else {
+      if (alarmTriggered) {
+        setAlarmTriggered(false);
+      }
+    }
+  }, [clockHour, clockMinute, clockAmPm, alarmHour, alarmMinute, alarmAmPm, alarmEnabled, alarmTriggered]);
+
+  useEffect(() => {
+    if (!isLiveTime) return;
+    const interval = setInterval(() => {
+      const now = new Date();
+      let h = now.getHours();
+      const m = now.getMinutes();
+      const ampm = h >= 12 ? 'PM' : 'AM';
+      h = h % 12;
+      h = h ? h : 12;
+      setClockHour(h);
+      setClockMinute(m);
+      setClockAmPm(ampm);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [isLiveTime]);
+
   // Synchronize initial timers for already active features
   useEffect(() => {
     setFeatureTimers((prev) => {
@@ -1221,9 +1285,148 @@ export default function App() {
                       <div className="w-3 h-3 bg-[#FFC000] rounded-full z-20 shadow"></div>
                     </div>
                     
-                    {/* Time display */}
-                    <div className="mt-4 font-mono font-black text-2xl text-white tracking-widest drop-shadow-sm flex items-center gap-1 bg-slate-900/50 px-4 py-1.5 rounded-full border border-white/5">
-                      <span>09:41 AM</span>
+                    {/* Time display & Adjust Controls */}
+                    <div className="mt-3 flex flex-col items-center">
+                      <div className="font-mono font-black text-xl text-white tracking-widest drop-shadow-sm flex items-center gap-1 bg-slate-900/70 px-4 py-1.5 rounded-full border border-white/10 shadow-lg">
+                        <span>{String(clockHour).padStart(2, '0')}:{String(clockMinute).padStart(2, '0')} {clockAmPm}</span>
+                      </div>
+                      
+                      {/* Time Adjustment & Live Mode Buttons */}
+                      <div className="flex flex-wrap items-center justify-center gap-1.5 mt-2.5">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const nextH = clockHour >= 12 ? 1 : clockHour + 1;
+                            setClockHour(nextH);
+                            localStorage.setItem('cwb_clock_hour', String(nextH));
+                            setIsLiveTime(false);
+                            localStorage.setItem('cwb_clock_islive', 'false');
+                          }}
+                          className="px-2 py-0.5 bg-white/10 hover:bg-white/20 text-white rounded text-[9px] font-bold border border-white/20 transition"
+                          title="Hour +"
+                        >
+                          Hour +
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const nextM = clockMinute >= 59 ? 0 : clockMinute + 1;
+                            setClockMinute(nextM);
+                            localStorage.setItem('cwb_clock_minute', String(nextM));
+                            setIsLiveTime(false);
+                            localStorage.setItem('cwb_clock_islive', 'false');
+                          }}
+                          className="px-2 py-0.5 bg-white/10 hover:bg-white/20 text-white rounded text-[9px] font-bold border border-white/20 transition"
+                          title="Min +"
+                        >
+                          Min +
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const nextAmPm = clockAmPm === 'AM' ? 'PM' : 'AM';
+                            setClockAmPm(nextAmPm);
+                            localStorage.setItem('cwb_clock_ampm', nextAmPm);
+                            setIsLiveTime(false);
+                            localStorage.setItem('cwb_clock_islive', 'false');
+                          }}
+                          className="px-2 py-0.5 bg-[#FFC000] hover:bg-[#ffca1c] text-[#082c75] rounded text-[9px] font-extrabold transition shadow"
+                          title="Toggle AM/PM"
+                        >
+                          {clockAmPm}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newLive = !isLiveTime;
+                            setIsLiveTime(newLive);
+                            localStorage.setItem('cwb_clock_islive', String(newLive));
+                            if (newLive) {
+                              const now = new Date();
+                              let h = now.getHours();
+                              const m = now.getMinutes();
+                              const ampm = h >= 12 ? 'PM' : 'AM';
+                              h = h % 12;
+                              h = h ? h : 12;
+                              setClockHour(h);
+                              setClockMinute(m);
+                              setClockAmPm(ampm);
+                              localStorage.setItem('cwb_clock_hour', String(h));
+                              localStorage.setItem('cwb_clock_minute', String(m));
+                              localStorage.setItem('cwb_clock_ampm', ampm);
+                            }
+                          }}
+                          className={`px-2 py-0.5 rounded text-[9px] font-bold border transition ${isLiveTime ? 'bg-emerald-500 text-white border-emerald-400' : 'bg-white/10 text-gray-300 border-white/20 hover:bg-white/20'}`}
+                          title="Toggle Live/Auto Time"
+                        >
+                          {isLiveTime ? '● Live Time' : '⚙ Manual'}
+                        </button>
+                      </div>
+
+                      {/* Alarm Section */}
+                      <div className="mt-2.5 bg-slate-900/80 border border-white/15 rounded-lg p-2 max-w-[240px] mx-auto text-left shadow-md">
+                        <div className="flex items-center justify-between text-[10px] font-bold text-[#FFC000] mb-1.5">
+                          <span>⏰ అలారం (Alarm):</span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newEnabled = !alarmEnabled;
+                              setAlarmEnabled(newEnabled);
+                              localStorage.setItem('cwb_alarm_enabled', String(newEnabled));
+                              if (!newEnabled) setAlarmTriggered(false);
+                            }}
+                            className={`px-2 py-0.5 rounded text-[8px] font-extrabold ${alarmEnabled ? 'bg-emerald-500 text-white' : 'bg-gray-700 text-gray-300'}`}
+                          >
+                            {alarmEnabled ? 'ON' : 'OFF'}
+                          </button>
+                        </div>
+                        <div className="flex items-center justify-between text-[10px] text-white font-mono">
+                          <span>{String(alarmHour).padStart(2, '0')}:{String(alarmMinute).padStart(2, '0')} {alarmAmPm}</span>
+                          <div className="flex gap-1">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const nextAH = alarmHour >= 12 ? 1 : alarmHour + 1;
+                                setAlarmHour(nextAH);
+                                localStorage.setItem('cwb_alarm_hour', String(nextAH));
+                              }}
+                              className="px-1.5 py-0.5 bg-white/10 hover:bg-white/25 rounded text-[8px] font-bold"
+                              title="Alarm Hour +"
+                            >
+                              H+
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const nextAM = alarmMinute >= 45 ? 0 : alarmMinute + 15;
+                                setAlarmMinute(nextAM);
+                                localStorage.setItem('cwb_alarm_minute', String(nextAM));
+                              }}
+                              className="px-1.5 py-0.5 bg-white/10 hover:bg-white/25 rounded text-[8px] font-bold"
+                              title="Alarm Min +"
+                            >
+                              M+
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const nextAAPM = alarmAmPm === 'AM' ? 'PM' : 'AM';
+                                setAlarmAmPm(nextAAPM);
+                                localStorage.setItem('cwb_alarm_ampm', nextAAPM);
+                              }}
+                              className="px-1.5 py-0.5 bg-[#FFC000] text-[#082c75] rounded text-[8px] font-black"
+                              title="Toggle AM/PM"
+                            >
+                              {alarmAmPm}
+                            </button>
+                          </div>
+                        </div>
+                        {alarmTriggered && (
+                          <div className="mt-1.5 bg-rose-600/90 text-white text-[9px] font-black text-center py-1 rounded animate-pulse">
+                            🚨 అలారం మోగుతోంది! (Alarm Ringing!)
+                          </div>
+                        )}
+                      </div>
                     </div>
                     
 
