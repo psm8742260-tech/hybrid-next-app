@@ -9,7 +9,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Civil Worker Book" />
     <meta name="application-name" content="Civil Worker Book" />
-    <link rel="apple-touch-icon" href="/icon-512.png" />
+    <link rel="apple-touch-icon" href="/cwrb-logo.png" />
     <title>Civil Worker Book</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
@@ -36,16 +36,27 @@
 
     <script type="module" src="/src/main.tsx"></script>
     <script>
-      // Service Worker registration (safeguarded)
+      // Service Worker registration with Strict Draft Mode & Manual Admin PWA Update Control
       if ('serviceWorker' in navigator) {
         if (window.self === window.top) {
           window.addEventListener('load', () => {
+            const pwaEnabled = localStorage.getItem('cwb_pwa_enabled') !== 'false';
+            if (!pwaEnabled) {
+              console.log('PWA is disabled by Admin. Unregistering service workers...');
+              navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
+              return;
+            }
+
             navigator.serviceWorker.register('/service-worker.js').then((reg) => {
               console.log('Service Worker registered successfully:', reg);
-              if (reg && typeof reg.update === 'function') {
+              // Only check for updates if Admin explicitly clicked 'Publish Final PWA Update'
+              const publishedVersion = localStorage.getItem('cwb_published_cache_version');
+              if (publishedVersion && reg && typeof reg.update === 'function') {
                 reg.update().catch((err) => {
                   console.log('Service Worker update check skipped:', err);
                 });
+              } else {
+                console.log('PWA is in Strict Draft Mode. No auto-update triggered without Admin Publish.');
               }
             }).catch((err) => {
               console.log('Service Worker registration failed:', err);
@@ -55,7 +66,7 @@
           navigator.serviceWorker.addEventListener('controllerchange', () => {
             if (!refreshing) {
               refreshing = true;
-              console.log('New Service Worker version detected! Reloading page automatically...');
+              console.log('New published PWA update detected! Reloading app...');
               window.location.reload();
             }
           });

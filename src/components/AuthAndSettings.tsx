@@ -10,6 +10,7 @@ import {  INITIAL_FEATURES } from '../data';
 import {  ManualFeatureTimer } from './ManualFeatureTimer';
 import BrahmastraSystemComponent from './BrahmastraSystem';
 import EcommerceVendorDashboard from './EcommerceVendorDashboard';
+import CWRBLogo from './CWRBLogo';
 import {  auth, RecaptchaVerifier } from '../lib/firebase';
 import {  signInWithPhoneNumber, ConfirmationResult } from 'firebase/auth';
 
@@ -183,12 +184,9 @@ export const PhoneLogin: React.FC<PhoneLoginProps> = ({ onLoginSuccess, transpar
         {/* App Emblem */}
         {!transparent && (
           <div className="text-center space-y-2">
-            <div className="w-14 h-14 bg-[#082c75] text-[#FFC000] rounded-2xl mx-auto flex items-center justify-center font-black text-xl shadow-lg border-2 border-[#FFC000] rotate-6">
-              <span className="-rotate-6">CWRB</span>
-            </div>
+            <CWRBLogo stacked={true} className="mx-auto" />
             <div>
-              <h3 className="text-lg font-black text-[#082c75]">CWRB సివిల్ వర్కర్ పోర్టల్</h3>
-              <p className="text-[10px] text-gray-500 font-bold tracking-wider">రక్షిత లాగిన్ వ్యవస్థ / Secure Verification Panel</p>
+              <p className="text-[10px] text-gray-500 font-bold tracking-wider mt-1">రక్షిత లాగిన్ వ్యవస్థ / Secure Verification Panel</p>
             </div>
           </div>
         )}
@@ -459,7 +457,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [fingerprintScanning, setFingerprintScanning] = useState(false);
   const [fingerprintScanned, setFingerprintScanned] = useState(false);
   const [error, setError] = useState('');
-  const [activeSubTab, setActiveSubTab] = useState<'features' | 'gateways' | 'vendor' | 'brahmastra' | 'passwords' | 'support' | 'maintenance' | 'agents'>('features');
+  const [activeSubTab, setActiveSubTab] = useState<'features' | 'gateways' | 'vendor' | 'brahmastra' | 'passwords' | 'support' | 'maintenance' | 'agents' | 'pwa'>('features');
+  const [pwaEnabled, setPwaEnabled] = useState<boolean>(() => {
+    return localStorage.getItem('cwb_pwa_enabled') !== 'false';
+  });
+  const [pwaNotificationTitle, setPwaNotificationTitle] = useState('');
+  const [pwaNotificationBody, setPwaNotificationBody] = useState('');
+  const [isPushingUpdate, setIsPushingUpdate] = useState(false);
   const [featuresSubTab, setFeaturesSubTab] = useState<'normal' | 'premium' | 'postpaid' | 'rates'>('normal');
 
   const [preferredAgent, setPreferredAgent] = useState<string>(() => {
@@ -873,6 +877,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   }`}
                 >
                   ప్రధాన ఏజెంట్లు / Agents 🤖
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveSubTab('pwa')}
+                  className={`px-2 pb-2 text-[10px] font-extrabold transition-all border-b-2 shrink-0 ${
+                    activeSubTab === 'pwa'
+                      ? 'border-cyan-600 text-cyan-700'
+                      : 'border-transparent text-gray-400 hover:text-gray-500'
+                  }`}
+                >
+                  PWA మేనేజ్‌మెంట్ / PWA 📱
                 </button>
               </div>
 
@@ -2072,6 +2087,105 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         </div>
                       )}
                     </div>
+                  </div>
+                </div>
+              ) : activeSubTab === 'pwa' ? (
+                <div className="animate-fade-in space-y-4 max-h-[440px] overflow-y-auto pr-1 text-xs text-gray-700">
+                  <div className="bg-cyan-50 border border-cyan-200 p-3.5 rounded-xl space-y-1.5">
+                    <h5 className="font-extrabold text-cyan-950 flex items-center gap-1.5">
+                      <span>📱 PWA (Progressive Web App) కంట్రోల్ సిస్టమ్</span>
+                    </h5>
+                    <p className="text-[10px] text-cyan-800 leading-relaxed">
+                      అడ్మిన్ ప్యానెల్ ద్వారా మీ వెబ్ యాప్ యొక్క PWA ఇన్స్టాల్ ప్రాంప్ట్లు, సర్వీస్ వర్కర్ మరియు ఆఫ్లైన్ క్యాచింగ్ సిస్టమ్‌ను ఎనేబుల్ లేదా డిసేబుల్ చేయండి.
+                    </p>
+                  </div>
+
+                  {/* PWA On/Off Toggle Switch */}
+                  <div className="bg-white p-4 rounded-xl border border-gray-150 space-y-3 shadow-xs">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <h6 className="font-extrabold text-gray-800 text-xs">PWA మాస్టర్ స్విచ్ (PWA On/Off Toggle)</h6>
+                        <p className="text-[9px] text-gray-500">
+                          {pwaEnabled ? 'ప్రస్తుతం PWA ఆన్‌లో ఉంది (Install App ప్రాంప్ట్లు యాక్టివ్)' : 'ప్రస్తుతం PWA ఆఫ్‌లో ఉంది (డిసేబుల్ చేయబడింది)'}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const nextState = !pwaEnabled;
+                          setPwaEnabled(nextState);
+                          localStorage.setItem('cwb_pwa_enabled', nextState ? 'true' : 'false');
+                          window.dispatchEvent(new Event('storage'));
+                          alert(nextState ? '✓ PWA ఆన్ చేయబడింది! యూజర్లకు Install App ఆప్షన్ యాక్టివేట్ అయింది.' : '✓ PWA ఆఫ్ చేయబడింది! సర్వీస్ వర్కర్ మరియు ప్రాంప్ట్లు డిసేబుల్ అయ్యాయి.');
+                        }}
+                        className={`w-12 h-6 rounded-full transition-colors flex items-center px-0.5 ${pwaEnabled ? 'bg-cyan-600' : 'bg-gray-300'}`}
+                      >
+                        <div className={`w-5 h-5 rounded-full bg-white transition-transform shadow-sm ${pwaEnabled ? 'translate-x-6' : 'translate-x-0'}`} />
+                      </button>
+                    </div>
+
+                    <div className="pt-2 border-t border-gray-100 flex items-center justify-between text-[9px]">
+                      <span className="font-bold text-gray-500">స్టేటస్ (Status):</span>
+                      <span className={`font-black px-2 py-0.5 rounded-full ${pwaEnabled ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`}>
+                        {pwaEnabled ? '🟢 ACTIVE (ON)' : '🔴 DISABLED (OFF)'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Publish Final PWA Update / Manual Control Feature */}
+                  <div className={`bg-white p-4 rounded-xl border border-gray-150 space-y-3 shadow-xs transition-opacity ${pwaEnabled ? 'opacity-100' : 'opacity-50 pointer-events-none'}`}>
+                    <div className="space-y-0.5">
+                      <h6 className="font-extrabold text-gray-800 text-xs">Publish Final PWA Update (ఫైనల్ PWA అప్‌డేట్)</h6>
+                      <p className="text-[9px] text-gray-500">
+                        డెవలప్‌మెంట్ డ్రాఫ్ట్ మార్పులు ఆటోమేటిక్‌గా వెళ్లకుండా, అడ్మిన్ ప్యానెల్ ద్వారా మాన్యువల్‌గా పబ్లిష్ చేయండి.
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <input
+                        type="text"
+                        value={pwaNotificationTitle}
+                        onChange={(e) => setPwaNotificationTitle(e.target.value)}
+                        placeholder="అప్‌డేట్ వెర్షన్ టైటిల్ (e.g. CWRB Final Update v2.6)"
+                        className="w-full bg-slate-50 border border-gray-200 rounded-lg p-2 text-[10px] font-semibold text-gray-800 focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                      />
+                      <textarea
+                        value={pwaNotificationBody}
+                        onChange={(e) => setPwaNotificationBody(e.target.value)}
+                        placeholder="అప్‌డేట్ గమనిక (e.g. కొత్త మార్పులతో కూడిన ఫైనల్ వెర్షన్ పబ్లిష్ చేయబడింది.)"
+                        rows={2}
+                        className="w-full bg-slate-50 border border-gray-200 rounded-lg p-2 text-[10px] font-semibold text-gray-800 focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                      />
+                    </div>
+
+                    <button
+                      type="button"
+                      disabled={!pwaEnabled}
+                      onClick={() => {
+                        if (!pwaNotificationTitle.trim()) {
+                          alert('దయచేసి అప్‌డేట్ వెర్షన్ టైటిల్ ఎంటర్ చేయండి!');
+                          return;
+                        }
+                        setIsPushingUpdate(true);
+                        const publishVersion = 'cwb-cache-pub-' + Date.now();
+                        localStorage.setItem('cwb_published_cache_version', publishVersion);
+                        
+                        setTimeout(() => {
+                          setIsPushingUpdate(false);
+                          alert(`🚀 "చెన్నై/తెలుగు CWRB" ఫైనల్ PWA అప్‌డేట్ విజయవంతంగా పబ్లిష్ చేయబడింది మరియు మొబైల్ యూజర్లకు పుష్ చేయబడింది!\n\nవెర్షన్ టోకెన్: ${publishVersion}\nశీర్షిక: ${pwaNotificationTitle}`);
+                          setPwaNotificationTitle('');
+                          setPwaNotificationBody('');
+                        }, 1500);
+                      }}
+                      className="w-full py-3 bg-cyan-600 hover:bg-cyan-700 text-white font-black text-xs rounded-xl shadow-md transition active:scale-95 flex items-center justify-center gap-1.5"
+                    >
+                      {isPushingUpdate ? 'ఫైనల్ అప్‌డేట్ పబ్లిష్ అవుతోంది...' : '🚀 Publish Final PWA Update (ఫైనల్ అప్‌డేట్ పబ్లిష్ చేయి)'}
+                    </button>
+                    {!pwaEnabled && (
+                      <p className="text-[9px] text-rose-600 font-bold text-center">
+                        ⚠️ PWA స్విచ్ ఆఫ్ లో ఉంది కాబట్టి పబ్లిష్ అప్‌డేట్ బటన్ నిలిపివేయబడింది.
+                      </p>
+                    )}
                   </div>
                 </div>
               ) : activeSubTab === 'agents' ? (

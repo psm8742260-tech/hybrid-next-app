@@ -316,6 +316,8 @@ export default function App() {
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: Event) => {
+      const pwaEnabled = localStorage.getItem('cwb_pwa_enabled') !== 'false';
+      if (!pwaEnabled) return;
       e.preventDefault();
       setDeferredPrompt(e);
       setShowInstallBanner(true);
@@ -329,6 +331,11 @@ export default function App() {
   }, []);
 
   const handleInstallClick = async () => {
+    const pwaEnabled = localStorage.getItem('cwb_pwa_enabled') !== 'false';
+    if (!pwaEnabled) {
+      alert("⚠️ అడ్మిన్ గారు PWA సిస్టమ్‌ను డిసేబుల్ (OFF) చేసారు. ప్రస్తుతం ఇన్స్టాల్ ఆప్షన్ అందుబాటులో లేదు.");
+      return;
+    }
     if (window.self !== window.top) {
       alert("⚠️ దయచేసి పైన ఉన్న 'ఓపెన్ ఇన్ న్యూ ట్యాబ్' (Open in New Tab) బటన్ నొక్కి, కొత్త ట్యాబ్ లో యాప్ ఓపెన్ చేసి ఇన్స్టాల్ బటన్ నొక్కండి.\n\nమొబైల్ బ్రౌజర్ల భద్రతా నిబంధనల ప్రకారం ఇక్కడ(ప్రివ్యూలో) నుండి నేరుగా ఇన్స్టాల్ చేయడం కుదరదు.");
       return;
