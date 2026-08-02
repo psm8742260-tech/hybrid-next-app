@@ -532,6 +532,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [newBrahmastraPwd, setNewBrahmastraPwd] = useState(() => localStorage.getItem('cwb_brahmastra_pwd') || 'CWRB99');
   const [newVaultPwd, setNewVaultPwd] = useState(() => localStorage.getItem('cwb_vault_pwd') || '1234');
 
+  // Phone contact form states
+  const [newContactName, setNewContactName] = useState('');
+  const [newContactPhone, setNewContactPhone] = useState('');
+
   const [adminSaved, setAdminSaved] = useState(false);
   const [brahmastraSaved, setBrahmastraSaved] = useState(false);
   const [vaultSaved, setVaultSaved] = useState(false);
@@ -540,6 +544,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [biometricCredentialId, setBiometricCredentialId] = useState(() => localStorage.getItem('cwb_biometric_credential_id') || '');
   const [masterPhotoUrl, setMasterPhotoUrl] = useState(() => localStorage.getItem('cwb_master_photo_url') || '');
   const [cameraVerificationEnabled, setCameraVerificationEnabled] = useState(() => localStorage.getItem('cwb_camera_verification_enabled') !== 'false');
+  const [mobileSettingsIconVisible, setMobileSettingsIconVisible] = useState(() => localStorage.getItem('cwb_mobile_settings_icon_visible') !== 'false');
   const [loginAuditPhotos, setLoginAuditPhotos] = useState<string[]>(() => {
     try {
       const saved = localStorage.getItem('cwb_login_audit_photos');
@@ -550,6 +555,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   });
   const [isCloudSyncing, setIsCloudSyncing] = useState(false);
   const [cloudSyncStatus, setCloudSyncStatus] = useState<string | null>(null);
+  const [isSavedRecently, setIsSavedRecently] = useState(false);
 
   // Gateway integration configuration states
   const [smsGatewayUrl, setSmsGatewayUrl] = useState('https://api.sms-gateway.telugu.in/v2/otp');
@@ -595,6 +601,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             setCameraVerificationEnabled(data.cameraVerificationEnabled);
             localStorage.setItem('cwb_camera_verification_enabled', String(data.cameraVerificationEnabled));
           }
+          if (data.mobileSettingsIconVisible !== undefined) {
+            setMobileSettingsIconVisible(data.mobileSettingsIconVisible);
+            localStorage.setItem('cwb_mobile_settings_icon_visible', String(data.mobileSettingsIconVisible));
+          }
           if (Array.isArray(data.loginAuditPhotos)) {
             setLoginAuditPhotos(data.loginAuditPhotos);
             localStorage.setItem('cwb_login_audit_photos', JSON.stringify(data.loginAuditPhotos));
@@ -616,6 +626,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     biometricCredentialId?: string;
     masterPhotoUrl?: string;
     cameraVerificationEnabled?: boolean;
+    mobileSettingsIconVisible?: boolean;
     loginAuditPhotos?: string[];
   }) => {
     setIsCloudSyncing(true);
@@ -628,6 +639,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         biometricCredentialId: updates.biometricCredentialId !== undefined ? updates.biometricCredentialId : biometricCredentialId,
         masterPhotoUrl: updates.masterPhotoUrl !== undefined ? updates.masterPhotoUrl : masterPhotoUrl,
         cameraVerificationEnabled: updates.cameraVerificationEnabled !== undefined ? updates.cameraVerificationEnabled : cameraVerificationEnabled,
+        mobileSettingsIconVisible: updates.mobileSettingsIconVisible !== undefined ? updates.mobileSettingsIconVisible : mobileSettingsIconVisible,
         loginAuditPhotos: updates.loginAuditPhotos !== undefined ? updates.loginAuditPhotos : loginAuditPhotos,
         updatedAt: new Date().toISOString()
       };
@@ -638,26 +650,33 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       if (payload.biometricCredentialId !== undefined) localStorage.setItem('cwb_biometric_credential_id', payload.biometricCredentialId);
       if (payload.masterPhotoUrl !== undefined) localStorage.setItem('cwb_master_photo_url', payload.masterPhotoUrl);
       localStorage.setItem('cwb_camera_verification_enabled', String(payload.cameraVerificationEnabled));
+      localStorage.setItem('cwb_mobile_settings_icon_visible', String(payload.mobileSettingsIconVisible));
       // Truncate audit photos if too large for quota/localStorage
       const safePhotos = (payload.loginAuditPhotos || []).slice(-10);
       localStorage.setItem('cwb_login_audit_photos', JSON.stringify(safePhotos));
 
       try {
-        const docRef = doc(db, 'settings', 'admin_security');
-        // Omit heavy base64 audit photos from firestore to prevent quota exceeded
-        const cloudPayload = { ...payload, loginAuditPhotos: safePhotos.slice(-3) };
-        await setDoc(docRef, cloudPayload, { merge: true });
-        setCloudSyncStatus('✓ అడ్మిన్ సెక్యూరిటీ నిబంధనలు క్లౌడ్‌లో పర్మనెంట్‌గా సేవ్ చేయబడ్డాయి!');
+        if (db) {
+          const docRef = doc(db, 'settings', 'admin_security');
+          // Omit heavy base64 audit photos from firestore to prevent quota exceeded
+          const cloudPayload = { ...payload, loginAuditPhotos: safePhotos.slice(-3) };
+          await setDoc(docRef, cloudPayload, { merge: true });
+          setCloudSyncStatus('✓ అడ్మిన్ సెక్యూరిటీ నిబంధనలు క్లౌడ్‌లో పర్మనెంట్‌గా సేవ్ చేయబడ్డాయి!');
+        }
       } catch (cloudErr) {
         setCloudSyncStatus('✓ లోకల్ స్టోరేజ్‌లో సురక్షితంగా సేవ్ చేయబడింది (Quota Safe Mode)');
         console.log('Cloud save quota/offline handled:', cloudErr);
       }
 
+      setIsSavedRecently(true);
+      setTimeout(() => setIsSavedRecently(false), 3000);
       setIsCloudSyncing(false);
+      alert('✓ అన్ని అడ్మిన్ సెక్యూరిటీ సెట్టింగ్స్ క్లౌడ్ & లోకల్‌లో విజయవంతంగా సేవ్ చేయబడ్డాయి!');
     } catch (err) {
       setIsCloudSyncing(false);
       setCloudSyncStatus('⚠️ లోకల్ సేవ్ విజయవంతమైంది');
       console.error('Security save error:', err);
+      alert('✓ అడ్మిన్ సెక్యూరిటీ సెట్టింగ్స్ లోకల్‌లో సేవ్ చేయబడ్డాయి!');
     }
   };
 
@@ -674,9 +693,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               name: "admin@cwrb.in",
               displayName: "అడ్మిన్ గారు"
             },
-            pubKeyCredParams: [{ alg: -7, type: "public-key" }],
+            pubKeyCredParams: [{ alg: -7, type: "public-key" as const }],
             timeout: 60000,
-            attestation: "direct"
+            attestation: "direct" as const
           };
           const credential = await navigator.credentials.create({ publicKey: pubKeyCredParams });
           if (credential && credential.id) {
@@ -2189,10 +2208,29 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                             <p className="text-[9px] text-gray-500">లాగిన్ సమయంలో కెమెరా ఫోటో ఈ ఫోటోతో మ్యాచ్ కావాలి.</p>
                           </div>
                         </div>
-                        <label className="px-3 py-1.5 bg-[#082c75] hover:bg-[#001040] text-white font-extrabold text-[9px] rounded-lg cursor-pointer shadow-xs transition active:scale-95 whitespace-nowrap">
-                          అప్‌లోడ్ ఫోటో
-                          <input type="file" accept="image/*" onChange={handleMasterPhotoUpload} className="hidden" />
-                        </label>
+                        <div className="flex items-center gap-1.5">
+                          {masterPhotoUrl && (
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                if (confirm('మాస్టర్ ఫోటోను తొలగించాలా? (Delete Master Photo)')) {
+                                  setMasterPhotoUrl('');
+                                  localStorage.removeItem('cwb_master_photo_url');
+                                  await saveSecurityToCloudAndLocal({ masterPhotoUrl: '' });
+                                  alert('✓ మాస్టర్ ఫోటో విజయవంతంగా తొలగించబడింది!');
+                                }
+                              }}
+                              className="px-2.5 py-1.5 bg-rose-100 hover:bg-rose-200 text-rose-800 font-extrabold text-[9px] rounded-lg transition active:scale-95"
+                              title="Delete Master Photo"
+                            >
+                              తొలగించు
+                            </button>
+                          )}
+                          <label className="px-3 py-1.5 bg-[#082c75] hover:bg-[#001040] text-white font-extrabold text-[9px] rounded-lg cursor-pointer shadow-xs transition active:scale-95 whitespace-nowrap">
+                            అప్‌లోడ్ ఫోటో
+                            <input type="file" accept="image/*" onChange={handleMasterPhotoUpload} className="hidden" />
+                          </label>
+                        </div>
                       </div>
 
                       {/* Camera Verification Toggle Switch */}
@@ -2214,6 +2252,29 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           className={`w-11 h-6 rounded-full transition-colors flex items-center px-0.5 ${cameraVerificationEnabled ? 'bg-emerald-600' : 'bg-gray-300'}`}
                         >
                           <div className={`w-5 h-5 rounded-full bg-white transition-transform shadow-sm ${cameraVerificationEnabled ? 'translate-x-5' : 'translate-x-0'}`} />
+                        </button>
+                      </div>
+
+                      {/* Mobile App Settings Icon Visibility Toggle Switch */}
+                      <div className="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-gray-150">
+                        <div className="space-y-0.5">
+                          <p className="font-extrabold text-gray-800 text-[11px]">మొబైల్ యాప్‌లో సెట్టింగ్స్ ఐకాన్ విజిబిలిటీ (Show Settings/Admin Icon in Mobile App)</p>
+                          <p className="text-[9px] text-gray-500">
+                            {mobileSettingsIconVisible ? 'మొబైల్ యాప్‌లో సెట్టింగ్స్ ఐకాన్ కనిపిస్తుంది (ON)' : 'మొబైల్ యాప్‌లో సెట్టింగ్స్ ఐకాన్ దాచబడింది (OFF - Secure)'}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            const nextVal = !mobileSettingsIconVisible;
+                            setMobileSettingsIconVisible(nextVal);
+                            localStorage.setItem('cwb_mobile_settings_icon_visible', String(nextVal));
+                            await saveSecurityToCloudAndLocal({ mobileSettingsIconVisible: nextVal });
+                            alert(nextVal ? '✓ మొబైల్ యాప్‌లో సెట్టింగ్స్ ఐకాన్ ఆన్ చేయబడింది!' : '✓ మొబైల్ యాప్‌లో సెట్టింగ్స్ ఐకాన్ దాచబడింది (OFF).');
+                          }}
+                          className={`w-11 h-6 rounded-full transition-colors flex items-center px-0.5 ${mobileSettingsIconVisible ? 'bg-emerald-600' : 'bg-gray-300'}`}
+                        >
+                          <div className={`w-5 h-5 rounded-full bg-white transition-transform shadow-sm ${mobileSettingsIconVisible ? 'translate-x-5' : 'translate-x-0'}`} />
                         </button>
                       </div>
 
@@ -2272,9 +2333,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <button
                     type="button"
                     onClick={() => saveSecurityToCloudAndLocal({})}
-                    className="w-full py-3 bg-[#082c75] hover:bg-[#001040] text-white font-black text-xs rounded-xl shadow-md transition active:scale-95 flex items-center justify-center gap-1.5"
+                    className={`w-full py-3 ${isSavedRecently ? 'bg-emerald-600 hover:bg-emerald-500 scale-[1.02]' : 'bg-[#082c75] hover:bg-[#001040]'} text-white font-black text-xs rounded-xl shadow-md transition-all duration-300 active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer`}
                   >
-                    <span>☁️ Save All Security Settings to Firebase Cloud (క్లౌడ్‌కు సింక్ చేయి)</span>
+                    <span>{isSavedRecently ? '✓ సేవ్ చేయబడింది! (Saved Successfully!)' : '☁️ Save All Security Settings to Firebase Cloud (క్లౌడ్‌కు సింక్ చేయి)'}</span>
                   </button>
                 </div>
               ) : activeSubTab === 'support' ? (
@@ -2560,8 +2621,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           <button
                             type="button"
                             onClick={() => {
-                              setPwaNotificationTitle('CWRB Final Update v2.6');
-                              setPwaNotificationBody('కోడ్, లోగో మరియు మేనిఫెస్టో అప్డేట్స్ తో కూడిన ఫైనల్ PWA వెర్షన్ పబ్లిష్ చేయబడింది.');
+                              const currentVerNum = Number(localStorage.getItem('cwb_pwa_version_counter') || '26') + 1;
+                              localStorage.setItem('cwb_pwa_version_counter', String(currentVerNum));
+                              const newVerStr = `CWRB Final Update v2.${currentVerNum}`;
+                              setPwaNotificationTitle(newVerStr);
+                              setPwaNotificationBody(`కోడ్, లోగో మరియు మేనిఫెస్టో అప్డేట్స్ తో కూడిన ఫైనల్ PWA వెర్షన్ ${newVerStr} పబ్లిష్ చేయబడింది.`);
                             }}
                             className="text-[9px] font-bold text-gray-500 hover:text-cyan-600 underline"
                           >

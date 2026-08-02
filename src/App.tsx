@@ -156,6 +156,27 @@ export default function App() {
 
   // Mobile App Settings Preferences (controlled by settings menu)
   const [showMobileSettings, setShowMobileSettings] = useState<boolean>(false);
+  const [mobileSettingsIconVisible, setMobileSettingsIconVisible] = useState<boolean>(() => localStorage.getItem('cwb_mobile_settings_icon_visible') !== 'false');
+
+  const isStandaloneApp = window.matchMedia('(display-mode: standalone)').matches || (navigator as any).standalone === true;
+  const showSettingsIcon = !isStandaloneApp || mobileSettingsIconVisible;
+
+  useEffect(() => {
+    const handleStorage = () => {
+      setMobileSettingsIconVisible(localStorage.getItem('cwb_mobile_settings_icon_visible') !== 'false');
+    };
+    window.addEventListener('storage', handleStorage);
+    const interval = setInterval(() => {
+      const val = localStorage.getItem('cwb_mobile_settings_icon_visible') !== 'false';
+      if (val !== mobileSettingsIconVisible) {
+        setMobileSettingsIconVisible(val);
+      }
+    }, 1000);
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+      clearInterval(interval);
+    };
+  }, [mobileSettingsIconVisible]);
   const [accentColor, setAccentColor] = useState<string>(() => localStorage.getItem('cwb_accent_color') || 'blue');
   const [language, setLanguage] = useState<'te' | 'en'>(() => (localStorage.getItem('cwb_lang') as 'te' | 'en') || 'te');
   const [soundOn, setSoundOn] = useState<boolean>(() => localStorage.getItem('cwb_sound_on') !== 'false');
@@ -1474,13 +1495,15 @@ export default function App() {
 
                       <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
                         {/* Dedicated Settings Button inside phone mockup header */}
-                        <button
-                          onClick={() => setShowMobileSettings(true)}
-                          title="సెట్టింగ్స్ / App Settings"
-                          className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-all text-[#FFC000] flex items-center justify-center active:scale-90"
-                        >
-                          <Settings className="w-3.5 h-3.5 text-[#FFC000]" />
-                        </button>
+                        {showSettingsIcon && (
+                          <button
+                            onClick={() => setShowMobileSettings(true)}
+                            title="సెట్టింగ్స్ / App Settings"
+                            className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-all text-[#FFC000] flex items-center justify-center active:scale-90"
+                          >
+                            <Settings className="w-3.5 h-3.5 text-[#FFC000]" />
+                          </button>
+                        )}
 
                         {/* Back/Logout Button inside phone mockup */}
                         <button
@@ -2754,38 +2777,40 @@ export default function App() {
                     </div>
                     <span className={`text-[8px] mt-1 tracking-tight transition-all ${currentScreen === 'vault' ? 'text-[#082c75] font-black' : 'text-gray-400 font-bold'}`}>వాల్ట్</span>
                   </button>
-                  <button 
-                    onClick={() => {
-                      if (soundOn) {
-                        try {
-                          const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-                          const osc = audioCtx.createOscillator();
-                          const gain = audioCtx.createGain();
-                          osc.connect(gain);
-                          gain.connect(audioCtx.destination);
-                          osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
-                          gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-                          osc.start();
-                          osc.stop(audioCtx.currentTime + 0.1);
-                        } catch (e) {}
-                      }
-                      setShowMobileSettings(true);
-                    }} 
-                    className="flex flex-col items-center justify-center py-0.5 transition-all active:scale-95"
-                    title="సెట్టింగ్స్ / Settings"
-                  >
-                    <div className={`relative w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300 ${
-                      showMobileSettings 
-                        ? 'bg-gradient-to-tr from-indigo-600 via-indigo-400 to-purple-300 text-white shadow-[inset_0_2px_4px_rgba(255,255,255,0.85),_0_4px_8px_rgba(79,70,229,0.4),_0_1px_2px_rgba(0,0,0,0.15)] border-b-2 border-indigo-700 scale-110 -translate-y-1.5' 
-                        : 'bg-gradient-to-tr from-slate-100 to-white text-gray-400 shadow-[inset_0_1.5px_2px_rgba(255,255,255,1),_0_1px_2px_rgba(0,0,0,0.05)] border border-slate-200'
-                    }`}>
-                      {showMobileSettings && (
-                        <div className="absolute top-0.5 left-1 w-2.5 h-1.5 rounded-full bg-white/40 blur-[0.3px]" />
-                      )}
-                      <Settings className={`w-4.5 h-4.5 ${showMobileSettings ? 'drop-shadow-[0_1px_1px_rgba(0,0,0,0.2)] text-white animate-spin' : 'text-gray-500'}`} style={showMobileSettings ? { animationDuration: '6s' } : undefined} />
-                    </div>
-                    <span className={`text-[8px] mt-1 tracking-tight transition-all ${showMobileSettings ? 'text-[#082c75] font-black' : 'text-gray-400 font-bold'}`}>సెట్టింగ్స్</span>
-                  </button>
+                  {showSettingsIcon && (
+                    <button 
+                      onClick={() => {
+                        if (soundOn) {
+                          try {
+                            const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+                            const osc = audioCtx.createOscillator();
+                            const gain = audioCtx.createGain();
+                            osc.connect(gain);
+                            gain.connect(audioCtx.destination);
+                            osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+                            gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                            osc.start();
+                            osc.stop(audioCtx.currentTime + 0.1);
+                          } catch (e) {}
+                        }
+                        setShowMobileSettings(true);
+                      }} 
+                      className="flex flex-col items-center justify-center py-0.5 transition-all active:scale-95"
+                      title="సెట్టింగ్స్ / Settings"
+                    >
+                      <div className={`relative w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300 ${
+                        showMobileSettings 
+                          ? 'bg-gradient-to-tr from-indigo-600 via-indigo-400 to-purple-300 text-white shadow-[inset_0_2px_4px_rgba(255,255,255,0.85),_0_4px_8px_rgba(79,70,229,0.4),_0_1px_2px_rgba(0,0,0,0.15)] border-b-2 border-indigo-700 scale-110 -translate-y-1.5' 
+                          : 'bg-gradient-to-tr from-slate-100 to-white text-gray-400 shadow-[inset_0_1.5px_2px_rgba(255,255,255,1),_0_1px_2px_rgba(0,0,0,0.05)] border border-slate-200'
+                      }`}>
+                        {showMobileSettings && (
+                          <div className="absolute top-0.5 left-1 w-2.5 h-1.5 rounded-full bg-white/40 blur-[0.3px]" />
+                        )}
+                        <Settings className={`w-4.5 h-4.5 ${showMobileSettings ? 'drop-shadow-[0_1px_1px_rgba(0,0,0,0.2)] text-white animate-spin' : 'text-gray-500'}`} style={showMobileSettings ? { animationDuration: '6s' } : undefined} />
+                      </div>
+                      <span className={`text-[8px] mt-1 tracking-tight transition-all ${showMobileSettings ? 'text-[#082c75] font-black' : 'text-gray-400 font-bold'}`}>సెట్టింగ్స్</span>
+                    </button>
+                  )}
                   <button 
                     onClick={() => {
                       if (soundOn) {
@@ -3383,38 +3408,40 @@ export default function App() {
                         </div>
                         <span className={`text-[8px] mt-1 tracking-tight transition-all ${currentWorkerScreen === 'entertainment' ? 'text-[#082c75] font-black' : 'text-gray-400 font-bold'}`}>వినోదం</span>
                       </button>
-                      <button 
-                        onClick={() => {
-                          if (soundOn) {
-                            try {
-                              const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-                              const osc = audioCtx.createOscillator();
-                              const gain = audioCtx.createGain();
-                              osc.connect(gain);
-                              gain.connect(audioCtx.destination);
-                              osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
-                              gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-                              osc.start();
-                              osc.stop(audioCtx.currentTime + 0.1);
-                            } catch (e) {}
-                          }
-                          setShowMobileSettings(true);
-                        }} 
-                        className="flex flex-col items-center justify-center py-0.5 transition-all active:scale-95"
-                        title="సెట్టింగ్స్ / Settings"
-                      >
-                        <div className={`relative w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300 ${
-                          showMobileSettings 
-                            ? 'bg-gradient-to-tr from-indigo-600 via-indigo-400 to-purple-300 text-white shadow-[inset_0_2px_4px_rgba(255,255,255,0.85),_0_4px_8px_rgba(79,70,229,0.4),_0_1px_2px_rgba(0,0,0,0.15)] border-b-2 border-indigo-700 scale-110 -translate-y-1.5' 
-                            : 'bg-gradient-to-tr from-slate-100 to-white text-gray-400 shadow-[inset_0_1.5px_2px_rgba(255,255,255,1),_0_1px_2px_rgba(0,0,0,0.05)] border border-slate-200'
-                        }`}>
-                          {showMobileSettings && (
-                            <div className="absolute top-0.5 left-1 w-2.5 h-1.5 rounded-full bg-white/40 blur-[0.3px]" />
-                          )}
-                          <Settings className={`w-4.5 h-4.5 ${showMobileSettings ? 'drop-shadow-[0_1px_1px_rgba(0,0,0,0.2)] text-white animate-spin' : 'text-gray-500'}`} style={showMobileSettings ? { animationDuration: '6s' } : undefined} />
-                        </div>
-                        <span className={`text-[8px] mt-1 tracking-tight transition-all ${showMobileSettings ? 'text-[#082c75] font-black' : 'text-gray-400 font-bold'}`}>సెట్టింగ్స్</span>
-                      </button>
+                      {showSettingsIcon && (
+                        <button 
+                          onClick={() => {
+                            if (soundOn) {
+                              try {
+                                const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+                                const osc = audioCtx.createOscillator();
+                                const gain = audioCtx.createGain();
+                                osc.connect(gain);
+                                gain.connect(audioCtx.destination);
+                                osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+                                gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                                osc.start();
+                                osc.stop(audioCtx.currentTime + 0.1);
+                              } catch (e) {}
+                            }
+                            setShowMobileSettings(true);
+                          }} 
+                          className="flex flex-col items-center justify-center py-0.5 transition-all active:scale-95"
+                          title="సెట్టింగ్స్ / Settings"
+                        >
+                          <div className={`relative w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300 ${
+                            showMobileSettings 
+                              ? 'bg-gradient-to-tr from-indigo-600 via-indigo-400 to-purple-300 text-white shadow-[inset_0_2px_4px_rgba(255,255,255,0.85),_0_4px_8px_rgba(79,70,229,0.4),_0_1px_2px_rgba(0,0,0,0.15)] border-b-2 border-indigo-700 scale-110 -translate-y-1.5' 
+                              : 'bg-gradient-to-tr from-slate-100 to-white text-gray-400 shadow-[inset_0_1.5px_2px_rgba(255,255,255,1),_0_1px_2px_rgba(0,0,0,0.05)] border border-slate-200'
+                          }`}>
+                            {showMobileSettings && (
+                              <div className="absolute top-0.5 left-1 w-2.5 h-1.5 rounded-full bg-white/40 blur-[0.3px]" />
+                            )}
+                            <Settings className={`w-4.5 h-4.5 ${showMobileSettings ? 'drop-shadow-[0_1px_1px_rgba(0,0,0,0.2)] text-white animate-spin' : 'text-gray-500'}`} style={showMobileSettings ? { animationDuration: '6s' } : undefined} />
+                          </div>
+                          <span className={`text-[8px] mt-1 tracking-tight transition-all ${showMobileSettings ? 'text-[#082c75] font-black' : 'text-gray-400 font-bold'}`}>సెట్టింగ్స్</span>
+                        </button>
+                      )}
                       <button 
                         onClick={() => {
                           if (soundOn) {
