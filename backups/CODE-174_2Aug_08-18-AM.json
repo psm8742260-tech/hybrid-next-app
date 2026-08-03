@@ -1,0 +1,8 @@
+{
+  "codeId": "CODE-174_2Aug_08-18-AM",
+  "timestamp": "2026-08-02T08:18:25-07:00",
+  "description": "Moved Mobile App Admin Settings Icon control board into PWA Management Section under AuthAndSettings.tsx",
+  "filesModified": [
+    "src/components/AuthAndSettings.tsx"
+  ]
+}

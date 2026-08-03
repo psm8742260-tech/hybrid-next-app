@@ -13,7 +13,7 @@ import EcommerceVendorDashboard from './EcommerceVendorDashboard';
 import CWRBLogo from './CWRBLogo';
 import {  auth, RecaptchaVerifier, db } from '../lib/firebase';
 import {  signInWithPhoneNumber, ConfirmationResult } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 
 // Toggle for testing without real Firebase SMS
 const USE_SIMULATED_AUTH = true;
@@ -465,6 +465,21 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [pwaNotificationTitle, setPwaNotificationTitle] = useState('CWRB Final Update v2.6');
   const [pwaNotificationBody, setPwaNotificationBody] = useState('కోడ్, లోగో మరియు మేనిఫెస్టో అప్డేట్స్ తో కూడిన ఫైనల్ PWA వెర్షన్ పబ్లిష్ చేయబడింది.');
   const [isPushingUpdate, setIsPushingUpdate] = useState(false);
+  const [currentLiveVersion, setCurrentLiveVersion] = useState<string>('v2.0');
+
+  // Sync with Firestore for PWA live version
+  useEffect(() => {
+    if (!db) return;
+    const unsub = onSnapshot(doc(db, 'settings', 'pwa_update'), (snap) => {
+      if (snap.exists()) {
+        const data = snap.data();
+        if (data.version) {
+          setCurrentLiveVersion(data.version);
+        }
+      }
+    });
+    return () => unsub();
+  }, []);
   const [featuresSubTab, setFeaturesSubTab] = useState<'normal' | 'premium' | 'postpaid' | 'rates'>('normal');
 
   const [preferredAgent, setPreferredAgent] = useState<string>(() => {
@@ -2255,29 +2270,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         </button>
                       </div>
 
-                      {/* Mobile App Settings Icon Visibility Toggle Switch */}
-                      <div className="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-gray-150">
-                        <div className="space-y-0.5">
-                          <p className="font-extrabold text-gray-800 text-[11px]">మొబైల్ యాప్‌లో సెట్టింగ్స్ ఐకాన్ విజిబిలిటీ (Show Settings/Admin Icon in Mobile App)</p>
-                          <p className="text-[9px] text-gray-500">
-                            {mobileSettingsIconVisible ? 'మొబైల్ యాప్‌లో సెట్టింగ్స్ ఐకాన్ కనిపిస్తుంది (ON)' : 'మొబైల్ యాప్‌లో సెట్టింగ్స్ ఐకాన్ దాచబడింది (OFF - Secure)'}
-                          </p>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={async () => {
-                            const nextVal = !mobileSettingsIconVisible;
-                            setMobileSettingsIconVisible(nextVal);
-                            localStorage.setItem('cwb_mobile_settings_icon_visible', String(nextVal));
-                            await saveSecurityToCloudAndLocal({ mobileSettingsIconVisible: nextVal });
-                            alert(nextVal ? '✓ మొబైల్ యాప్‌లో సెట్టింగ్స్ ఐకాన్ ఆన్ చేయబడింది!' : '✓ మొబైల్ యాప్‌లో సెట్టింగ్స్ ఐకాన్ దాచబడింది (OFF).');
-                          }}
-                          className={`w-11 h-6 rounded-full transition-colors flex items-center px-0.5 ${mobileSettingsIconVisible ? 'bg-emerald-600' : 'bg-gray-300'}`}
-                        >
-                          <div className={`w-5 h-5 rounded-full bg-white transition-transform shadow-sm ${mobileSettingsIconVisible ? 'translate-x-5' : 'translate-x-0'}`} />
-                        </button>
-                      </div>
-
                       {/* View Login Photos Gallery (Audit Logs) */}
                       <div className="space-y-2 pt-1">
                         <div className="flex items-center justify-between">
@@ -2605,6 +2597,44 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     </div>
                   </div>
 
+                  {/* Mobile App Admin Settings Icon Control Board */}
+                  <div className="bg-white p-4 rounded-xl border border-gray-150 space-y-3 shadow-xs">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <h6 className="font-extrabold text-gray-800 text-xs">📱 మొబైల్ యాప్ అడ్మిన్ ఐకాన్ స్విచ్ (Mobile App Admin Icon Control)</h6>
+                        <p className="text-[9px] text-gray-500">
+                          {mobileSettingsIconVisible ? 'మొబైల్ యాప్‌లో సెట్టింగ్స్/అడ్మిన్ ఐకాన్ కనిపిస్తుంది (ON)' : 'మొబైల్ యాప్‌లో సెట్టింగ్స్/అడ్మిన్ ఐకాన్ దాచబడింది (OFF - Secure)'}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          const nextVal = !mobileSettingsIconVisible;
+                          setMobileSettingsIconVisible(nextVal);
+                          localStorage.setItem('cwb_mobile_settings_icon_visible', String(nextVal));
+                          await saveSecurityToCloudAndLocal({ mobileSettingsIconVisible: nextVal });
+                          try {
+                            if (db) {
+                              await setDoc(doc(db, 'settings', 'pwaConfig'), { showAdminIcon: nextVal, pwaAdminIconVisible: nextVal, mobileSettingsIconVisible: nextVal }, { merge: true });
+                              await setDoc(doc(db, 'settings', 'admin_security'), { mobileSettingsIconVisible: nextVal, showAdminIcon: nextVal, pwaAdminIconVisible: nextVal }, { merge: true });
+                            }
+                          } catch (e) {}
+                          alert(nextVal ? '✓ మొబైల్ యాప్‌లో సెట్టింగ్స్/అడ్మిన్ ఐకాన్ ఆన్ చేయబడింది!' : '✓ మొబైల్ యాప్‌లో సెట్టింగ్స్/అడ్మిన్ ఐకాన్ దాచబడింది (OFF).');
+                        }}
+                        className={`w-12 h-6 rounded-full transition-colors flex items-center px-0.5 ${mobileSettingsIconVisible ? 'bg-cyan-600' : 'bg-gray-300'}`}
+                      >
+                        <div className={`w-5 h-5 rounded-full bg-white transition-transform shadow-sm ${mobileSettingsIconVisible ? 'translate-x-6' : 'translate-x-0'}`} />
+                      </button>
+                    </div>
+
+                    <div className="pt-2 border-t border-gray-100 flex items-center justify-between text-[9px]">
+                      <span className="font-bold text-gray-500">యాప్ ఐకాన్ డిస్‌ప్లే స్టేటస్:</span>
+                      <span className={`font-black px-2 py-0.5 rounded-full ${mobileSettingsIconVisible ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`}>
+                        {mobileSettingsIconVisible ? '🟢 VISIBLE (కనిపిస్తుంది)' : '🔴 HIDDEN (దాచబడింది)'}
+                      </span>
+                    </div>
+                  </div>
+
                   {/* Publish Final PWA Update / Manual Control Feature */}
                   <div className={`bg-white p-4 rounded-xl border border-gray-150 space-y-3 shadow-xs transition-opacity ${pwaEnabled ? 'opacity-100' : 'opacity-50 pointer-events-none'}`}>
                     <div className="space-y-0.5">
@@ -2616,20 +2646,24 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-[9px] font-bold text-cyan-700">✨ ఆటో-డిటెక్ట్ వెర్షన్ (Auto-Detected Version)</span>
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-[9px] font-bold text-cyan-700">✨ లైవ్ వెర్షన్: <span className="text-emerald-600 font-black">{currentLiveVersion}</span></span>
+                          <span className="text-[8px] text-gray-400">మొబైల్ యాప్ ఈ వెర్షన్‌తో సింక్ అవుతుంది</span>
+                        </div>
                         <div className="flex gap-2">
                           <button
                             type="button"
                             onClick={() => {
-                              const currentVerNum = Number(localStorage.getItem('cwb_pwa_version_counter') || '26') + 1;
-                              localStorage.setItem('cwb_pwa_version_counter', String(currentVerNum));
-                              const newVerStr = `CWRB Final Update v2.${currentVerNum}`;
-                              setPwaNotificationTitle(newVerStr);
-                              setPwaNotificationBody(`కోడ్, లోగో మరియు మేనిఫెస్టో అప్డేట్స్ తో కూడిన ఫైనల్ PWA వెర్షన్ ${newVerStr} పబ్లిష్ చేయబడింది.`);
+                              // Try to parse the version number from string like 'v2.26' or 'CWRB-v2.26'
+                              const match = currentLiveVersion.match(/(\d+)(?!.*\d)/);
+                              const nextNum = match ? parseInt(match[0]) + 1 : 27;
+                              const newVerStr = `v2.${nextNum}`;
+                              setPwaNotificationTitle(`CWRB Final Update ${newVerStr}`);
+                              setPwaNotificationBody(`కొత్త ఫీచర్లు మరియు సెక్యూరిటీ అప్‌డేట్స్‌తో కూడిన ఫైనల్ వెర్షన్ ${newVerStr} సిద్ధంగా ఉంది.`);
                             }}
-                            className="text-[9px] font-bold text-gray-500 hover:text-cyan-600 underline"
+                            className="text-[9px] font-bold text-cyan-600 hover:text-cyan-800 underline bg-cyan-50 px-2 py-0.5 rounded-md"
                           >
-                            Auto-Fill
+                            Next Ver (ఆటో)
                           </button>
                           <button
                             type="button"
@@ -2668,9 +2702,19 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           return;
                         }
                         setIsPushingUpdate(true);
-                        const publishVersion = 'cwb-cache-pub-' + Date.now();
-                        localStorage.setItem('cwb_published_cache_version', publishVersion);
                         
+                        // Use the title's version number as the token if it contains one, else use timestamp
+                        const verMatch = pwaNotificationTitle.match(/v\d+\.\d+/i) || pwaNotificationTitle.match(/\d+\.\d+/);
+                        const publishVersion = verMatch ? verMatch[0].toLowerCase() : 'v2.' + Date.now();
+                        
+                        // 🔥 Post update to Firestore so all mobile apps sync
+                        setDoc(doc(db, 'settings', 'pwa_update'), {
+                          version: publishVersion,
+                          title: pwaNotificationTitle,
+                          body: pwaNotificationBody,
+                          timestamp: new Date().toISOString()
+                        }, { merge: true }).catch(err => console.error("PWA Sync Error:", err));
+
                         setTimeout(() => {
                           setIsPushingUpdate(false);
                           alert(`🚀 "చెన్నై/తెలుగు CWRB" ఫైనల్ PWA అప్‌డేట్ విజయవంతంగా పబ్లిష్ చేయబడింది మరియు మొబైల్ యూజర్లకు పుష్ చేయబడింది!\n\nవెర్షన్ టోకెన్: ${publishVersion}\nశీర్షిక: ${pwaNotificationTitle}`);

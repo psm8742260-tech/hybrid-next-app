@@ -46,17 +46,5 @@
         "63:BD:D8:7F:F0:5C:67:21:A9:1F:8A:9F:D8:72:C1:0D:9D:44:0A:79:4E:74:49:2D:89:B8:1C:63:47:CD:3C:1D"
       ]
     }
-  },
-  {
-    "relation": [
-      "delegate_permission/common.handle_all_urls"
-    ],
-    "target": {
-      "namespace": "android_app",
-      "package_name": "app.run.asia_southeast1.hybridnext_401635921059.twa",
-      "sha256_cert_fingerprints": [
-        "63:BD:D8:7F:F0:5C:67:21:A9:1F:8A:9F:D8:72:C1:0D:9D:44:0A:79:4E:74:49:2D:89:B8:1C:63:47:CD:3C:1D"
-      ]
-    }
   }
 ]

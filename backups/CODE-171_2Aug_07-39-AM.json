@@ -1,0 +1,6 @@
+{
+  "codeId": "CODE-171_2Aug_07-39-AM",
+  "timestamp": "2026-08-02T07:39:40-07:00",
+  "description": "Restored bottom bar settings button for browser mode while maintaining real-time Firestore sync (pwaAdminIconVisible / mobileSettingsIconVisible) for APK/PWA mode",
+  "filesModified": ["src/App.tsx", "src/components/AuthAndSettings.tsx"]
+}

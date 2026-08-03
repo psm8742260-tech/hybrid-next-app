@@ -1,0 +1,11 @@
+{
+  "codeId": "CODE-172_2Aug_07-48-AM",
+  "timestamp": "2026-08-02T07:48:48-07:00",
+  "description": "Fixed APK mobile browser top bar by updating manifest.json to display standalone with display_override, adding CORS & Cache-Control headers to assetlinks.json in server.ts, adding package names in assetlinks.json, and adding viewport-fit=cover in index.html",
+  "filesModified": [
+    "public/manifest.json",
+    "public/.well-known/assetlinks.json",
+    "server.ts",
+    "index.html"
+  ]
+}

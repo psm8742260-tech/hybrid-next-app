@@ -166,6 +166,8 @@ app.get("/api/health", (req, res) => {
 // Serve Digital Asset Links file for Android TWA (removes address bar)
 app.get("/.well-known/assetlinks.json", (req, res) => {
   res.setHeader("Content-Type", "application/json");
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
   res.sendFile(path.join(process.cwd(), "public/.well-known/assetlinks.json"));
 });
 

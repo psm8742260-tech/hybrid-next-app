@@ -7,7 +7,8 @@
       "namespace": "android_app",
       "package_name": "studio.ai.hybridnext.twa",
       "sha256_cert_fingerprints": [
-        "63:BD:D8:7F:F0:5C:67:21:A9:1F:8A:9F:D8:72:C1:0D:9D:44:0A:79:4E:74:49:2D:89:B8:1C:63:47:CD:3C:1D"
+        "C5:61:68:68:C3:B5:11:62:E0:12:03:78:2E:C4:B4:5C:E2:09:82:53:A5:97:02:60:1A:4E:1E:B8:C7:40:54:73",
+        "FA:C6:17:45:DC:09:03:78:6F:B9:ED:E6:2A:96:2B:39:9F:73:48:F0:BB:6F:89:9B:83:32:66:75:10:36:E7:BB"
       ]
     }
   },
@@ -19,7 +20,8 @@
       "namespace": "android_app",
       "package_name": "com.cwrb.app",
       "sha256_cert_fingerprints": [
-        "63:BD:D8:7F:F0:5C:67:21:A9:1F:8A:9F:D8:72:C1:0D:9D:44:0A:79:4E:74:49:2D:89:B8:1C:63:47:CD:3C:1D"
+        "C5:61:68:68:C3:B5:11:62:E0:12:03:78:2E:C4:B4:5C:E2:09:82:53:A5:97:02:60:1A:4E:1E:B8:C7:40:54:73",
+        "FA:C6:17:45:DC:09:03:78:6F:B9:ED:E6:2A:96:2B:39:9F:73:48:F0:BB:6F:89:9B:83:32:66:75:10:36:E7:BB"
       ]
     }
   },
@@ -31,7 +33,8 @@
       "namespace": "android_app",
       "package_name": "com.cwrb.mobile",
       "sha256_cert_fingerprints": [
-        "63:BD:D8:7F:F0:5C:67:21:A9:1F:8A:9F:D8:72:C1:0D:9D:44:0A:79:4E:74:49:2D:89:B8:1C:63:47:CD:3C:1D"
+        "C5:61:68:68:C3:B5:11:62:E0:12:03:78:2E:C4:B4:5C:E2:09:82:53:A5:97:02:60:1A:4E:1E:B8:C7:40:54:73",
+        "FA:C6:17:45:DC:09:03:78:6F:B9:ED:E6:2A:96:2B:39:9F:73:48:F0:BB:6F:89:9B:83:32:66:75:10:36:E7:BB"
       ]
     }
   },
@@ -43,19 +46,8 @@
       "namespace": "android_app",
       "package_name": "com.civilworker.book",
       "sha256_cert_fingerprints": [
-        "63:BD:D8:7F:F0:5C:67:21:A9:1F:8A:9F:D8:72:C1:0D:9D:44:0A:79:4E:74:49:2D:89:B8:1C:63:47:CD:3C:1D"
-      ]
-    }
-  },
-  {
-    "relation": [
-      "delegate_permission/common.handle_all_urls"
-    ],
-    "target": {
-      "namespace": "android_app",
-      "package_name": "app.run.asia_southeast1.hybridnext_401635921059.twa",
-      "sha256_cert_fingerprints": [
-        "63:BD:D8:7F:F0:5C:67:21:A9:1F:8A:9F:D8:72:C1:0D:9D:44:0A:79:4E:74:49:2D:89:B8:1C:63:47:CD:3C:1D"
+        "C5:61:68:68:C3:B5:11:62:E0:12:03:78:2E:C4:B4:5C:E2:09:82:53:A5:97:02:60:1A:4E:1E:B8:C7:40:54:73",
+        "FA:C6:17:45:DC:09:03:78:6F:B9:ED:E6:2A:96:2B:39:9F:73:48:F0:BB:6F:89:9B:83:32:66:75:10:36:E7:BB"
       ]
     }
   }

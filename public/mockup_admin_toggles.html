@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="te">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel - Toggle Controls Sample Mockup</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: #0f172a;
+      color: #f8fafc;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .card {
+      background-color: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 16px;
+      padding: 24px;
+      max-width: 600px;
+      width: 100%;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+    }
+    .header {
+      border-bottom: 1px solid #334155;
+      padding-bottom: 16px;
+      margin-bottom: 20px;
+    }
+    .title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .subtitle {
+      font-size: 0.875rem;
+      color: #94a3b8;
+      margin-top: 4px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    @media (max-width: 500px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .toggle-box {
+      background-color: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .toggle-label {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #e2e8f0;
+    }
+    .toggle-sub {
+      font-size: 0.75rem;
+      color: #64748b;
+    }
+    .switch-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 8px;
+    }
+    .status-badge {
+      font-size: 0.75rem;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-weight: 600;
+    }
+    .badge-on {
+      background-color: #059669;
+      color: #ecfdf5;
+    }
+    .badge-off {
+      background-color: #475569;
+      color: #cbd5e1;
+    }
+    .toggle-switch {
+      width: 48px;
+      height: 26px;
+      background-color: #0284c7;
+      border-radius: 13px;
+      position: relative;
+      cursor: pointer;
+    }
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      right: 3px;
+      width: 20px;
+      height: 20px;
+      background-color: #ffffff;
+      border-radius: 50%;
+    }
+    .push-btn {
+      margin-top: 20px;
+      width: 100%;
+      background: linear-gradient(135deg, #0284c7, #0369a1);
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+      <div class="title">⚙️ అడ్మిన్ కంట్రోల్స్ (పక్క పక్కనే - Sample Layout)</div>
+      <div class="subtitle">మొబైల్ యాప్ / PWA కంట్రోల్ స్విచ్ లు</div>
+    </div>
+
+    <div class="grid">
+      <!-- Toggle 1: Mobile Settings Icon -->
+      <div class="toggle-box">
+        <div>
+          <div class="toggle-label">📱 అడ్మిన్ ఐకాన్ స్విచ్</div>
+          <div class="toggle-sub">మొబైల్ APK లో అడ్మిన్ ఐకాన్ కనపడాలా వద్ద లేదా?</div>
+        </div>
+        <div class="switch-row">
+          <span class="status-badge badge-on">ON (కనిపిస్తుంది)</span>
+          <div class="toggle-switch"></div>
+        </div>
+      </div>
+
+      <!-- Toggle 2: PWA Push Update Switch -->
+      <div class="toggle-box">
+        <div>
+          <div class="toggle-label">🚀 PWA పబ్లిష్ చేంజ్</div>
+          <div class="toggle-sub">చేంజ్ చేసాక పుష్ నొక్కితే లైవ్ అప్‌డేట్ అవుతుంది</div>
+        </div>
+        <div class="switch-row">
+          <span class="status-badge badge-on">READY</span>
+          <div class="toggle-switch"></div>
+        </div>
+      </div>
+    </div>
+
+    <button class="push-btn">📢 PWA పబ్లిష్ / పుష్ చేంజెస్ (Publish Updates)</button>
+  </div>
+</body>
+</html>

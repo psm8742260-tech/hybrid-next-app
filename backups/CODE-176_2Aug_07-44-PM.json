@@ -1,0 +1,8 @@
+{
+  "codeId": "CODE-176_2Aug_07-44-PM",
+  "timestamp": "2026-08-02T19:44:17-07:00",
+  "description": "Backup for Admin Settings Icon visibility logic requirement in regular web browser vs mobile APK/Standalone PWA mode.",
+  "filesModified": [
+    "src/App.tsx"
+  ]
+}
