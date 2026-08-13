@@ -386,8 +386,8 @@ export default function ChatAssistant({
   };
 
   const containerClasses = isFullScreen 
-    ? "w-full bg-white rounded-2xl border border-gray-200 flex flex-col overflow-hidden h-[440px] md:h-[550px] shadow-sm relative transition-all duration-300 focus-within:h-[550px] md:focus-within:h-[700px]"
-    : "w-full bg-white rounded-2xl shadow-lg border border-[#082c75] flex flex-col overflow-hidden my-4 h-[250px] md:h-[350px] relative transition-all duration-300 focus-within:h-[450px] md:focus-within:h-[550px]";
+    ? "w-full bg-white rounded-2xl border border-gray-200 flex flex-col overflow-hidden h-[440px] shadow-sm relative"
+    : "w-full bg-white rounded-2xl shadow-lg border border-[#082c75] flex flex-col overflow-hidden my-4 h-[250px] relative";
 
   return (
     <div
@@ -910,7 +910,7 @@ export default function ChatAssistant({
       )}
 
       {/* Input area */}
-      <div className="p-2.5 border-t bg-white flex gap-2 shrink-0 items-end font-sans transition-all duration-300">
+      <div className="p-2.5 border-t bg-white flex gap-2 shrink-0 items-center font-sans">
         <input
           type="file"
           ref={fileInputRef}
@@ -921,7 +921,7 @@ export default function ChatAssistant({
           onClick={() => fileInputRef.current?.click()} 
           disabled={selectedAgent === 'none'}
           title="అటాచ్ చేయండి (Attach file/photo)"
-          className="p-2 mb-0.5 border border-gray-200 rounded-xl text-gray-500 hover:bg-gray-50 active:scale-95 transition cursor-pointer disabled:opacity-50 disabled:bg-gray-100 shrink-0"
+          className="p-2 border border-gray-200 rounded-xl text-gray-500 hover:bg-gray-50 active:scale-95 transition cursor-pointer disabled:opacity-50 disabled:bg-gray-100"
         >
           <Upload size={14} />
         </button>
@@ -929,7 +929,7 @@ export default function ChatAssistant({
           onClick={startListening} 
           disabled={selectedAgent === 'none'}
           title="వాయిస్ టైపింగ్"
-          className={`p-2 mb-0.5 border rounded-xl transition cursor-pointer shrink-0 disabled:opacity-50 disabled:bg-gray-100 ${
+          className={`p-2 border rounded-xl transition cursor-pointer disabled:opacity-50 disabled:bg-gray-100 ${
             isListening 
               ? 'bg-rose-50 border-rose-500 text-rose-500 animate-pulse' 
               : 'border-gray-200 text-gray-500 hover:bg-gray-50 active:scale-95'
@@ -937,24 +937,18 @@ export default function ChatAssistant({
         >
           <Mic size={14} />
         </button>
-        <textarea
+        <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-              e.preventDefault();
-              handleSend();
-            }
-          }}
+          onKeyDown={(e) => e.key === 'Enter' && handleSend()}
           placeholder={selectedAgent === 'none' ? "ఏజెంట్‌ను ఆన్ చేయండి..." : "ఇక్కడ తెలుగు లేదా ఇంగ్లీషులో టైప్ చేయండి..."}
           disabled={selectedAgent === 'none'}
-          className="flex-1 text-[11px] border border-gray-200 rounded-xl p-2.5 bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#082c75] font-medium disabled:opacity-50 disabled:bg-gray-100 min-h-[40px] max-h-[120px] resize-none overflow-y-auto"
-          rows={input.split('\n').length > 1 ? Math.min(4, input.split('\n').length) : 1}
+          className="flex-1 text-[11px] border border-gray-200 rounded-xl p-2 bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#082c75] font-medium disabled:opacity-50 disabled:bg-gray-100"
         />
         <button 
           onClick={() => handleSend()} 
           disabled={isLoading || (!input.trim() && !attachedFile) || selectedAgent === 'none'}
-          className="bg-[#082c75] mb-0.5 hover:bg-[#001040] disabled:opacity-40 text-white p-2 rounded-xl transition active:scale-95 flex items-center justify-center cursor-pointer shadow-xs shrink-0"
+          className="bg-[#082c75] hover:bg-[#001040] disabled:opacity-40 text-white p-2 rounded-xl transition active:scale-95 flex items-center justify-center cursor-pointer shadow-xs"
         >
           <Send size={14} />
         </button>

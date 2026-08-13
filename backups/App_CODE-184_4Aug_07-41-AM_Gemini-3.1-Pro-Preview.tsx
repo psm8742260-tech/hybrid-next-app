@@ -208,8 +208,8 @@ export default function App() {
     };
 
     // 1. Immediate fetch on launch
-    getDoc(doc(db, 'settings', 'admin_security')).then(snap => snap.exists() && handleData(snap.data())).catch((err) => { if (!err.message?.includes('offline')) console.error("Firestore Settings Error:", err); });
-    getDoc(doc(db, 'settings', 'pwaConfig')).then(snap => snap.exists() && handleData(snap.data())).catch((err) => { if (!err.message?.includes('offline')) console.error("Firestore Settings Error:", err); });
+    getDoc(doc(db, 'settings', 'admin_security')).then(snap => snap.exists() && handleData(snap.data())).catch((err) => console.error("Firestore Settings Error:", err));
+    getDoc(doc(db, 'settings', 'pwaConfig')).then(snap => snap.exists() && handleData(snap.data())).catch((err) => console.error("Firestore Settings Error:", err));
 
     // 2. Real-time listeners
     const unsub1 = onSnapshot(doc(db, 'settings', 'admin_security'), (snap) => {

@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "studio.ai.hybridnext_v_0.twa",
+      "sha256_cert_fingerprints": [
+        "D6:79:7B:91:2E:32:7C:43:2A:27:1E:8D:4B:36:3F:76:47:84:14:49:99:4C:91:79:14:E4:6B:B7:EC:9C:D8:CE"
+      ]
+    }
+  }
+]

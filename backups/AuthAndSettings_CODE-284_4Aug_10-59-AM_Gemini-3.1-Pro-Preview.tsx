@@ -474,7 +474,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          boardId: 'invisible_agent', deepseekApiKey: localStorage.getItem('cwb_deepseek_api_key'),
+          boardId: 'invisible_agent',
           message: userInput
         })
       });

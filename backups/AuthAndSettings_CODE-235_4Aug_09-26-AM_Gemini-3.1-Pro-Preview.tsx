@@ -458,11 +458,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [fingerprintScanning, setFingerprintScanning] = useState(false);
   const [fingerprintScanned, setFingerprintScanned] = useState(false);
   const [error, setError] = useState('');
-  const [activeSubTab, setActiveSubTab] = useState<'features' | 'gateways' | 'vendor' | 'brahmastra' | 'passwords' | 'support' | 'maintenance' | 'agents' | 'pwa' | 'apikeys'>('features');
+  const [activeSubTab, setActiveSubTab] = useState<'features' | 'gateways' | 'vendor' | 'brahmastra' | 'passwords' | 'support' | 'maintenance' | 'agents' | 'pwa'>('features');
   const [agentCommandOutput, setAgentCommandOutput] = useState<string | null>(null);
   const [agentCommandInput, setAgentCommandInput] = useState('');
   const [isAgentProcessing, setIsAgentProcessing] = useState(false);
-  const [deepseekApiKey, setDeepseekApiKey] = useState(() => localStorage.getItem('cwb_deepseek_api_key') || '');
 
   const handleInvisibleAgentCommand = async (command: string) => {
     if (!command.trim()) return;
@@ -474,7 +473,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          boardId: 'invisible_agent', deepseekApiKey: localStorage.getItem('cwb_deepseek_api_key'),
+          boardId: 'invisible_agent',
           message: userInput
         })
       });
@@ -1213,17 +1212,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   }`}
                 >
                   PWA మేనేజ్‌మెంట్ / PWA 📱
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveSubTab('apikeys')}
-                  className={`px-2 pb-2 text-[10px] font-extrabold transition-all border-b-2 shrink-0 ${
-                    activeSubTab === 'apikeys'
-                      ? 'border-fuchsia-600 text-fuchsia-700'
-                      : 'border-transparent text-gray-400 hover:text-gray-500'
-                  }`}
-                >
-                  AI API Keys 🔑
                 </button>
               </div>
 
@@ -2690,43 +2678,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           ))}
                         </div>
                       )}
-                    </div>
-                  </div>
-                </div>
-              ) : activeSubTab === 'apikeys' ? (
-                <div className="animate-fade-in space-y-4 max-h-[440px] overflow-y-auto pr-1 text-xs text-gray-700">
-                  <div className="bg-fuchsia-50 border border-fuchsia-200 p-3.5 rounded-xl space-y-1.5">
-                    <h5 className="font-extrabold text-fuchsia-950 flex items-center gap-1.5">
-                      <span>🔑 AI API Key Settings</span>
-                    </h5>
-                    <p className="text-[10px] text-fuchsia-800 leading-relaxed">
-                      బయటి నుండి తీసుకున్న ఏవైనా క్రొత్త AI (DeepSeek, OpenAI వగైరా) API Keys ను ఇక్కడ అప్‌డేట్ చేయండి. అడ్మిన్ కి మాత్రమే ఈ యాక్సెస్ ఉంటుంది.
-                    </p>
-                    
-                    <div className="space-y-3 mt-4">
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-gray-700">DeepSeek API Key</label>
-                        <div className="flex gap-2">
-                          <input 
-                            type="password"
-                            value={deepseekApiKey}
-                            onChange={(e) => setDeepseekApiKey(e.target.value)}
-                            placeholder="sk-..."
-                            className="flex-1 bg-white border border-gray-300 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-fuchsia-500"
-                          />
-                          <button 
-                            type="button"
-                            onClick={() => {
-                              localStorage.setItem('cwb_deepseek_api_key', deepseekApiKey);
-                              alert('DeepSeek API Key విజయవంతంగా సేవ్‌ చేయబడింది.');
-                            }}
-                            className="bg-fuchsia-600 hover:bg-fuchsia-700 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold transition active:scale-95 whitespace-nowrap"
-                          >
-                            Save Key
-                          </button>
-                        </div>
-                        <p className="text-[9px] text-gray-500">యాప్‌లో DeepSeek ఏజెంట్ ఫీచర్లు సరిగ్గా పని చేయాలంటే ఈ కీ అవసరం.</p>
-                      </div>
                     </div>
                   </div>
                 </div>

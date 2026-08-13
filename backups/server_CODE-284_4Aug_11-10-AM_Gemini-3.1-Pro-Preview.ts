@@ -242,19 +242,19 @@ app.post("/api/chat", async (req: express.Request, res: express.Response) => {
     let reply = "";
 
     if (deepseekApiKey) {
-      // Use DeepSeek API via OpenAI SDK
+      // Use DeepSeek Responses API
       const client = new OpenAI({
           apiKey: deepseekApiKey,
           baseURL: "https://api.deepseek.com"
       });
-      const deepseekResponse = await client.chat.completions.create({
-          model: "deepseek-chat",
-          messages: [
-            { role: "system", content: instruction },
-            { role: "user", content: message }
-          ]
+      // The user wants to use client.responses.create (which might require a ts-ignore if not typed yet)
+      // @ts-ignore
+      const deepseekResponse = await client.responses.create({
+          model: "deepseek-v4-flash",
+          instructions: instruction,
+          input: message
       });
-      reply = deepseekResponse.choices?.[0]?.message?.content || "";
+      reply = deepseekResponse.text || deepseekResponse.choices?.[0]?.message?.content || "";
     } else {
       const ai = getGeminiClient();
 

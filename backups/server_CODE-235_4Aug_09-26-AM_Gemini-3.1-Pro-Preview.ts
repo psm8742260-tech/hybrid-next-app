@@ -3,7 +3,6 @@ import path from "path";
 import fs from "fs";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
-import OpenAI from "openai";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -198,7 +197,7 @@ app.get("/api/download-cwrb-apk", (req, res) => {
 // API: AI-Powered Dynamic Response Generator
 app.post("/api/chat", async (req: express.Request, res: express.Response) => {
   try {
-    const { boardId, message, file, deepseekApiKey } = req.body;
+    const { boardId, message, file } = req.body;
 
     if (!boardId || !message) {
       res.status(400).json({ error: "Missing boardId or message in request body" });
@@ -239,62 +238,44 @@ app.post("/api/chat", async (req: express.Request, res: express.Response) => {
       }
     }
 
-    let reply = "";
+    const ai = getGeminiClient();
 
-    if (deepseekApiKey) {
-      // Use DeepSeek API via OpenAI SDK
-      const client = new OpenAI({
-          apiKey: deepseekApiKey,
-          baseURL: "https://api.deepseek.com"
-      });
-      const deepseekResponse = await client.chat.completions.create({
-          model: "deepseek-chat",
-          messages: [
-            { role: "system", content: instruction },
-            { role: "user", content: message }
-          ]
-      });
-      reply = deepseekResponse.choices?.[0]?.message?.content || "";
-    } else {
-      const ai = getGeminiClient();
+    if (!ai) {
+      // Fallback response if API Key is not configured
+      const fallbacks = customFallbacks || FALLBACK_RESPONSES[boardId] || FALLBACK_RESPONSES.default;
+      const randomResponse = fallbacks[Math.floor(Math.random() * fallbacks.length)];
+      res.json({ response: randomResponse, isFallback: true });
+      return;
+    }
 
-      if (!ai) {
-        // Fallback response if API Key is not configured
-        const fallbacks = customFallbacks || FALLBACK_RESPONSES[boardId] || FALLBACK_RESPONSES.default;
-        const randomResponse = fallbacks[Math.floor(Math.random() * fallbacks.length)];
-        res.json({ response: randomResponse, isFallback: true });
-        return;
+    const contents: any[] = [message];
+
+    // If a file is attached, inject it as inlineData for Gemini
+    if (file && file.base64 && file.type) {
+      let base64Data = file.base64;
+      if (base64Data.includes(";base64,")) {
+        base64Data = base64Data.split(";base64,").pop() || "";
       }
-
-      const contents: any[] = [message];
-
-      // If a file is attached, inject it as inlineData for Gemini
-      if (file && file.base64 && file.type) {
-        let base64Data = file.base64;
-        if (base64Data.includes(";base64,")) {
-          base64Data = base64Data.split(";base64,").pop() || "";
+      contents.push({
+        inlineData: {
+          data: base64Data,
+          mimeType: file.type
         }
-        contents.push({
-          inlineData: {
-            data: base64Data,
-            mimeType: file.type
-          }
-        });
-      }
-
-      const response = await ai.models.generateContent({
-        model: "gemini-3.5-flash",
-        contents: contents,
-        config: {
-          systemInstruction: instruction,
-          temperature: 0.7,
-        },
       });
+    }
 
-      reply = response.text?.trim() || "";
-      if (!reply) {
-        throw new Error("Empty response from Gemini API");
-      }
+    const response = await ai.models.generateContent({
+      model: "gemini-3.5-flash",
+      contents: contents,
+      config: {
+        systemInstruction: instruction,
+        temperature: 0.7,
+      },
+    });
+
+    const reply = response.text?.trim() || "";
+    if (!reply) {
+      throw new Error("Empty response from Gemini API");
     }
 
     res.json({ response: reply, isFallback: false });

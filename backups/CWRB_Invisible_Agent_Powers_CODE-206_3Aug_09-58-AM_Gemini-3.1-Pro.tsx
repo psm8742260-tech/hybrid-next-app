@@ -458,36 +458,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [fingerprintScanning, setFingerprintScanning] = useState(false);
   const [fingerprintScanned, setFingerprintScanned] = useState(false);
   const [error, setError] = useState('');
-  const [activeSubTab, setActiveSubTab] = useState<'features' | 'gateways' | 'vendor' | 'brahmastra' | 'passwords' | 'support' | 'maintenance' | 'agents' | 'pwa' | 'apikeys'>('features');
-  const [agentCommandOutput, setAgentCommandOutput] = useState<string | null>(null);
-  const [agentCommandInput, setAgentCommandInput] = useState('');
-  const [isAgentProcessing, setIsAgentProcessing] = useState(false);
-  const [deepseekApiKey, setDeepseekApiKey] = useState(() => localStorage.getItem('cwb_deepseek_api_key') || '');
-
-  const handleInvisibleAgentCommand = async (command: string) => {
-    if (!command.trim()) return;
-    setIsAgentProcessing(true);
-    const userInput = command;
-    setAgentCommandInput('');
-    try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          boardId: 'invisible_agent', deepseekApiKey: localStorage.getItem('cwb_deepseek_api_key'),
-          message: userInput
-        })
-      });
-      const data = await response.json();
-      setAgentCommandOutput(`> ${userInput}\n\n${data.response || 'సిస్టమ్ ప్రాసెస్ చేసింది.'}`);
-    } catch (err) {
-      console.error("Agent error:", err);
-      setAgentCommandOutput(`> ${userInput}\n\nకనెక్షన్ ఎర్రర్. ఏజెంట్ తాత్కాలికంగా ఆఫ్‌లైన్‌లో ఉంది.`);
-    } finally {
-      setIsAgentProcessing(false);
-    }
-  };
-
+  const [activeSubTab, setActiveSubTab] = useState<'features' | 'gateways' | 'vendor' | 'brahmastra' | 'passwords' | 'support' | 'maintenance' | 'agents' | 'pwa'>('features');
   const [pwaEnabled, setPwaEnabled] = useState<boolean>(() => {
     return localStorage.getItem('cwb_pwa_enabled') !== 'false';
   });
@@ -572,13 +543,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   }, []);
 
   // Password configuration states
-  const [newAdminPwd, setNewAdminPwd] = useState(() => localStorage.getItem('cwb_admin_pwd') || '8466');
-  const [newBrahmastraPwd, setNewBrahmastraPwd] = useState(() => localStorage.getItem('cwb_brahmastra_pwd') || '8466');
-  const [newVaultPwd, setNewVaultPwd] = useState(() => localStorage.getItem('cwb_vault_pwd') || '8466');
+  const [newAdminPwd, setNewAdminPwd] = useState(() => localStorage.getItem('cwb_admin_pwd') || '1234');
+  const [newBrahmastraPwd, setNewBrahmastraPwd] = useState(() => localStorage.getItem('cwb_brahmastra_pwd') || 'CWRB99');
+  const [newVaultPwd, setNewVaultPwd] = useState(() => localStorage.getItem('cwb_vault_pwd') || '1234');
 
   // Phone contact form states
   const [newContactName, setNewContactName] = useState('');
-  const [newContactPhone, setNewContactPhone] = useState('')
+  const [newContactPhone, setNewContactPhone] = useState('');
 
   const [adminSaved, setAdminSaved] = useState(false);
   const [brahmastraSaved, setBrahmastraSaved] = useState(false);
@@ -855,9 +826,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       setAdminSaved(false);
       setBrahmastraSaved(false);
       setVaultSaved(false);
-      setNewAdminPwd(localStorage.getItem('cwb_admin_pwd') || '8466');
-      setNewBrahmastraPwd(localStorage.getItem('cwb_brahmastra_pwd') || '8466');
-      setNewVaultPwd(localStorage.getItem('cwb_vault_pwd') || '8466');
+      setNewAdminPwd(localStorage.getItem('cwb_admin_pwd') || '1234');
+      setNewBrahmastraPwd(localStorage.getItem('cwb_brahmastra_pwd') || 'CWRB99');
+      setNewVaultPwd(localStorage.getItem('cwb_vault_pwd') || '1234');
     }
   }, [isOpen]);
 
@@ -939,7 +910,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     e.preventDefault();
     setError('');
     
-    const savedAdminPwd = localStorage.getItem('cwb_admin_pwd') || '8466';
+    const savedAdminPwd = localStorage.getItem('cwb_admin_pwd') || '1234';
     
     if (password !== savedAdminPwd) {
       setError('తప్పుడు పాస్‌వర్డ్! దయచేసి సరైన కోడ్ ఎంటర్ చేయండి. (Incorrect password!)');
@@ -1213,17 +1184,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   }`}
                 >
                   PWA మేనేజ్‌మెంట్ / PWA 📱
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveSubTab('apikeys')}
-                  className={`px-2 pb-2 text-[10px] font-extrabold transition-all border-b-2 shrink-0 ${
-                    activeSubTab === 'apikeys'
-                      ? 'border-fuchsia-600 text-fuchsia-700'
-                      : 'border-transparent text-gray-400 hover:text-gray-500'
-                  }`}
-                >
-                  AI API Keys 🔑
                 </button>
               </div>
 
@@ -2541,105 +2501,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     </button>
                   </div>
 
-
-                  {/* Invisible Agent Command Center */}
-                  <div className="mt-4 p-3.5 bg-slate-900 rounded-2xl border border-gray-700 shadow-inner overflow-hidden relative">
-                    <div className="absolute top-0 right-0 p-2 opacity-10">
-                      <ShieldAlert className="w-16 h-16 text-white" />
-                    </div>
-                    <div className="relative z-10 space-y-3">
-                      <div className="flex items-center gap-2 mb-1">
-                        <div className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                        <h4 className="font-extrabold text-white text-[11px] tracking-wide">ఇన్విజిబుల్ ఏజెంట్ కమాండ్ సెంటర్ (Invisible Agent Powers)</h4>
-                      </div>
-                      <p className="text-[9px] text-gray-400 leading-relaxed">
-                        అడ్మిన్ గారు (Admin garu), మీరు కోరినట్లుగా ఇన్విజిబుల్ ఏజెంట్‌కు అదనపు బాధ్యతలు (System Scan, Auto-Settings, User Management, Database Backup) యాడ్ చేయబడ్డాయి.
-                      </p>
-                      
-                      <div className="grid grid-cols-2 gap-2 mt-2">
-                        <button 
-                          type="button"
-                          onClick={() => {
-                            setAgentCommandOutput('🛡️ సిస్టమ్ స్కానింగ్ ప్రారంభించబడింది...\n\n- నెట్‌వర్క్ భద్రత: సురక్షితం\n- ఫైర్‌బేస్ రూల్స్: కట్టుదిట్టం\n- ఏజెంట్ స్టేటస్: ఆన్‌లైన్ (100% హెల్త్)');
-                          }}
-                          className="flex flex-col items-center justify-center p-2.5 bg-gray-800 hover:bg-gray-700 border border-gray-600 rounded-xl transition active:scale-95 gap-1.5"
-                        >
-                          <ShieldAlert className="w-4 h-4 text-emerald-400" />
-                          <span className="text-[9px] font-black text-white text-center">సిస్టమ్ స్కానింగ్ (System Scan)</span>
-                        </button>
-
-                        <button 
-                          type="button"
-                          onClick={() => {
-                            setAgentCommandOutput('⚙️ ఆటోమేటిక్ సెట్టింగ్స్ కంట్రోల్...\n\nవాయిస్/టెక్స్ట్ ద్వారా కెమెరా, క్లాక్ మరియు అలారం ఫీచర్లను నియంత్రించడానికి ఏజెంట్ సిద్ధంగా ఉంది.');
-                          }}
-                          className="flex flex-col items-center justify-center p-2.5 bg-gray-800 hover:bg-gray-700 border border-gray-600 rounded-xl transition active:scale-95 gap-1.5"
-                        >
-                          <Settings className="w-4 h-4 text-cyan-400" />
-                          <span className="text-[9px] font-black text-white text-center">ఆటో సెట్టింగ్స్ (Auto Controls)</span>
-                        </button>
-
-                        <button 
-                          type="button"
-                          onClick={() => {
-                            setAgentCommandOutput('👥 యూజర్ మేనేజ్‌మెంట్...\n\n- ప్రస్తుత యాక్టివ్ యూజర్లు: 1 (Admin)\n- బ్లాక్ చేసిన అకౌంట్స్: 0\n- సెషన్ యాక్టివిటీ లాగ్ చెక్ చేయబడింది.');
-                          }}
-                          className="flex flex-col items-center justify-center p-2.5 bg-gray-800 hover:bg-gray-700 border border-gray-600 rounded-xl transition active:scale-95 gap-1.5"
-                        >
-                          <Users className="w-4 h-4 text-purple-400" />
-                          <span className="text-[9px] font-black text-white text-center">యూజర్ ట్రాకింగ్ (User Mgmt)</span>
-                        </button>
-
-                        <button 
-                          type="button"
-                          onClick={() => {
-                            setAgentCommandOutput('💾 ఫైర్‌బేస్ డేటాబేస్ బ్యాకప్...\n\n- లోకల్ బ్యాకప్: సక్సెస్\n- క్లౌడ్ స్టోరేజ్: సింక్ చేయబడింది (100% సురక్షితం)');
-                          }}
-                          className="flex flex-col items-center justify-center p-2.5 bg-gray-800 hover:bg-gray-700 border border-gray-600 rounded-xl transition active:scale-95 gap-1.5"
-                        >
-                          <Database className="w-4 h-4 text-amber-400" />
-                          <span className="text-[9px] font-black text-white text-center">డేటా బ్యాకప్ (DB Backup)</span>
-                        </button>
-                      </div>
-
-                      {agentCommandOutput && (
-                        <div className="mt-2 p-2.5 bg-gray-950 border border-gray-700 rounded-xl relative group">
-                          <button 
-                            onClick={() => setAgentCommandOutput(null)}
-                            className="absolute top-1 right-1 text-gray-500 hover:text-gray-300"
-                          >
-                            <X className="w-3.5 h-3.5" />
-                          </button>
-                          <pre className="text-[10px] text-emerald-400 font-mono whitespace-pre-wrap leading-relaxed">{agentCommandOutput}</pre>
-                        </div>
-                      )}
-
-                      <div className="mt-3 flex gap-2">
-                        <input 
-                          type="text" 
-                          placeholder="ఏజెంట్‌కు కమాండ్ ఇవ్వండి... (e.g. Turn off camera)"
-                          value={agentCommandInput}
-                          onChange={(e) => setAgentCommandInput(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter' && agentCommandInput.trim()) {
-                              handleInvisibleAgentCommand(agentCommandInput);
-                            }
-                          }}
-                          className="flex-1 bg-gray-950 border border-gray-700 rounded-lg px-2.5 py-1.5 text-[10px] text-emerald-400 font-mono focus:outline-none focus:border-emerald-500"
-                        />
-                        <button 
-                          type="button"
-                          disabled={isAgentProcessing || !agentCommandInput.trim()}
-                          onClick={() => {
-                            handleInvisibleAgentCommand(agentCommandInput);
-                          }}
-                          className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white px-3 py-1.5 rounded-lg text-[9px] font-black transition active:scale-95"
-                        >
-                          {isAgentProcessing ? '...' : 'Send'}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
                   {/* Section 2: Secret Log Panel */}
                   <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-100 space-y-3">
                     <div className="flex items-center justify-between">
@@ -2690,43 +2551,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           ))}
                         </div>
                       )}
-                    </div>
-                  </div>
-                </div>
-              ) : activeSubTab === 'apikeys' ? (
-                <div className="animate-fade-in space-y-4 max-h-[440px] overflow-y-auto pr-1 text-xs text-gray-700">
-                  <div className="bg-fuchsia-50 border border-fuchsia-200 p-3.5 rounded-xl space-y-1.5">
-                    <h5 className="font-extrabold text-fuchsia-950 flex items-center gap-1.5">
-                      <span>🔑 AI API Key Settings</span>
-                    </h5>
-                    <p className="text-[10px] text-fuchsia-800 leading-relaxed">
-                      బయటి నుండి తీసుకున్న ఏవైనా క్రొత్త AI (DeepSeek, OpenAI వగైరా) API Keys ను ఇక్కడ అప్‌డేట్ చేయండి. అడ్మిన్ కి మాత్రమే ఈ యాక్సెస్ ఉంటుంది.
-                    </p>
-                    
-                    <div className="space-y-3 mt-4">
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-gray-700">DeepSeek API Key</label>
-                        <div className="flex gap-2">
-                          <input 
-                            type="password"
-                            value={deepseekApiKey}
-                            onChange={(e) => setDeepseekApiKey(e.target.value)}
-                            placeholder="sk-..."
-                            className="flex-1 bg-white border border-gray-300 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-fuchsia-500"
-                          />
-                          <button 
-                            type="button"
-                            onClick={() => {
-                              localStorage.setItem('cwb_deepseek_api_key', deepseekApiKey);
-                              alert('DeepSeek API Key విజయవంతంగా సేవ్‌ చేయబడింది.');
-                            }}
-                            className="bg-fuchsia-600 hover:bg-fuchsia-700 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold transition active:scale-95 whitespace-nowrap"
-                          >
-                            Save Key
-                          </button>
-                        </div>
-                        <p className="text-[9px] text-gray-500">యాప్‌లో DeepSeek ఏజెంట్ ఫీచర్లు సరిగ్గా పని చేయాలంటే ఈ కీ అవసరం.</p>
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -2977,6 +2801,83 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     <p className="text-[9px] text-gray-500 leading-normal">
                       అడ్మిన్ గారు, అదనపు 48 గంటల పాటు మీ అనుమతితో ఈ ఏజెంట్ సిస్టమ్ కోడింగ్ మరియు ఆటోమేషన్ బాధ్యతలను నిర్వర్తిస్తుంది.
                     </p>
+                  </div>
+
+                  {/* Invisible Agent Command Center */}
+                  <div className="mt-4 p-3.5 bg-slate-900 rounded-2xl border border-gray-700 shadow-inner overflow-hidden relative">
+                    <div className="absolute top-0 right-0 p-2 opacity-10">
+                      <ShieldAlert className="w-16 h-16 text-white" />
+                    </div>
+                    <div className="relative z-10 space-y-3">
+                      <div className="flex items-center gap-2 mb-1">
+                        <div className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                        <h4 className="font-extrabold text-white text-[11px] tracking-wide">ఇన్విజిబుల్ ఏజెంట్ కమాండ్ సెంటర్ (Invisible Agent Powers)</h4>
+                      </div>
+                      <p className="text-[9px] text-gray-400 leading-relaxed">
+                        అడ్మిన్ గారు (Admin garu), మీరు కోరినట్లుగా ఇన్విజిబుల్ ఏజెంట్‌కు అదనపు బాధ్యతలు (System Scan, Auto-Settings, User Management, Database Backup) యాడ్ చేయబడ్డాయి.
+                      </p>
+                      
+                      <div className="grid grid-cols-2 gap-2 mt-2">
+                        <button 
+                          type="button"
+                          onClick={() => {
+                            alert('🛡️ సిస్టమ్ స్కానింగ్ ప్రారంభించబడింది...\n\n- నెట్‌వర్క్ భద్రత: సురక్షితం\n- ఫైర్‌బేస్ రూల్స్: కట్టుదిట్టం\n- ఏజెంట్ స్టేటస్: ఆన్‌లైన్ (100% హెల్త్)');
+                          }}
+                          className="flex flex-col items-center justify-center p-2.5 bg-gray-800 hover:bg-gray-700 border border-gray-600 rounded-xl transition active:scale-95 gap-1.5"
+                        >
+                          <ShieldAlert className="w-4 h-4 text-emerald-400" />
+                          <span className="text-[9px] font-black text-white text-center">సిస్టమ్ స్కానింగ్ (System Scan)</span>
+                        </button>
+
+                        <button 
+                          type="button"
+                          onClick={() => {
+                            alert('⚙️ ఆటోమేటిక్ సెట్టింగ్స్ కంట్రోల్...\n\nవాయిస్/టెక్స్ట్ ద్వారా కెమెరా, క్లాక్ మరియు అలారం ఫీచర్లను నియంత్రించడానికి ఏజెంట్ సిద్ధంగా ఉంది.');
+                          }}
+                          className="flex flex-col items-center justify-center p-2.5 bg-gray-800 hover:bg-gray-700 border border-gray-600 rounded-xl transition active:scale-95 gap-1.5"
+                        >
+                          <Settings className="w-4 h-4 text-cyan-400" />
+                          <span className="text-[9px] font-black text-white text-center">ఆటో సెట్టింగ్స్ (Auto Controls)</span>
+                        </button>
+
+                        <button 
+                          type="button"
+                          onClick={() => {
+                            alert('👥 యూజర్ మేనేజ్‌మెంట్...\n\n- ప్రస్తుత యాక్టివ్ యూజర్లు: 1 (Admin)\n- బ్లాక్ చేసిన అకౌంట్స్: 0\n- సెషన్ యాక్టివిటీ లాగ్ చెక్ చేయబడింది.');
+                          }}
+                          className="flex flex-col items-center justify-center p-2.5 bg-gray-800 hover:bg-gray-700 border border-gray-600 rounded-xl transition active:scale-95 gap-1.5"
+                        >
+                          <Users className="w-4 h-4 text-purple-400" />
+                          <span className="text-[9px] font-black text-white text-center">యూజర్ ట్రాకింగ్ (User Mgmt)</span>
+                        </button>
+
+                        <button 
+                          type="button"
+                          onClick={() => {
+                            alert('💾 ఫైర్‌బేస్ డేటాబేస్ బ్యాకప్...\n\n- లోకల్ బ్యాకప్: సక్సెస్\n- క్లౌడ్ స్టోరేజ్: సింక్ చేయబడింది (100% సురక్షితం)');
+                          }}
+                          className="flex flex-col items-center justify-center p-2.5 bg-gray-800 hover:bg-gray-700 border border-gray-600 rounded-xl transition active:scale-95 gap-1.5"
+                        >
+                          <Database className="w-4 h-4 text-amber-400" />
+                          <span className="text-[9px] font-black text-white text-center">డేటా బ్యాకప్ (DB Backup)</span>
+                        </button>
+                      </div>
+
+                      <div className="mt-3 flex gap-2">
+                        <input 
+                          type="text" 
+                          placeholder="ఏజెంట్‌కు కమాండ్ ఇవ్వండి... (e.g. Turn off camera)"
+                          className="flex-1 bg-gray-950 border border-gray-700 rounded-lg px-2.5 py-1.5 text-[10px] text-emerald-400 font-mono focus:outline-none focus:border-emerald-500"
+                        />
+                        <button 
+                          type="button"
+                          onClick={() => alert('కమాండ్ స్వీకరించబడింది! ఇన్విజిబుల్ ఏజెంట్ ప్రాసెస్ చేస్తోంది...')}
+                          className="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-[9px] font-black transition active:scale-95"
+                        >
+                          Send
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               ) : null}

@@ -1,0 +1,7 @@
+{
+  "restoreCode": "CODE-178_3Aug_09-23-AM_Gemini-3.6-Flash",
+  "timestamp": "2026-08-03T09:23:00-07:00",
+  "agent": "Gemini-3.6-Flash",
+  "fileModified": "/AGENTS.md",
+  "description": "Updated AGENTS.md rule to mandate 12-hour AM/PM timestamp and active Agent Name in all Restore Codes."
+}
