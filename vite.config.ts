@@ -2,11 +2,24 @@ import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 import {defineConfig} from 'vite';
+import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig(() => {
   return {
     base: './',
-    plugins: [react(), tailwindcss()],
+    plugins: [
+      react(),
+      tailwindcss(),
+      VitePWA({
+        registerType: 'autoUpdate',
+        manifest: false, // Use the existing public/manifest.json
+        workbox: {
+          cleanupOutdatedCaches: true,
+          globPatterns: ['**/*.{js,css,html,ico,png,svg,json,woff,woff2}'],
+          maximumFileSizeToCacheInBytes: 5000000,
+        },
+      })
+    ],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),

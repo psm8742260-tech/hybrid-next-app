@@ -37,43 +37,5 @@
     <div id="root"></div>
 
     <script type="module" src="/src/main.tsx"></script>
-    <script>
-      // Service Worker registration with Strict Draft Mode & Manual Admin PWA Update Control
-      if ('serviceWorker' in navigator) {
-        if (window.self === window.top) {
-          window.addEventListener('load', () => {
-            const pwaEnabled = localStorage.getItem('cwb_pwa_enabled') !== 'false';
-            if (!pwaEnabled) {
-              console.log('PWA is disabled by Admin. Unregistering service workers...');
-              navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
-              return;
-            }
-
-            navigator.serviceWorker.register('/service-worker.js').then((reg) => {
-              console.log('Service Worker registered successfully:', reg);
-              // Only check for updates if Admin explicitly clicked 'Publish Final PWA Update'
-              const publishedVersion = localStorage.getItem('cwb_published_cache_version');
-              if (publishedVersion && reg && typeof reg.update === 'function') {
-                reg.update().catch((err) => {
-                  console.log('Service Worker update check skipped:', err);
-                });
-              } else {
-                console.log('PWA is in Strict Draft Mode. No auto-update triggered without Admin Publish.');
-              }
-            }).catch((err) => {
-              console.log('Service Worker registration failed:', err);
-            });
-          });
-          let refreshing = false;
-          navigator.serviceWorker.addEventListener('controllerchange', () => {
-            if (!refreshing) {
-              refreshing = true;
-              console.log('New published PWA update detected! Reloading app...');
-              window.location.reload();
-            }
-          });
-        }
-      }
-    </script>
   </body>
 </html>
