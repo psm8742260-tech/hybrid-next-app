@@ -5,6 +5,7 @@ import {
   Sparkles, Check, Trash2, Fingerprint, Key, ShieldAlert, ShieldCheck, RefreshCw, Volume2, Globe,
   Eye, EyeOff
 } from 'lucide-react';
+import { t, Language, translations } from '../lib/translations';
 
 interface MobileSettingsProps {
   isOpen: boolean;
@@ -14,8 +15,8 @@ interface MobileSettingsProps {
   userPhone: string;
   accentColor: string;
   onAccentColorChange: (color: string) => void;
-  language: 'te' | 'en';
-  onLanguageChange: (lang: 'te' | 'en') => void;
+  language: Language;
+  onLanguageChange: (lang: Language) => void;
   soundOn: boolean;
   onSoundToggle: (on: boolean) => void;
   smsOn: boolean;
@@ -60,11 +61,11 @@ export default function MobileSettings({
   const [fingerprintScanned, setFingerprintScanned] = useState(false);
   const [adminError, setAdminError] = useState('');
 
-  const accents = [
-    { id: 'blue', nameEn: 'Royal Blue', nameTe: 'రాయల్ బ్లూ', hex: '#082c75', border: 'border-blue-900 bg-[#082c75]' },
-    { id: 'gold', nameEn: 'Golden Yellow', nameTe: 'బంగారు వర్ణం', hex: '#FFC000', border: 'border-yellow-600 bg-[#FFC000]' },
-    { id: 'green', nameEn: 'Emerald Green', nameTe: 'పచ్చ రంగు', hex: '#10b981', border: 'border-emerald-700 bg-[#10b981]' },
-    { id: 'crimson', nameEn: 'Crimson Red', nameTe: 'ఎరుపు రంగు', hex: '#e11d48', border: 'border-rose-700 bg-[#e11d48]' },
+  const accents: { id: string; nameKey: keyof typeof translations; hex: string; border: string }[] = [
+    { id: 'blue', nameKey: 'royal_blue', hex: '#082c75', border: 'border-blue-900 bg-[#082c75]' },
+    { id: 'gold', nameKey: 'golden_yellow', hex: '#FFC000', border: 'border-yellow-600 bg-[#FFC000]' },
+    { id: 'green', nameKey: 'emerald_green', hex: '#10b981', border: 'border-emerald-700 bg-[#10b981]' },
+    { id: 'crimson', nameKey: 'crimson_red', hex: '#e11d48', border: 'border-rose-700 bg-[#e11d48]' },
   ];
 
   if (!isOpen) return null;
@@ -125,8 +126,8 @@ export default function MobileSettings({
           <div className="flex items-center gap-2">
             <Settings className="w-5 h-5 text-[#082c75] animate-spin" style={{ animationDuration: '10s' }} />
             <div>
-              <h3 className="text-xs font-black text-[#082c75] uppercase">మొబైల్ యాప్ సెట్టింగ్స్ / App Settings</h3>
-              <p className="text-[8px] text-gray-500 font-bold">మంచి చెడ్డ నియంత్రణ ప్యానెల్ (Preferences Panel)</p>
+              <h3 className="text-xs font-black text-[#082c75] uppercase">{t('app_settings_header', language)}</h3>
+              <p className="text-[8px] text-gray-500 font-bold">{t('preferences_panel', language)}</p>
             </div>
           </div>
           <button 
@@ -160,8 +161,8 @@ export default function MobileSettings({
                       {userEmail ? userEmail.slice(0, 2).toUpperCase() : 'CWRB'}
                     </div>
                     <div>
-                      <h4 className="font-extrabold text-xs text-gray-800 truncate max-w-[170px]">సివిల్ వర్కర్ సభ్యులు</h4>
-                      <p className="text-[9px] text-gray-500 font-mono mt-0.5">గోప్యత కోసం దాచబడింది</p>
+                      <h4 className="font-extrabold text-xs text-gray-800 truncate max-w-[170px]">{t('civil_worker_member', language)}</h4>
+                      <p className="text-[9px] text-gray-500 font-mono mt-0.5">{t('privacy_hidden', language)}</p>
                     </div>
                   </div>
                   <ChevronRight className="w-4 h-4 text-gray-400" />
@@ -170,8 +171,8 @@ export default function MobileSettings({
                 {/* Accent Color Switcher Section */}
                 <div className="bg-slate-50 p-3.5 rounded-2xl border border-gray-150 space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-black text-gray-500 uppercase">రూపం & రంగు (UI Themes)</span>
-                    <span className="text-[9px] text-gray-400 font-bold">Dynamic Accent Accent</span>
+                    <span className="text-[10px] font-black text-gray-500 uppercase">{t('appearance_themes', language)}</span>
+                    <span className="text-[9px] text-gray-400 font-bold">{t('dynamic_accent', language)}</span>
                   </div>
                   <div className="grid grid-cols-4 gap-2 pt-1">
                     {accents.map((acc) => {
@@ -187,39 +188,49 @@ export default function MobileSettings({
                           <span className={`w-5.5 h-5.5 rounded-full ${acc.border} flex items-center justify-center text-white`}>
                             {active && <Check className="w-3.5 h-3.5 stroke-[3.5]" />}
                           </span>
-                          <span className="text-[8px] font-bold text-gray-600 truncate max-w-[55px]">{language === 'te' ? acc.nameTe : acc.nameEn}</span>
+                          <span className="text-[8px] font-bold text-gray-600 truncate max-w-[55px]">{t(acc.nameKey, language)}</span>
                         </button>
                       );
                     })}
                   </div>
                 </div>
 
-                {/* Language Switcher Row */}
-                <div className="bg-slate-50 p-3 rounded-2xl border border-gray-150 flex items-center justify-between">
+                {/* Language Switcher Section */}
+                <div className="bg-slate-50 p-3.5 rounded-2xl border border-gray-150 space-y-3">
                   <div className="flex items-center gap-2">
                     <Globe className="w-4 h-4 text-[#082c75]" />
                     <div>
-                      <span className="text-[11px] font-extrabold text-gray-700 block">భాషా ఎంపిక / Language</span>
-                      <span className="text-[8px] text-gray-400 font-bold">Switch app language preference</span>
+                      <span className="text-[11px] font-extrabold text-gray-700 block">
+                        {t('language_selection', language)}
+                      </span>
+                      <span className="text-[8px] text-gray-400 font-bold">{t('switch_preference', language)}</span>
                     </div>
                   </div>
-                  <div className="flex bg-white rounded-lg p-0.5 border border-gray-200">
-                    <button
-                      onClick={() => onLanguageChange('te')}
-                      className={`px-3 py-1 rounded text-[10px] font-black transition ${
-                        language === 'te' ? 'bg-[#082c75] text-[#FFC000]' : 'text-gray-500 hover:text-gray-800'
-                      }`}
-                    >
-                      తెలుగు
-                    </button>
-                    <button
-                      onClick={() => onLanguageChange('en')}
-                      className={`px-3 py-1 rounded text-[10px] font-black transition ${
-                        language === 'en' ? 'bg-[#082c75] text-[#FFC000]' : 'text-gray-500 hover:text-gray-800'
-                      }`}
-                    >
-                      English
-                    </button>
+                  
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { id: 'te', label: 'తెలుగు' },
+                      { id: 'en', label: 'English' },
+                      { id: 'hi', label: 'हिन्दी' },
+                      { id: 'kn', label: 'ಕನ್ನಡ' },
+                      { id: 'ta', label: 'தமிழ்' }
+                    ].map((lang) => {
+                      const active = language === lang.id;
+                      return (
+                        <button
+                          key={lang.id}
+                          onClick={() => onLanguageChange(lang.id as any)}
+                          className={`py-2 px-1 rounded-xl border text-[10px] font-black transition-all flex flex-col items-center justify-center gap-1 ${
+                            active 
+                              ? 'bg-[#082c75] text-[#FFC000] border-[#082c75] shadow-sm' 
+                              : 'bg-white text-gray-500 border-gray-200 hover:border-[#082c75]/30'
+                          }`}
+                        >
+                          <span>{lang.label}</span>
+                          {active && <div className="w-1 h-1 rounded-full bg-[#FFC000]" />}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -235,8 +246,8 @@ export default function MobileSettings({
                         <Bell className="w-4.5 h-4.5" />
                       </div>
                       <div>
-                        <span className="font-extrabold text-gray-800 block">నోటిఫికేషన్లు & రిమైండర్లు</span>
-                        <span className="text-[8px] text-gray-400 font-semibold">Sound, SMS, work alarms configurations</span>
+                        <span className="font-extrabold text-gray-800 block">{t('notifications', language)}</span>
+                        <span className="text-[8px] text-gray-400 font-semibold">{t('notifications_desc', language)}</span>
                       </div>
                     </div>
                     <ChevronRight className="w-4 h-4 text-gray-400" />
@@ -252,8 +263,8 @@ export default function MobileSettings({
                         <Shield className="w-4.5 h-4.5" />
                       </div>
                       <div>
-                        <span className="font-extrabold text-gray-800 block">భద్రత మరియు ప్రైవసీ నియంత్రణలు</span>
-                        <span className="text-[8px] text-gray-400 font-semibold">Hide number, location accuracy, biometrics</span>
+                        <span className="font-extrabold text-gray-800 block">{t('security_privacy', language)}</span>
+                        <span className="text-[8px] text-gray-400 font-semibold">{t('security_privacy_desc', language)}</span>
                       </div>
                     </div>
                     <ChevronRight className="w-4 h-4 text-gray-400" />
@@ -269,8 +280,8 @@ export default function MobileSettings({
                         <Database className="w-4.5 h-4.5" />
                       </div>
                       <div>
-                        <span className="font-extrabold text-gray-800 block">మెమరీ & డయాగ్నస్టిక్స్</span>
-                        <span className="text-[8px] text-gray-400 font-semibold">Clear cache memory, offline backups</span>
+                        <span className="font-extrabold text-gray-800 block">{t('memory_diagnostics', language)}</span>
+                        <span className="text-[8px] text-gray-400 font-semibold">{t('memory_diagnostics_desc', language)}</span>
                       </div>
                     </div>
                     <ChevronRight className="w-4 h-4 text-gray-400" />
@@ -286,8 +297,8 @@ export default function MobileSettings({
                         <HelpCircle className="w-4.5 h-4.5" />
                       </div>
                       <div>
-                        <span className="font-extrabold text-gray-800 block">హెల్ప్‌లైన్ & సపోర్ట్ గ్రూప్</span>
-                        <span className="text-[8px] text-gray-400 font-semibold">Helpdesk chatbot support live</span>
+                        <span className="font-extrabold text-gray-800 block">{t('helpline_support', language)}</span>
+                        <span className="text-[8px] text-gray-400 font-semibold">{t('helpline_support_desc', language)}</span>
                       </div>
                     </div>
                     <ChevronRight className="w-4 h-4 text-gray-400" />
@@ -317,20 +328,20 @@ export default function MobileSettings({
                 className="space-y-4"
               >
                 <button onClick={() => setActiveSection('main')} className="text-xs font-black text-[#082c75] hover:underline flex items-center gap-1 mb-2">
-                  ← వెనుకకు / Go Back
+                  ← {t('go_back', language)}
                 </button>
 
-                <h4 className="font-extrabold text-xs text-gray-800 border-b border-gray-150 pb-2">యూజర్ ప్రొఫైల్ ఖాతా / Member Profile</h4>
+                <h4 className="font-extrabold text-xs text-gray-800 border-b border-gray-150 pb-2">{t('member_profile', language)}</h4>
                 
                 <div className="space-y-3 bg-slate-50 p-4 rounded-2xl border border-gray-150 text-xs">
                   <div className="space-y-0.5">
-                    <span className="text-[9px] font-bold text-gray-400 block uppercase">ఖాతాదారుని ఈమెయిల్ (Account Email):</span>
-                    <span className="font-black text-gray-800 break-all">గోప్యత కోసం దాచబడింది</span>
+                    <span className="text-[9px] font-bold text-gray-400 block uppercase">{t('account_email', language)}:</span>
+                    <span className="font-black text-gray-800 break-all">{t('privacy_hidden', language)}</span>
                   </div>
 
                   <div className="space-y-0.5">
-                    <span className="text-[9px] font-bold text-gray-400 block uppercase">రిజిస్టర్ మొబైల్ (Registered Phone):</span>
-                    <span className="font-black text-gray-800 font-mono">గోప్యత కోసం దాచబడింది</span>
+                    <span className="text-[9px] font-bold text-gray-400 block uppercase">{t('registered_phone', language)}:</span>
+                    <span className="font-black text-gray-800 font-mono">{t('privacy_hidden', language)}</span>
                   </div>
 
                   <div className="space-y-0.5">
@@ -349,7 +360,7 @@ export default function MobileSettings({
                   onClick={onLogout}
                   className="w-full py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-extrabold rounded-xl text-xs transition active:scale-95"
                 >
-                  మెంబర్ లాగ్ అవుట్ చేయి / Logout Member
+                  {language === 'en' ? 'Logout Member' : language === 'hi' ? 'सदस्य लॉग आउट करें' : language === 'kn' ? 'ಸದಸ್ಯ ಲಾಗ್ ಔಟ್ ಮಾಡಿ' : language === 'ta' ? 'உறுப்பினர் வெளியேறு' : 'మెంబర్ లాగ్ అవుట్ చేయి'}
                 </button>
               </motion.div>
             )}
@@ -706,14 +717,14 @@ export default function MobileSettings({
             onClick={onLogout}
             className="px-3.5 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 text-[10px] font-black rounded-xl border border-rose-200 flex items-center gap-1.5 transition active:scale-95"
           >
-            లాగ్ అవుట్ (Logout)
+            {t('logout', language)}
           </button>
 
           <button
             onClick={onClose}
             className="px-5 py-2.5 bg-[#082c75] hover:bg-[#001040] text-[#FFC000] text-[10px] font-black rounded-xl shadow-md transition active:scale-95"
           >
-            మూసివేయి (Close)
+            {t('close', language)}
           </button>
         </div>
 

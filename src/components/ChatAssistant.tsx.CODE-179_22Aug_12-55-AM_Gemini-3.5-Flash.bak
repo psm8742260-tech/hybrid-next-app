@@ -8,7 +8,6 @@ interface ChatAssistantProps {
   isAgentToggleVisible?: boolean;
   isBrahmastraButtonVisible?: boolean;
   isSystemOnline?: boolean;
-  language?: string;
 }
 
 interface Message {
@@ -111,66 +110,11 @@ export default function ChatAssistant({
   isFullScreen = false, 
   isAgentToggleVisible = false,
   isBrahmastraButtonVisible = true,
-  isSystemOnline = true,
-  language = 'te'
+  isSystemOnline = true
 }: ChatAssistantProps) {
-  const getTranslatedMessageText = (text: string) => {
-    if (text === 'నమస్కారం! నేను CWRB AI అసిస్టెంట్ బోర్డు. మీకు ఏ సమాచారం కావాలి? కింద టైప్ చేయండి లేదా అడగండి.') {
-      if (language === 'en') return 'Hello! I am the CWRB AI Assistant Board. What information do you need? Type or ask below.';
-      if (language === 'hi') return 'नमस्ते! मैं CWRB AI सहायक बोर्ड हूँ। आपको क्या जानकारी चाहिए? नीचे टाइप करें या पूछें।';
-      if (language === 'kn') return 'ನಮಸ್ಕಾರ! ನಾನು CWRB AI ಸಹಾಯಕ ಮಂಡಳಿ. ನಿಮಗೆ ಯಾವ ಮಾಹಿತಿ ಬೇಕು? ಕೆಳಗೆ ಟೈಪ್ ಮಾಡಿ ಅಥವಾ ಕೇಳಿ.';
-      if (language === 'ta') return 'வணக்கம்! நான் CWRB AI உதவி வாரியம். உங்களுக்கு என்ன தகவல் தேவை? கீழே தட்டச்சு செய்யவும் அல்லது கேட்கவும்.';
-      return text;
-    }
-    if (text === 'నమస్కారం! నేను సాధారణ సహాయక ఏజెంట్‌ను. మీకు ఏ సమాచారం కావాలి? కింద టైప్ చేయండి లేదా అడగండి.') {
-      if (language === 'en') return 'Hello! I am a normal assistant agent. What information do you need? Type or ask below.';
-      if (language === 'hi') return 'नमस्ते! मैं एक सामान्य सहायक एजेंट हूँ। आपको क्या जानकारी चाहिए? नीचे टाइप करें या पूछें।';
-      if (language === 'kn') return 'ನಮಸ್ಕಾರ! ನಾನು ಸಾಮಾನ್ಯ ಸಹಾಯಕ ಏಜೆಂಟ್. ನಿಮಗೆ ಯಾವ ಮಾಹಿತಿ ಬೇಕು? ಕೆಳಗೆ ಟೈಪ್ ಮಾಡಿ ಅಥವಾ ಕೇಳಿ.';
-      if (language === 'ta') return 'வணக்கம்! நான் ఒక சாதாரண உதவி முகவர். உங்களுக்கு என்ன தகவல் தேவை? கீழே தட்டச்சு செய்யவும் அல்லது கேட்கவும்.';
-      return text;
-    }
-    if (text === '✨ [ఏజెంట్ మార్పిడి] సాధారణ AI అసిస్టెంట్ తిరిగి కనెక్ట్ చేయబడ్డారు.') {
-      if (language === 'en') return '✨ [Agent Switched] Normal AI Assistant reconnected.';
-      if (language === 'hi') return '✨ [एजेंट बदला गया] सामान्य एआई सहायक फिर से कनेक्ट हो गया है।';
-      if (language === 'kn') return '✨ [ಏಜೆಂಟ್ ಬದಲಾಯಿಸಲಾಗಿದೆ] ಸಾಮಾನ್ಯ AI ಸಹಾಯಕ ಮರುಸಂಪರ್ಕಗೊಂಡಿದೆ.';
-      if (language === 'ta') return '✨ [முகவர் மாற்றப்பட்டார்] சாதாரண AI உதவியாளர் மீண்டும் இணைக்கப்பட்டார்.';
-      return text;
-    }
-    return text;
-  };
-
-  const getChipDisplay = (idx: number, lang: string) => {
-    const displays: Record<string, string[]> = {
-      en: ["How to find workers?", "Wage Rates Details", "Workers Nearby", "How to use App?"],
-      hi: ["श्रमिक कैसे ढूंढें?", "मजदूरी दरों का विवरण", "आस-पास के श्रमिक", "ऐप का उपयोग कैसे करें?"],
-      kn: ["ಕಾರ್ಮಿಕರನ್ನು ಕಂಡುಹಿಡಿಯುವುದು ಹೇಗೆ?", "ಕೂಲಿ ದರಗಳ ವಿವರಗಳು", "ಸುತ್ತಮುತ್ತಲಿನ ಕಾರ್ಮಿಕರು", "ಅಪ್ಲಿಕೇಶನ್ ಬಳಸುವುದು ಹೇಗೆ?"],
-      ta: ["பணியாளர்களை எவ்வாறு கண்டுபிடிப்பது?", "கூலி விகிதங்களின் விவரங்கள்", "அருகிலுள்ள பணியாளர்கள்", "பயன்பாட்டை எவ்வாறு பயன்படுத்துவது?"],
-      te: ["వర్కర్లు ఎలా దొరుకుతారు?", "కూలీ రేట్ల వివరాలు", "చుట్టుపక్కల వర్కర్లు", "యాప్ ఎలా వాడాలి?"]
-    };
-    return (displays[lang] || displays['te'])[idx];
-  };
-
-  const getChipPrompt = (idx: number, lang: string) => {
-    const prompts: Record<string, string[]> = {
-      en: ["How to find workers?", "Tell me the details of wage rates", "Workers around me", "App guide information"],
-      hi: ["श्रमिक कैसे ढूंढें?", "मजदूरी दरों का विवरण बताएं", "मेरे आस-पास के श्रमिक", "ऐप गाइड की जानकारी"],
-      kn: ["ಕಾರ್ಮಿಕರನ್ನು ಕಂಡುಹಿಡಿಯುವುದು ಹೇಗೆ?", "ಕೂಲಿ ದರಗಳ ವಿವರಗಳನ್ನು ತಿಳಿಸಿ", "ನನ್ನ ಸುತ್ತಮುತ್ತಲಿನ ಕಾರ್ಮಿಕರು", "ಅಪ್ಲಿಕೇಶನ್ ಮಾರ್ಗದರ್ಶಿ ಮಾಹಿತಿ"],
-      ta: ["பணியாளர்களை எவ்வாறு கண்டுபி秇ப்பது?", "கூலி விகிதங்களின் விவரங்களைச் சொல்லுங்கள்", "என்னைச் சுற்றியுள்ள பணியாளர்கள்", "பயன்பாட்டு வழிகாட்டி தகவல்"],
-      te: ["👷 వర్కర్లు ఎలా దొరుకుతారు?", "📊 కూలీ రేట్ల వివరాలు చెప్పు", "📍 నా చుట్టూ ఉన్న వర్కర్లు", "📱 యాప్ గైడ్ సమాచారం"]
-    };
-    return (prompts[lang] || prompts['te'])[idx];
-  };
-  const [messages, setMessages] = useState<Message[]>([]);
-
-  useEffect(() => {
-    setMessages([
-      { 
-        role: 'assistant', 
-        text: getTranslatedMessageText('నమస్కారం! నేను CWRB AI అసిస్టెంట్ బోర్డు. మీకు ఏ సమాచారం కావాలి? కింద టైప్ చేయండి లేదా అడగండి.') 
-      }
-    ]);
-  }, [language]);
-
+  const [messages, setMessages] = useState<Message[]>([
+    { role: 'assistant', text: 'నమస్కారం! నేను CWRB AI అసిస్టెంట్ బోర్డు. మీకు ఏ సమాచారం కావాలి? కింద టైప్ చేయండి లేదా అడగండి.' }
+  ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isListening, setIsListening] = useState(false);
@@ -450,36 +394,30 @@ export default function ChatAssistant({
       className={containerClasses}
     >
       {/* Header with Board selection if FullScreen */}
-      <div className="bg-[#082c75] text-white py-0.5 px-2 shrink-0">
-        <div className="flex justify-between items-center mb-0">
-          <div className="flex items-center gap-1">
-            <Bot size={12} className="text-[#FFC000] animate-bounce" />
-            <span className="font-extrabold text-[10px]">
-              {language === 'en' ? 'CWRB AI Assistant Board' : 
-               language === 'hi' ? 'CWRB एआई सहायक बोर्ड' : 
-               language === 'kn' ? 'CWRB AI ಸಹಾಯಕ ಮಂಡಳಿ' : 
-               language === 'ta' ? 'CWRB AI உதவி வாரியம்' : 
-               'CWRB AI అసిస్టెంట్ బోర్డు'}
-            </span>
+      <div className="bg-[#082c75] text-white p-3 shrink-0">
+        <div className="flex justify-between items-center mb-1">
+          <div className="flex items-center gap-1.5">
+            <Bot size={16} className="text-[#FFC000] animate-bounce" />
+            <span className="font-extrabold text-xs">CWRB AI అసిస్టెంట్ బోర్డు</span>
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
             <button
               onClick={() => setAutoSpeak(!autoSpeak)}
-              className={`p-0.5 rounded transition ${
+              className={`p-1.5 rounded-lg transition ${
                 autoSpeak ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-slate-800 text-slate-400 border border-slate-700'
               }`}
               title={autoSpeak ? "ఆటో వాయిస్ ఆన్ (Auto-Speak is ON)" : "ఆటో వాయిస్ ఆఫ్ (Auto-Speak is OFF)"}
             >
-              {autoSpeak ? <Volume2 size={9} className="animate-pulse" /> : <VolumeX size={9} />}
+              {autoSpeak ? <Volume2 size={11} className="animate-pulse" /> : <VolumeX size={11} />}
             </button>
 
-            <span className="text-[7px] bg-emerald-500 text-white px-1 py-[1px] rounded font-black font-mono">LIVE</span>
+            <span className="text-[8px] bg-emerald-500 text-white px-1.5 py-0.5 rounded font-black font-mono">LIVE</span>
           </div>
         </div>
 
         {/* Agent Toggles Bar */}
         {isSystemOnline && (
-          <div className="bg-[#00184a] px-2 py-0.5 flex justify-between items-center shrink-0 border-t border-white/10 gap-1.5">
+          <div className="bg-[#00184a] px-3 py-2 flex justify-between items-center shrink-0 border-t border-white/10 gap-2">
             {/* Ordinary Agent Toggle */}
             <button 
               onClick={() => {
@@ -493,13 +431,13 @@ export default function ChatAssistant({
                   ]);
                 }
               }}
-              className={`flex-1 py-px rounded text-[8.5px] font-black transition cursor-pointer border flex items-center justify-center gap-1 ${
+              className={`flex-1 py-1.5 rounded-lg text-[10px] font-black transition cursor-pointer border flex items-center justify-center gap-1.5 ${
                 selectedAgent === 'default' 
                   ? 'bg-emerald-500 border-emerald-400 text-white shadow-[0_0_10px_rgba(16,185,129,0.3)]' 
                   : 'bg-rose-600 border-rose-500 text-white opacity-90'
               }`}
             >
-              👤 {language === 'en' ? 'Normal Agent' : language === 'hi' ? 'सामान्य एजेंट' : language === 'kn' ? 'ಸಾಮಾನ್ಯ ಏಜೆಂಟ್' : language === 'ta' ? 'சாதாரண முகவர்' : 'సాధారణ ఏజెంట్'} - {selectedAgent === 'default' ? 'ON' : 'OFF'}
+              👤 సాధారణ ఏజెంట్ - {selectedAgent === 'default' ? 'ON' : 'OFF'}
             </button>
 
             {/* Brahmastra Agent Toggle */}
@@ -512,13 +450,13 @@ export default function ChatAssistant({
                     setShowAgentList(true);
                   }
                 }}
-                className={`flex-1 py-px rounded text-[8.5px] font-black transition cursor-pointer border flex items-center justify-center gap-1 ${
+                className={`flex-1 py-1.5 rounded-lg text-[10px] font-black transition cursor-pointer border flex items-center justify-center gap-1.5 ${
                   (selectedAgent !== 'default' && selectedAgent !== 'none')
                     ? 'bg-[#FFC000] border-amber-300 text-slate-950 shadow-[0_0_10px_rgba(255,192,0,0.3)]' 
                     : 'bg-rose-600 border-rose-500 text-white opacity-90'
                 }`}
               >
-                <Sparkles size={9} /> {language === 'en' ? 'Brahmastra Agent' : language === 'hi' ? 'ब्रह्मास्त्र एजेंट' : language === 'kn' ? 'ಬ್ರಹ್ಮಾಸ್ತ್ರ ಏಜೆಂಟ್' : language === 'ta' ? 'பிரம்ماஸ்திர முகவர்' : 'బ్రహ్మాస్త్రం ఏజెంట్'} - {(selectedAgent !== 'default' && selectedAgent !== 'none') ? 'ON' : 'OFF'}
+                <Sparkles size={12} /> బ్రహ్మాస్త్రం ఏజెంట్ - {(selectedAgent !== 'default' && selectedAgent !== 'none') ? 'ON' : 'OFF'}
               </button>
             )}
           </div>
@@ -932,11 +870,11 @@ export default function ChatAssistant({
         {PRESET_CHIPS.map((chip, idx) => (
           <button
             key={idx}
-            onClick={() => handleSend(getChipPrompt(idx, language))}
+            onClick={() => handleSend(chip.text)}
             disabled={isLoading}
             className="shrink-0 bg-[#082c75]/5 hover:bg-[#082c75]/10 border border-[#082c75]/10 text-[#082c75] px-2.5 py-1 rounded-full text-[9px] font-bold transition active:scale-95 disabled:opacity-50 cursor-pointer"
           >
-            {getChipDisplay(idx, language)}
+            {chip.textTe}
           </button>
         ))}
       </div>
@@ -1008,9 +946,7 @@ export default function ChatAssistant({
               handleSend();
             }
           }}
-          placeholder={selectedAgent === 'none' 
-            ? (language === 'en' ? "Turn on agent..." : language === 'hi' ? "एजेंट चालू करें..." : language === 'kn' ? "ಏಜೆಂಟ್ ಆನ್ ಮಾಡಿ..." : language === 'ta' ? "முகவரை ஆன் செய்யவும்..." : "ఏజెంట్‌ను ఆన్ చేయండి...")
-            : (language === 'en' ? "Type here in English or Telugu..." : language === 'hi' ? "यहाँ अंग्रेजी या तेलुगु में टाइप करें..." : language === 'kn' ? "ಇಲ್ಲಿ ಇಂಗ್ಲಿಷ್ ಅಥವಾ ತೆಲುಗಿನಲ್ಲಿ ಟೈಪ್ ಮಾಡಿ..." : language === 'ta' ? "இங்கே ஆங்கிலம் அல்லது தெலுங்கில் தட்டச்சு செய்யவும்..." : "ఇక్కడ తెలుగు లేదా ఇంగ్లీషులో టైప్ చేయండి...")}
+          placeholder={selectedAgent === 'none' ? "ఏజెంట్‌ను ఆన్ చేయండి..." : "ఇక్కడ తెలుగు లేదా ఇంగ్లీషులో టైప్ చేయండి..."}
           disabled={selectedAgent === 'none'}
           className="flex-1 text-[11px] border border-gray-200 rounded-xl p-2.5 bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#082c75] font-medium disabled:opacity-50 disabled:bg-gray-100 min-h-[40px] max-h-[120px] resize-none overflow-y-auto"
           rows={input.split('\n').length > 1 ? Math.min(4, input.split('\n').length) : 1}

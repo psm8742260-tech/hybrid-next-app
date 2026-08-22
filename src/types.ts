@@ -18,6 +18,9 @@ export interface ServiceCategory {
   id: string;
   nameEn: string;
   nameTe: string;
+  nameHi: string;
+  nameKn: string;
+  nameTa: string;
   icon: string;
   available: boolean;
   basePrice: number;

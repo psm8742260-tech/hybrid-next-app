@@ -1646,11 +1646,11 @@ export default function App() {
                         {/* PWA Direct Cache Buster Button for phone mockup */}
                         <button
                           onClick={forceUpdateApp}
-                          title={language === 'en' ? 'Clear Cache & Update App' : language === 'hi' ? 'कैश साफ़ करें और ऐप अपडेट करें' : language === 'kn' ? 'ಸಂಗ್ರಹವನ್ನು ತೆರವುಗೊಳಿಸಿ మరియు ಅಪ್ಲಿಕೇಶನ್ ನವೀಕರಿಸಿ' : language === 'ta' ? 'தற்காலிக சேமிப்பை அழித்து பயன்பாட்டைப் புதுப்பிக்கவும்' : 'క్లియర్ క్యాష్ & అప్‌డేట్ / Clear Cache & Update App'}
+                          title="క్లియర్ క్యాష్ & అప్‌డేట్ / Clear Cache & Update App"
                           className="px-1.5 sm:px-2 py-1 sm:py-1.5 rounded-md sm:rounded-lg bg-yellow-400 hover:bg-yellow-300 text-slate-950 transition-all flex items-center justify-center gap-1 shadow-md animate-pulse text-[8px] sm:text-[9px] font-black cursor-pointer border border-yellow-300/40 shrink-0"
                         >
                           <RefreshCwIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3 animate-spin" style={{ animationDuration: '4s' }} />
-                          <span>{language === 'en' ? 'Update PWA' : language === 'hi' ? 'PWA अपडेट करें' : language === 'kn' ? 'PWA ನವೀಕರಿಸಿ' : language === 'ta' ? 'PWA ஐப் புதுப்பிக்கவும்' : 'అప్‌డేట్ PWA'}</span>
+                          <span>అప్‌డేట్ PWA</span>
                         </button>
 
                         {/* FEATURE 7: SOS Emergency Tracker button (pulsing crimson red top right) */}
@@ -1700,7 +1700,7 @@ export default function App() {
                                 className="px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-md sm:rounded-lg bg-sky-600 text-white font-black text-[9px] sm:text-[10px] shadow-[0_0_12px_rgba(14,165,233,0.4)] flex items-center gap-1 active:scale-95 hover:bg-sky-700 shrink-0"
                               >
                                 <CloudSun className="w-3 h-3 text-sky-200 animate-pulse" />
-                                <span>{language === 'en' ? '32°C Weather' : language === 'hi' ? '32°C मौसम' : language === 'kn' ? '32°C ಹವಾಮಾನ' : language === 'ta' ? '32°C வானிலை' : '32°C వాతావరణం'}</span>
+                                <span>32°C వాతావరణం</span>
                               </button>
                             )}
                           </div>
@@ -1715,7 +1715,6 @@ export default function App() {
                 isAgentToggleVisible={isAgentToggleVisible} 
                 isBrahmastraButtonVisible={isBrahmastraButtonVisible} 
                 isSystemOnline={isSystemOnline}
-                language={language}
               />
 
 
@@ -2788,7 +2787,6 @@ export default function App() {
                         isAgentToggleVisible={isAgentToggleVisible} 
                         isBrahmastraButtonVisible={isBrahmastraButtonVisible} 
                         isSystemOnline={isSystemOnline}
-                        language={language}
                       />
                     )}
 

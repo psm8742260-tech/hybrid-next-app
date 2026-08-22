@@ -450,11 +450,11 @@ export default function ChatAssistant({
       className={containerClasses}
     >
       {/* Header with Board selection if FullScreen */}
-      <div className="bg-[#082c75] text-white py-0.5 px-2 shrink-0">
-        <div className="flex justify-between items-center mb-0">
-          <div className="flex items-center gap-1">
-            <Bot size={12} className="text-[#FFC000] animate-bounce" />
-            <span className="font-extrabold text-[10px]">
+      <div className="bg-[#082c75] text-white py-1.5 px-3 shrink-0">
+        <div className="flex justify-between items-center mb-0.5">
+          <div className="flex items-center gap-1.5">
+            <Bot size={16} className="text-[#FFC000] animate-bounce" />
+            <span className="font-extrabold text-xs">
               {language === 'en' ? 'CWRB AI Assistant Board' : 
                language === 'hi' ? 'CWRB एआई सहायक बोर्ड' : 
                language === 'kn' ? 'CWRB AI ಸಹಾಯಕ ಮಂಡಳಿ' : 
@@ -462,24 +462,24 @@ export default function ChatAssistant({
                'CWRB AI అసిస్టెంట్ బోర్డు'}
             </span>
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
             <button
               onClick={() => setAutoSpeak(!autoSpeak)}
-              className={`p-0.5 rounded transition ${
+              className={`p-1 rounded-md transition ${
                 autoSpeak ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-slate-800 text-slate-400 border border-slate-700'
               }`}
               title={autoSpeak ? "ఆటో వాయిస్ ఆన్ (Auto-Speak is ON)" : "ఆటో వాయిస్ ఆఫ్ (Auto-Speak is OFF)"}
             >
-              {autoSpeak ? <Volume2 size={9} className="animate-pulse" /> : <VolumeX size={9} />}
+              {autoSpeak ? <Volume2 size={11} className="animate-pulse" /> : <VolumeX size={11} />}
             </button>
 
-            <span className="text-[7px] bg-emerald-500 text-white px-1 py-[1px] rounded font-black font-mono">LIVE</span>
+            <span className="text-[8px] bg-emerald-500 text-white px-1.5 py-0.5 rounded font-black font-mono">LIVE</span>
           </div>
         </div>
 
         {/* Agent Toggles Bar */}
         {isSystemOnline && (
-          <div className="bg-[#00184a] px-2 py-0.5 flex justify-between items-center shrink-0 border-t border-white/10 gap-1.5">
+          <div className="bg-[#00184a] px-3 py-1 flex justify-between items-center shrink-0 border-t border-white/10 gap-2">
             {/* Ordinary Agent Toggle */}
             <button 
               onClick={() => {
@@ -493,7 +493,7 @@ export default function ChatAssistant({
                   ]);
                 }
               }}
-              className={`flex-1 py-px rounded text-[8.5px] font-black transition cursor-pointer border flex items-center justify-center gap-1 ${
+              className={`flex-1 py-0.5 rounded-md text-[10px] font-black transition cursor-pointer border flex items-center justify-center gap-1.5 ${
                 selectedAgent === 'default' 
                   ? 'bg-emerald-500 border-emerald-400 text-white shadow-[0_0_10px_rgba(16,185,129,0.3)]' 
                   : 'bg-rose-600 border-rose-500 text-white opacity-90'
@@ -512,13 +512,13 @@ export default function ChatAssistant({
                     setShowAgentList(true);
                   }
                 }}
-                className={`flex-1 py-px rounded text-[8.5px] font-black transition cursor-pointer border flex items-center justify-center gap-1 ${
+                className={`flex-1 py-0.5 rounded-md text-[10px] font-black transition cursor-pointer border flex items-center justify-center gap-1.5 ${
                   (selectedAgent !== 'default' && selectedAgent !== 'none')
                     ? 'bg-[#FFC000] border-amber-300 text-slate-950 shadow-[0_0_10px_rgba(255,192,0,0.3)]' 
                     : 'bg-rose-600 border-rose-500 text-white opacity-90'
                 }`}
               >
-                <Sparkles size={9} /> {language === 'en' ? 'Brahmastra Agent' : language === 'hi' ? 'ब्रह्मास्त्र एजेंट' : language === 'kn' ? 'ಬ್ರಹ್ಮಾಸ್ತ್ರ ಏಜೆಂಟ್' : language === 'ta' ? 'பிரம்ماஸ்திர முகவர்' : 'బ్రహ్మాస్త్రం ఏజెంట్'} - {(selectedAgent !== 'default' && selectedAgent !== 'none') ? 'ON' : 'OFF'}
+                <Sparkles size={12} /> {language === 'en' ? 'Brahmastra Agent' : language === 'hi' ? 'ब्रह्मास्त्र एजेंट' : language === 'kn' ? 'ಬ್ರಹ್ಮಾಸ್ತ್ರ ಏಜೆಂಟ್' : language === 'ta' ? 'பிரம்மாஸ்திர முகவர்' : 'బ్రహ్మాస్త్రం ఏజెంట్'} - {(selectedAgent !== 'default' && selectedAgent !== 'none') ? 'ON' : 'OFF'}
               </button>
             )}
           </div>
