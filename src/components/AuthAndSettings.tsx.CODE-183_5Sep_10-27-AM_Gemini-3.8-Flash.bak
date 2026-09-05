@@ -14,7 +14,6 @@ import CWRBLogo from './CWRBLogo';
 import {  auth, RecaptchaVerifier, db } from '../lib/firebase';
 import {  signInWithPhoneNumber, ConfirmationResult } from 'firebase/auth';
 import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
-import { sendCustomerWorkerOtp } from '../services/phrsCloudEngine';
 
 // Toggle for testing without real Firebase SMS
 const USE_SIMULATED_AUTH = true;
@@ -91,11 +90,10 @@ export const PhoneLogin: React.FC<PhoneLoginProps> = ({ onLoginSuccess, transpar
     }
 
     if (USE_SIMULATED_AUTH) {
-      const fullPhone = `${countryCode} ${phoneNumber}`;
-      const res = await sendCustomerWorkerOtp(fullPhone, "గౌరవనీయ యూజర్", "కస్టమర్/వర్కర్");
-      const otp = res.otp || Math.floor(100000 + Math.random() * 900000).toString();
+      // Simulation logic
+      const otp = "1234"; // Hardcoded test OTP
       setSimulatedOtp(otp);
-      console.log("[PHRS Engine] OTP Generated & Sent:", otp);
+      console.log("Simulated OTP (Development Only):", otp);
       setStep('otp');
       setTimer(30);
       return;
@@ -284,18 +282,12 @@ export const PhoneLogin: React.FC<PhoneLoginProps> = ({ onLoginSuccess, transpar
                   <div className={`text-[11px] font-bold ${transparent ? 'text-white/80' : 'text-gray-500'}`}>
                     మేము <span className={`font-mono font-extrabold ${transparent ? 'text-[#FFC000]' : 'text-gray-800'}`}>{countryCode} {phoneNumber}</span> కి కోడ్‌ను పంపాము
                   </div>
-                  <div 
-                    onClick={() => {
-                      if (simulatedOtp) setOtpCode(simulatedOtp);
-                    }}
-                    title="క్లిక్ చేసి ఆటోమేటిక్గా ఫిల్ చేయండి"
-                    className={`text-[10px] font-extrabold rounded-lg py-1 px-2.5 border inline-block cursor-pointer transition active:scale-95 ${
-                      transparent 
-                        ? 'text-[#FFC000] bg-white/10 border-[#FFC000]/30 hover:bg-white/20' 
-                        : 'text-amber-700 bg-amber-50 border-amber-300 hover:bg-amber-100'
-                    }`}
-                  >
-                    {simulatedOtp ? `ధృవీకరణ OTP: ${simulatedOtp} (ఆటో-ఫిల్ కోసం క్లిక్ చేయండి)` : 'పైన వచ్చిన అలర్ట్ లోని OTPని కింద టైప్ చేయండి'}
+                  <div className={`text-[10px] font-extrabold rounded-lg py-1 px-2 border inline-block ${
+                    transparent 
+                      ? 'text-[#FFC000] bg-white/10 border-[#FFC000]/30' 
+                      : 'text-amber-600 bg-amber-50 border-amber-200'
+                  }`}>
+                    పైన వచ్చిన అలర్ట్ లోని OTPని కింద టైప్ చేయండి
                   </div>
                 </div>
 
@@ -303,17 +295,17 @@ export const PhoneLogin: React.FC<PhoneLoginProps> = ({ onLoginSuccess, transpar
                   <label className={`block text-[11px] font-extrabold text-center uppercase ${transparent ? 'text-[#FFC000]' : 'text-[#082c75]'}`}>
                     OTP నంబర్ నమోదు చేయండి
                   </label>
-                  <div className="relative max-w-[200px] mx-auto">
+                  <div className="relative max-w-[160px] mx-auto">
                     <Lock className="absolute left-3 top-3.5 w-4.5 h-4.5 text-gray-400" />
                     <input 
                       type="text"
-                      maxLength={6}
+                      maxLength={4}
                       pattern="[0-9]*"
                       inputMode="numeric"
-                      placeholder="XXXXXX"
+                      placeholder="XXXX"
                       value={otpCode}
                       onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
-                      className="w-full bg-white border border-gray-300 rounded-xl py-3 pl-10 text-center tracking-[6px] font-mono font-black text-sm text-gray-800 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-[#082c75]"
+                      className="w-full bg-white border border-gray-300 rounded-xl py-3 pl-10 text-center tracking-[8px] font-mono font-black text-sm text-gray-800 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-[#082c75]"
                     />
                   </div>
                 </div>

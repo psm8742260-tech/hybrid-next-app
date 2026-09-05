@@ -308,20 +308,6 @@ app.post("/api/chat", async (req: express.Request, res: express.Response) => {
   }
 });
 
-// API: PHRS Crowd SMS History Endpoint
-app.post("/api/sms/history", express.json(), (req: express.Request, res: express.Response) => {
-  const { phone, content, type, id } = req.body || {};
-  console.log(`[PHRS Cloud SMS Engine] New SMS Log: ID=${id} To=${phone} Type=${type}`);
-  res.json({ success: true, message: "SMS logged in PHRS Cloud Engine", timestamp: new Date().toISOString() });
-});
-
-// API: PHRS Cloud DB Sync Endpoint
-app.post("/api/db/sync", express.json(), (req: express.Request, res: express.Response) => {
-  const { key, data } = req.body || {};
-  console.log(`[PHRS Master Cloud Sync] Record saved: key=${key}`);
-  res.json({ success: true, status: "synced_to_master", key, timestamp: new Date().toISOString() });
-});
-
 async function start() {
   const isProd = process.env.NODE_ENV === "production" || process.argv[1]?.includes("server.cjs");
   if (!isProd) {
