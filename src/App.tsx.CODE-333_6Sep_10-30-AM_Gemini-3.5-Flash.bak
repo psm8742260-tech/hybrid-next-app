@@ -36,8 +36,7 @@ import { doc, onSnapshot, getDoc, setDoc } from 'firebase/firestore';
 // Category icon map helper
 const getCategoryIcon = (iconName: string) => {
   if (iconName && (iconName.match(/[\uD800-\uDFFF\u2600-\u27BF]/) || iconName.length <= 2)) {
-    const isGear = iconName === '⚙️';
-    return <span className={`text-[20px] sm:text-[22px] filter drop-shadow-[0_4px_5px_rgba(0,0,0,0.3)] transform hover:scale-110 transition-transform duration-200 inline-block select-none leading-none ${isGear ? 'animate-spin' : ''}`} style={isGear ? { animationDuration: '10s' } : undefined}>{iconName}</span>;
+    return <span className="text-[20px] sm:text-[22px] filter drop-shadow-[0_4px_5px_rgba(0,0,0,0.3)] transform hover:scale-110 transition-transform duration-200 inline-block select-none leading-none">{iconName}</span>;
   }
   switch (iconName) {
     case 'Zap': return <ZapIcon className="w-5 h-5 text-[#FFC000]" />;
@@ -1624,7 +1623,7 @@ export default function App() {
                             title="సెట్టింగ్స్ / App Settings"
                             className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-all text-[#FFC000] flex items-center justify-center active:scale-90"
                           >
-                            <Settings className="w-3.5 h-3.5 text-[#FFC000] animate-spin" style={{ animationDuration: '10s' }} />
+                            <Settings className="w-3.5 h-3.5 text-[#FFC000]" />
                           </button>
                         )}
 
@@ -2941,7 +2940,7 @@ export default function App() {
                         {showMobileSettings && (
                           <div className="absolute top-0.5 left-1 w-2.5 h-1.5 rounded-full bg-white/40 blur-[0.3px]" />
                         )}
-                        <Settings className={`w-4.5 h-4.5 animate-spin ${showMobileSettings ? 'drop-shadow-[0_1px_1px_rgba(0,0,0,0.2)] text-white' : 'text-gray-500'}`} style={{ animationDuration: showMobileSettings ? '6s' : '10s' }} />
+                        <Settings className={`w-4.5 h-4.5 ${showMobileSettings ? 'drop-shadow-[0_1px_1px_rgba(0,0,0,0.2)] text-white animate-spin' : 'text-gray-500'}`} style={showMobileSettings ? { animationDuration: '6s' } : undefined} />
                       </div>
                       <span className={`text-[8px] mt-1 tracking-tight transition-all ${showMobileSettings ? 'text-[#082c75] font-black' : 'text-gray-400 font-bold'}`}>సెట్టింగ్స్</span>
                     </button>
@@ -3572,7 +3571,7 @@ export default function App() {
                             {showMobileSettings && (
                               <div className="absolute top-0.5 left-1 w-2.5 h-1.5 rounded-full bg-white/40 blur-[0.3px]" />
                             )}
-                            <Settings className={`w-4.5 h-4.5 animate-spin ${showMobileSettings ? 'drop-shadow-[0_1px_1px_rgba(0,0,0,0.2)] text-white' : 'text-gray-500'}`} style={{ animationDuration: showMobileSettings ? '6s' : '10s' }} />
+                            <Settings className={`w-4.5 h-4.5 ${showMobileSettings ? 'drop-shadow-[0_1px_1px_rgba(0,0,0,0.2)] text-white animate-spin' : 'text-gray-500'}`} style={showMobileSettings ? { animationDuration: '6s' } : undefined} />
                           </div>
                           <span className={`text-[8px] mt-1 tracking-tight transition-all ${showMobileSettings ? 'text-[#082c75] font-black' : 'text-gray-400 font-bold'}`}>{t('settings', language)}</span>
                         </button>
