@@ -282,12 +282,20 @@ export const PhoneLogin: React.FC<PhoneLoginProps> = ({ onLoginSuccess, transpar
               >
                 <div className="space-y-2 text-center">
                   <div className={`text-[11px] font-bold ${transparent ? 'text-white/80' : 'text-gray-500'}`}>
-                    మేము <span className={`font-mono font-extrabold ${transparent ? 'text-[#FFC000]' : 'text-gray-800'}`}>{countryCode} {phoneNumber}</span> కి నిజమైన SMS OTP పంపాము
+                    మేము <span className={`font-mono font-extrabold ${transparent ? 'text-[#FFC000]' : 'text-gray-800'}`}>{countryCode} {phoneNumber}</span> కి కోడ్‌ను పంపాము
                   </div>
-                  <div className={`text-[10px] font-extrabold rounded-lg py-1 px-2.5 border inline-block ${
-                    transparent ? 'text-[#FFC000] bg-white/10 border-[#FFC000]/30' : 'text-emerald-700 bg-emerald-50 border-emerald-300'
-                  }`}>
-                    దయచేసి మీ మొబైల్ ఇన్బాక్స్‌లోని SMS కోడ్‌ను కింద టైప్ చేయండి
+                  <div 
+                    onClick={() => {
+                      if (simulatedOtp) setOtpCode(simulatedOtp);
+                    }}
+                    title="క్లిక్ చేసి ఆటోమేటిక్గా ఫిల్ చేయండి"
+                    className={`text-[10px] font-extrabold rounded-lg py-1 px-2.5 border inline-block cursor-pointer transition active:scale-95 ${
+                      transparent 
+                        ? 'text-[#FFC000] bg-white/10 border-[#FFC000]/30 hover:bg-white/20' 
+                        : 'text-amber-700 bg-amber-50 border-amber-300 hover:bg-amber-100'
+                    }`}
+                  >
+                    {simulatedOtp ? `ధృవీకరణ OTP: ${simulatedOtp} (ఆటో-ఫిల్ కోసం క్లిక్ చేయండి)` : 'పైన వచ్చిన అలర్ట్ లోని OTPని కింద టైప్ చేయండి'}
                   </div>
                 </div>
 
