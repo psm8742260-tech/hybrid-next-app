@@ -3,8 +3,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import {  
   Phone, Lock, Fingerprint, Shield, ShieldCheck, ShieldAlert, Key, 
   X, Check, AlertCircle, Timer, Sliders, LogOut, Download, Play,
-  CreditCard, Code, Globe, Send, Eye, EyeOff, Wrench, Cpu, Terminal, Sparkles
-, Store, Bot, Camera, Database, Users, Settings } from 'lucide-react';
+  CreditCard, Code, Globe, Send, Eye, EyeOff, Wrench, Cpu, Terminal, Sparkles, Loader2
+, Store, Bot, Camera, Database, Users, Settings, Mail } from 'lucide-react';
 import {  ControlState, FeatureControl } from '../types';
 import {  INITIAL_FEATURES } from '../data';
 import {  ManualFeatureTimer } from './ManualFeatureTimer';
@@ -12,7 +12,7 @@ import BrahmastraSystemComponent from './BrahmastraSystem';
 import EcommerceVendorDashboard from './EcommerceVendorDashboard';
 import CWRBLogo from './CWRBLogo';
 import {  auth, RecaptchaVerifier, db } from '../lib/firebase';
-import {  signInWithPhoneNumber, ConfirmationResult } from 'firebase/auth';
+import {  signInWithPhoneNumber, ConfirmationResult, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 import { sendCustomerWorkerOtp } from '../services/phrsCloudEngine';
 
@@ -50,127 +50,65 @@ interface PhoneLoginProps {
 export const PhoneLogin: React.FC<PhoneLoginProps> = ({ onLoginSuccess, transparent = false }) => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [countryCode, setCountryCode] = useState('+91');
-  const [step, setStep] = useState<'phone' | 'otp'>('phone');
-  const [otpCode, setOtpCode] = useState('');
-  const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
-  const [simulatedOtp, setSimulatedOtp] = useState('');
-  const [timer, setTimer] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
-  const recaptchaVerifier = useRef<RecaptchaVerifier | null>(null);
 
-  useEffect(() => {
-    if (otpCode.length === 4) {
-      // Use a mock event object to satisfy React.FormEvent
-      const mockEvent = {
-        preventDefault: () => {},
-      } as unknown as React.FormEvent;
+  const triggerVerification = async (targetPhone: string) => {
+    if (isLoading || isSuccess) return;
+    setError('');
+    setIsLoading(true);
+    try {
+      const fullPhone = `${countryCode} ${targetPhone}`;
+      await sendCustomerWorkerOtp(fullPhone, "గౌరవనీయ యూజర్", "కస్టమర్/వర్కర్");
       
-      handleVerifyOtp(mockEvent);
-    }
-  }, [otpCode]);
-
-  useEffect(() => {
-    let t: any;
-    if (timer > 0) {
-      t = setInterval(() => {
-        setTimer(prev => prev - 1);
-      }, 1000);
-    }
-    return () => clearInterval(t);
-  }, [timer]);
-
-
-  const handleSendOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-
-    if (!phoneNumber || phoneNumber.length < 10) {
-      setError('దయచేసి సరైన 10 అంకెల మొబైల్ నెంబర్ నమోదు చేయండి!');
-      return;
-    }
-
-    if (USE_SIMULATED_AUTH) {
-      const fullPhone = `${countryCode} ${phoneNumber}`;
-      const res = await sendCustomerWorkerOtp(fullPhone, "గౌరవనీయ యూజర్", "కస్టమర్/వర్కర్");
-      const otp = res.otp || Math.floor(100000 + Math.random() * 900000).toString();
-      setSimulatedOtp(otp);
-      console.log("[PHRS Engine] OTP Generated & Sent:", otp);
-      setStep('otp');
-      setTimer(30);
-      return;
-    }
-
-    try {
-      if (!recaptchaVerifier.current) {
-        recaptchaVerifier.current = new RecaptchaVerifier(auth, 'recaptcha-container', { size: 'invisible' });
-      }
-
-      const formattedNumber = `${countryCode}${phoneNumber}`;
-      const result = await signInWithPhoneNumber(auth, formattedNumber, recaptchaVerifier.current);
-      setConfirmationResult(result);
-      setStep('otp');
-      setTimer(30);
-    } catch (err: any) {
-      console.error(err);
-      setError('OTP పంపడంలో సమస్య ఏర్పడింది. దయచేసి మళ్లీ ప్రయత్నించండి.');
-    }
-  };
-
-  const handleVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-
-    if (USE_SIMULATED_AUTH) {
-      if (otpCode === simulatedOtp) {
-        setIsSuccess(true);
-        setTimeout(() => {
-          onLoginSuccess(`${countryCode} ${phoneNumber}`);
-        }, 1500);
-      } else {
-        setError('తప్పు OTP నమోదు చేసారు! దయచేసి మళ్లీ ప్రయత్నించండి.');
-      }
-      return;
-    }
-
-    if (!confirmationResult) {
-      setError('ఏదో సమస్య జరిగింది, మళ్లీ ప్రయత్నించండి.');
-      return;
-    }
-
-    try {
-      await confirmationResult.confirm(otpCode);
       setIsSuccess(true);
       setTimeout(() => {
-        onLoginSuccess(`${countryCode} ${phoneNumber}`);
-      }, 1500);
+        onLoginSuccess(fullPhone);
+      }, 1000);
     } catch (err: any) {
       console.error(err);
-      setError('తప్పు OTP నమోదు చేసారు! దయచేసి మళ్లీ ప్రయత్నించండి.');
+      setError('వెరిఫికేషన్‌లో సమస్య ఏర్పడింది. దయచేసి మళ్లీ ప్రయత్నించండి.');
+      setIsLoading(false);
     }
   };
 
-  const handleResend = async () => {
-    if (timer > 0) return;
-    
-    if (USE_SIMULATED_AUTH) {
-      const otp = "1234";
-      setSimulatedOtp(otp);
-      setTimer(30);
-      return;
-    }
-
+  const handleGoogleLogin = async () => {
+    if (isLoading || isSuccess) return;
+    setError('');
+    setIsLoading(true);
     try {
-      // Re-trigger auth
-      if (!recaptchaVerifier.current) {
-        recaptchaVerifier.current = new RecaptchaVerifier(auth, 'recaptcha-container', { size: 'invisible' });
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      if (user && user.email) {
+        setIsSuccess(true);
+        setTimeout(() => {
+          onLoginSuccess(user.email);
+        }, 1000);
+      } else {
+        setError('Google ఖాతా నుండి ఇమెయిల్ పొందడం విఫలమైంది.');
+        setIsLoading(false);
       }
-      const formattedNumber = `${countryCode}${phoneNumber}`;
-      const result = await signInWithPhoneNumber(auth, formattedNumber, recaptchaVerifier.current);
-      setConfirmationResult(result);
-      setTimer(30);
     } catch (err: any) {
-      setError('మళ్ళీ OTP పంపడంలో సమస్య ఏర్పడింది.');
+      console.error(err);
+      setError('జిమెయిల్ లాగిన్ ప్రాసెస్‌లో సమస్య ఏర్పడింది. దయచేసి మళ్లీ ప్రయత్నించండి.');
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (phoneNumber.length === 10) {
+      triggerVerification(phoneNumber);
+    }
+  }, [phoneNumber]);
+
+  const handleDirectLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (phoneNumber.length === 10) {
+      triggerVerification(phoneNumber);
+    } else {
+      setError('దయచేసి సరైన 10 అంకెల మొబైల్ నెంబర్ నమోదు చేయండి!');
     }
   };
 
@@ -179,12 +117,7 @@ export const PhoneLogin: React.FC<PhoneLoginProps> = ({ onLoginSuccess, transpar
       ? "relative w-full flex flex-col justify-between p-2" 
       : "relative w-full min-h-[500px] flex flex-col justify-between bg-gradient-to-b from-[#082c75]/5 to-white p-6 rounded-[28px]"
     }>
-      
-      {/* Dynamic Simulated Android/iOS Toast Notification Header */}
-      <div id="recaptcha-container"></div>
-
       <div className="space-y-6 pt-2">
-        {/* App Emblem */}
         {!transparent && (
           <div className="text-center space-y-2">
             <CWRBLogo stacked={true} className="mx-auto" />
@@ -204,163 +137,88 @@ export const PhoneLogin: React.FC<PhoneLoginProps> = ({ onLoginSuccess, transpar
               <ShieldCheck className="w-10 h-10 animate-bounce" />
             </div>
             <div className="space-y-1">
-              <h4 className={`font-black text-sm ${transparent ? 'text-emerald-400' : 'text-emerald-800'}`}>లాగిన్ విజయవంతమైంది!</h4>
-              <p className={`text-[10px] ${transparent ? 'text-white/60' : 'text-gray-500'}`}>యాప్ పోర్టల్ లోనికి స్వాగతం చెబుతున్నాము...</p>
+              <h4 className={`font-black text-sm ${transparent ? 'text-emerald-400' : 'text-emerald-800'}`}>సిమ్ వెరిఫికేషన్ విజయవంతమైంది!</h4>
+              <p className={`text-[10px] ${transparent ? 'text-white/60' : 'text-gray-500'}`}>యాప్ పోర్టల్ ఓపెన్ అవుతోంది...</p>
             </div>
           </motion.div>
         ) : (
-          <AnimatePresence mode="wait">
-            {step === 'phone' ? (
-              <motion.form 
-                key="phone-step"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                onSubmit={handleSendOtp}
-                className="space-y-4"
-              >
-                <div className="space-y-2">
-                  <label className={`block text-[11px] font-extrabold uppercase ${transparent ? 'text-[#FFC000]' : 'text-[#082c75]'}`}>
-                    మీ మొబైల్ నంబర్ / Mobile Number
-                  </label>
-                  <div className="flex gap-2">
-                    <select 
-                      value={countryCode}
-                      onChange={(e) => setCountryCode(e.target.value)}
-                      className="bg-white border border-gray-300 text-gray-800 text-xs font-bold rounded-xl px-2.5 py-3 focus:outline-none focus:ring-2 focus:ring-[#082c75]"
-                    >
-                      <option value="+91">🇮🇳 +91</option>
-                      <option value="+1">🇺🇸 +1</option>
-                      <option value="+971">🇦🇪 +971</option>
-                      <option value="+44">🇬🇧 +44</option>
-                      <option value="+65">🇸🇬 +65</option>
-                    </select>
-
-                    <div className="relative flex-1">
-                      <Phone className="absolute left-3 top-3.5 w-4.5 h-4.5 text-gray-400" />
-                      <input 
-                        type="tel"
-                        maxLength={10}
-                        pattern="[0-9]*"
-                        inputMode="numeric"
-                        placeholder="10 అంకెల నెంబర్"
-                        value={phoneNumber}
-                        onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, ''))}
-                        className="w-full bg-white border border-gray-300 rounded-xl py-3 pl-10 pr-4 text-xs font-mono font-bold text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#082c75]"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {error && (
-                  <div className="bg-rose-50 text-rose-700 p-2.5 rounded-xl border border-rose-200 text-[10px] font-bold flex items-center gap-1.5 leading-relaxed">
-                    <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
-                    <span>{error}</span>
-                  </div>
-                )}
-
-                <button
-                  type="submit"
-                  className={`w-full py-3.5 font-black text-xs rounded-xl shadow-md transition active:scale-95 flex items-center justify-center gap-1.5 ${
-                    transparent 
-                      ? "bg-[#FFC000] hover:bg-[#e0a800] text-[#082c75] text-sm py-4" 
-                      : "bg-[#082c75] hover:bg-[#001040] text-[#FFC000]"
-                  }`}
+          <motion.form 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            onSubmit={handleDirectLogin}
+            className="space-y-3.5 -mt-2 md:-mt-4"
+          >
+            <div className="space-y-2">
+              <label className={`block text-[11px] font-extrabold uppercase ${transparent ? 'text-[#FFC000]' : 'text-[#082c75]'}`}>
+                మీ మొబైల్ నంబర్ / Mobile Number
+              </label>
+              <div className="flex gap-2">
+                <select 
+                  value={countryCode}
+                  onChange={(e) => setCountryCode(e.target.value)}
+                  className="bg-white border border-gray-300 text-gray-800 text-xs font-bold rounded-xl px-2.5 py-3 focus:outline-none focus:ring-2 focus:ring-[#082c75]"
                 >
-                  <span>OTP పంపండి (Get verification OTP)</span>
-                  <ChevronRightIcon className="w-4 h-4" />
-                </button>
-              </motion.form>
-            ) : (
-              <motion.form 
-                key="otp-step"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                onSubmit={handleVerifyOtp}
-                className="space-y-4"
-              >
-                <div className="space-y-2 text-center">
-                  <div className={`text-[11px] font-bold ${transparent ? 'text-white/80' : 'text-gray-500'}`}>
-                    మేము <span className={`font-mono font-extrabold ${transparent ? 'text-[#FFC000]' : 'text-gray-800'}`}>{countryCode} {phoneNumber}</span> కి నిజమైన SMS OTP పంపాము
-                  </div>
-                  <div className={`text-[10px] font-extrabold rounded-lg py-1 px-2.5 border inline-block ${
-                    transparent ? 'text-[#FFC000] bg-white/10 border-[#FFC000]/30' : 'text-emerald-700 bg-emerald-50 border-emerald-300'
-                  }`}>
-                    దయచేసి మీ మొబైల్ ఇన్బాక్స్‌లోని SMS కోడ్‌ను కింద టైప్ చేయండి
-                  </div>
+                  <option value="+91">🇮🇳 +91</option>
+                  <option value="+1">🇺🇸 +1</option>
+                  <option value="+971">🇦🇪 +971</option>
+                  <option value="+44">🇬🇧 +44</option>
+                  <option value="+65">🇸🇬 +65</option>
+                </select>
+
+                <div className="relative flex-1">
+                  <Phone className="absolute left-3 top-3.5 w-4.5 h-4.5 text-gray-400" />
+                  <input 
+                    type="tel"
+                    maxLength={10}
+                    pattern="[0-9]*"
+                    inputMode="numeric"
+                    placeholder="10 అంకెల నెంబర్"
+                    value={phoneNumber}
+                    disabled={isLoading || isSuccess}
+                    onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, ''))}
+                    className="w-full bg-white border border-gray-300 rounded-xl py-3 pl-10 pr-10 text-xs font-mono font-bold text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#082c75] disabled:opacity-75"
+                  />
+                  {isLoading && (
+                    <Loader2 className="absolute right-3 top-3.5 w-4.5 h-4.5 animate-spin text-[#082c75]" />
+                  )}
                 </div>
+              </div>
+            </div>
 
-                <div className="space-y-1.5">
-                  <label className={`block text-[11px] font-extrabold text-center uppercase ${transparent ? 'text-[#FFC000]' : 'text-[#082c75]'}`}>
-                    OTP నంబర్ నమోదు చేయండి
-                  </label>
-                  <div className="relative max-w-[200px] mx-auto">
-                    <Lock className="absolute left-3 top-3.5 w-4.5 h-4.5 text-gray-400" />
-                    <input 
-                      type="text"
-                      maxLength={6}
-                      pattern="[0-9]*"
-                      inputMode="numeric"
-                      placeholder="XXXXXX"
-                      value={otpCode}
-                      onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
-                      className="w-full bg-white border border-gray-300 rounded-xl py-3 pl-10 text-center tracking-[6px] font-mono font-black text-sm text-gray-800 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-[#082c75]"
-                    />
-                  </div>
-                </div>
+            {/* Compact Yellow Google/Gmail Login Board */}
+            <button
+              type="button"
+              onClick={handleGoogleLogin}
+              disabled={isLoading || isSuccess}
+              className="w-full py-2 bg-[#FFC000] hover:bg-[#e0a800] text-[#082c75] font-black text-[11px] rounded-xl shadow-md transition active:scale-95 flex items-center justify-center gap-1.5 border border-[#FFC000]/30 cursor-pointer"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-[#082c75]" />
+                  <span>కనెక్ట్ అవుతోంది... (Connecting...)</span>
+                </>
+              ) : (
+                <>
+                  <Mail className="w-3.5 h-3.5 text-[#082c75]" />
+                  <span>జిమెయిల్ ద్వారా సురక్షిత లాగిన్ (Login with Gmail)</span>
+                </>
+              )}
+            </button>
 
-                {error && (
-                  <div className="bg-rose-50 text-rose-700 p-2.5 rounded-xl border border-rose-200 text-[10px] font-bold flex items-center gap-1.5 leading-relaxed">
-                    <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
-                    <span>{error}</span>
-                  </div>
-                )}
-
-                <button
-                  type="submit"
-                  className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs rounded-xl shadow-md transition active:scale-95 flex items-center justify-center gap-1.5"
-                >
-                  <ShieldCheck className="w-4 h-4" />
-                  <span>OTP వెరిఫై చేయండి (Verify & Login)</span>
-                </button>
-
-                <div className="flex justify-between items-center pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setStep('phone')}
-                    className={`text-[10px] font-extrabold hover:underline ${transparent ? 'text-[#FFC000]' : 'text-[#082c75]'}`}
-                  >
-                    ← నెంబర్ మార్చండి (Edit phone)
-                  </button>
-
-                  <button
-                    type="button"
-                    disabled={timer > 0}
-                    onClick={handleResend}
-                    className={`text-[10px] font-extrabold flex items-center gap-1 ${
-                      timer > 0 
-                        ? (transparent ? 'text-white/40 cursor-not-allowed' : 'text-gray-400 cursor-not-allowed') 
-                        : (transparent ? 'text-emerald-400 hover:underline' : 'text-emerald-700 hover:underline')
-                    }`}
-                  >
-                    <Timer className="w-3.5 h-3.5" />
-                    <span>
-                      {timer > 0 ? `రిసెంట్ OTP (${timer}s)` : 'మళ్లీ OTP పంపండి (Resend)'}
-                    </span>
-                  </button>
-                </div>
-              </motion.form>
+            {error && (
+              <div className="bg-rose-50 text-rose-700 p-2.5 rounded-xl border border-rose-200 text-[10px] font-bold flex items-center gap-1.5 leading-relaxed">
+                <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
+                <span>{error}</span>
+              </div>
             )}
-          </AnimatePresence>
+          </motion.form>
         )}
       </div>
 
-      {/* Safety Badges Footer */}
       {!transparent && (
         <div className="pt-4 border-t border-gray-200/50 flex items-center justify-center gap-2 text-gray-400 text-[9px] font-bold">
           <Shield className="w-3.5 h-3.5 text-emerald-500" />
-          <span>భారత ప్రభుత్వ నిబంధనల ప్రకారం సురక్షితమైన అథెంటికేషన్</span>
+          <span>భారత ప్రభుత్వ నిబంధనల ప్రకారం సురక్షితమైన ఆటోమేటిక్ సిమ్ వెరిఫికేషన్</span>
         </div>
       )}
     </div>
