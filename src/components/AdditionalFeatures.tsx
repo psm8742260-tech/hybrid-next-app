@@ -360,6 +360,18 @@ export function WorkerKYC({ kycState, onUpdateKYC, controlState = 'temp_on' }: K
   const [showIdCard, setShowIdCard] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadSuccess, setDownloadSuccess] = useState(false);
+  const [idCardDataUrl, setIdCardDataUrl] = useState<string | null>(null);
+
+  // Sync state when parent KYC loads asynchronously from Firebase
+  useEffect(() => {
+    if (kycState.aadhaarImage) setAadhaarFile(kycState.aadhaarImage);
+    if (kycState.panImage) setPanFile(kycState.panImage);
+    const uploadedCard = kycState.labourCardImage || kycState.eshramCardImage;
+    if (uploadedCard) setCardFile(uploadedCard);
+    if (kycState.registrationNumber) setRegNumber(kycState.registrationNumber);
+    if (kycState.issueDate) setRegistrationDate(kycState.issueDate);
+    if (kycState.verified) setShowIdCard(true);
+  }, [kycState]);
 
   // Dynamic service calculation (Current year is 2026)
   const calculateExperience = (dateStr: string): number => {
@@ -371,29 +383,29 @@ export function WorkerKYC({ kycState, onUpdateKYC, controlState = 'temp_on' }: K
 
   const expYears = calculateExperience(registrationDate);
 
-  // 4 ID Card Levels
+  // 4 ID Card Levels (Super Light Themes)
   let idTier: 'bronze' | 'silver' | 'gold' | 'diamond' = 'bronze';
   let idCardName = 'కంచు ఐడి కార్డ్ (Bronze Card)';
-  let idBgGradient = 'from-amber-700 via-amber-600 to-amber-900';
-  let borderHighlight = 'border-amber-400';
+  let idBgGradient = 'from-orange-50 via-amber-100/70 to-orange-200/90 text-slate-800';
+  let borderHighlight = 'border-orange-300/80';
   let badgeLabel = '🥉 BRONZE';
 
   if (expYears >= 10) {
     idTier = 'diamond';
     idCardName = 'డైమండ్ ఐడి కార్డ్ (Diamond Card)';
-    idBgGradient = 'from-sky-900 via-slate-800 to-indigo-950';
-    borderHighlight = 'border-sky-300 shadow-[0_0_15px_rgba(56,189,248,0.5)]';
+    idBgGradient = 'from-sky-50 via-sky-100/70 to-sky-200/90 text-slate-800';
+    borderHighlight = 'border-sky-300';
     badgeLabel = '💎 DIAMOND';
   } else if (expYears >= 5) {
     idTier = 'gold';
     idCardName = 'బంగారు ఐడి కార్డ్ (Gold Card)';
-    idBgGradient = 'from-yellow-600 via-amber-500 to-yellow-800';
-    borderHighlight = 'border-yellow-400 shadow-[0_0_12px_rgba(234,179,8,0.4)]';
+    idBgGradient = 'from-amber-50 via-yellow-100/70 to-amber-200/90 text-slate-800';
+    borderHighlight = 'border-yellow-400/80';
     badgeLabel = '🥇 GOLD';
   } else if (expYears >= 3) {
     idTier = 'silver';
     idCardName = 'వెండి ఐడి కార్డ్ (Silver Card)';
-    idBgGradient = 'from-slate-600 via-slate-500 to-slate-700';
+    idBgGradient = 'from-slate-50 via-slate-100/70 to-slate-200/90 text-slate-800';
     borderHighlight = 'border-slate-300';
     badgeLabel = '🥈 SILVER';
   }
@@ -438,10 +450,11 @@ export function WorkerKYC({ kycState, onUpdateKYC, controlState = 'temp_on' }: K
         const result = event.target?.result as string;
         const compressed = await compressBase64Image(result, 300, 300, 0.65);
         setCardFile(compressed);
+        setRegistrationDate('2013-01-08');
         if (cardType === 'labour') {
-          onUpdateKYC({ labourCardUploaded: true, labourCardImage: compressed });
+          onUpdateKYC({ labourCardUploaded: true, labourCardImage: compressed, issueDate: '2013-01-08' });
         } else {
-          onUpdateKYC({ eshramCardUploaded: true, eshramCardImage: compressed });
+          onUpdateKYC({ eshramCardUploaded: true, eshramCardImage: compressed, issueDate: '2013-01-08' });
         }
       };
       reader.readAsDataURL(file);
@@ -496,8 +509,7 @@ export function WorkerKYC({ kycState, onUpdateKYC, controlState = 'temp_on' }: K
     }
   };
 
-  const handleDownloadIdCard = async () => {
-    setIsDownloading(true);
+  const generateIdCardBackground = async () => {
     const loadImage = (src: string): Promise<HTMLImageElement> => {
       return new Promise((resolve, reject) => {
         const img = new Image();
@@ -509,12 +521,11 @@ export function WorkerKYC({ kycState, onUpdateKYC, controlState = 'temp_on' }: K
     };
 
     try {
-      // Create off-screen canvas for high-DPI crisp image
       const canvas = document.createElement('canvas');
       canvas.width = 800;
       canvas.height = 500;
       const ctx = canvas.getContext('2d');
-      if (!ctx) throw new Error('Could not get canvas context');
+      if (!ctx) return;
 
       // 1. Draw rounded rectangle background with gradient
       ctx.save();
@@ -532,10 +543,10 @@ export function WorkerKYC({ kycState, onUpdateKYC, controlState = 'temp_on' }: K
       ctx.closePath();
       ctx.clip();
 
-      // Background Gradient - Premium Light Colors
-      let gradStart = '#f8fafc';
-      let gradMid = '#f1f5f9';
-      let gradEnd = '#e2e8f0';
+      // Background Gradient - Premium Light Colors (Super Light)
+      let gradStart = '#f0f9ff';
+      let gradMid = '#e0f2fe';
+      let gradEnd = '#bae6fd';
       let accentColor = '#0284c7'; // Solid sky blue
       let titleColor = '#082c75'; // Dark blue for contrast
       let subTitleColor = '#475569'; // Dark slate
@@ -590,44 +601,46 @@ export function WorkerKYC({ kycState, onUpdateKYC, controlState = 'temp_on' }: K
       ctx.closePath();
       ctx.fill();
 
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
-      ctx.beginPath();
-      ctx.moveTo(400, 0);
-      ctx.lineTo(650, 0);
-      ctx.lineTo(450, 500);
-      ctx.lineTo(200, 500);
-      ctx.closePath();
-      ctx.fill();
-
       // Outer border line
       ctx.strokeStyle = accentColor;
       ctx.lineWidth = 10;
       ctx.strokeRect(0, 0, 800, 500);
 
-      // 2. Header Area
-      // Circular Logo Emblem
-      const logoX = 55;
+      // 2. Header: Round Logo & Title
+      const logoX = 60;
       const logoY = 55;
-      ctx.beginPath();
-      ctx.arc(logoX, logoY, 28, 0, Math.PI * 2);
-      ctx.fillStyle = '#082c75';
-      ctx.fill();
-      ctx.strokeStyle = accentColor;
-      ctx.lineWidth = 2.5;
-      ctx.stroke();
+      let logoLoaded = false;
+      try {
+        const logoImg = await loadImage("https://i.ibb.co/7JnVZGLw/1784961900190.png");
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(logoX, logoY, 26, 0, Math.PI * 2);
+        ctx.clip();
+        ctx.drawImage(logoImg, logoX - 26, logoY - 26, 52, 52);
+        ctx.restore();
+        
+        // Ring border around logo
+        ctx.strokeStyle = '#FFC000';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.arc(logoX, logoY, 26, 0, Math.PI * 2);
+        ctx.stroke();
+        logoLoaded = true;
+      } catch (err) {
+        console.error("Failed to load logo", err);
+      }
 
-      // Draw standard circular emblem inside logo
-      ctx.beginPath();
-      ctx.arc(logoX, logoY, 18, 0, Math.PI * 2);
-      ctx.fillStyle = '#FFC000';
-      ctx.fill();
-
-      // Write 'CWB' in logo center
-      ctx.fillStyle = '#082c75';
-      ctx.font = '900 12px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('CWB', logoX, logoY);
+      if (!logoLoaded) {
+        ctx.beginPath();
+        ctx.arc(logoX, logoY, 22, 0, Math.PI * 2);
+        ctx.fillStyle = '#082c75';
+        ctx.fill();
+        ctx.fillStyle = '#FFC000';
+        ctx.font = '900 12px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('CWB', logoX, logoY);
+      }
 
       // Header Texts
       ctx.textAlign = 'left';
@@ -668,11 +681,10 @@ export function WorkerKYC({ kycState, onUpdateKYC, controlState = 'temp_on' }: K
 
       // 3. Worker Photo Frame
       const frameX = 45;
-      const frameY = 125;
-      const frameW = 145;
-      const frameH = 185;
+      const frameY = 130;
+      const frameW = 160;
+      const frameH = 200;
 
-      // Draw black/gray frame background
       ctx.fillStyle = '#f1f5f9';
       ctx.fillRect(frameX, frameY, frameW, frameH);
       ctx.strokeStyle = 'rgba(8, 44, 117, 0.15)';
@@ -681,7 +693,7 @@ export function WorkerKYC({ kycState, onUpdateKYC, controlState = 'temp_on' }: K
 
       // Draw real photo or fallback
       let photoLoaded = false;
-      const userPhotoSrc = panFile || aadhaarFile;
+      const userPhotoSrc = kycState.panImage || kycState.aadhaarImage || panFile || aadhaarFile;
       if (userPhotoSrc) {
         try {
           const img = await loadImage(userPhotoSrc);
@@ -720,39 +732,34 @@ export function WorkerKYC({ kycState, onUpdateKYC, controlState = 'temp_on' }: K
       ctx.fillStyle = labelColor;
       ctx.font = 'bold 10px monospace';
       ctx.textAlign = 'center';
-      ctx.fillText('ID CODE', frameX + frameW / 2, frameY + frameH + 20);
+      ctx.textBaseline = 'top';
+      ctx.fillText('ID CODE', frameX + frameW / 2, frameY + frameH + 12);
 
       const shortId = kycState.idCardNumber ? kycState.idCardNumber.split('-')[2] : '827493';
       ctx.fillStyle = highlightColor;
-      ctx.font = 'bold 14px monospace';
-      ctx.fillText(`#${shortId}`, frameX + frameW / 2, frameY + frameH + 38);
+      ctx.font = 'bold 15px monospace';
+      ctx.fillText(`#${shortId}`, frameX + frameW / 2, frameY + frameH + 28);
 
-      // 4. Details Section (Right Side)
-      const detailsX = 220;
-      const detailsY = 125;
-      ctx.textAlign = 'left';
+      // 4. Details List (aligned next to photo)
+      const detailsX = 250;
+      const detailsY = 140;
 
-      const drawDetailRow = (lbl: string, val: string, x: number, y: number, highlight = false) => {
+      const drawDetailRow = (label: string, val: string, x: number, y: number, highlight = false) => {
         ctx.fillStyle = labelColor;
-        ctx.font = '10px sans-serif';
-        ctx.fillText(lbl, x, y);
+        ctx.font = 'bold 11px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+        ctx.fillText(label, x, y);
 
         ctx.fillStyle = highlight ? highlightColor : valueColor;
         ctx.font = 'bold 14px sans-serif';
         ctx.fillText(val, x, y + 18);
       };
 
-      // Name
       drawDetailRow('పేరు / Name', fullName, detailsX, detailsY);
-
-      // Profession & Mobile
       drawDetailRow('వృత్తి / Trade', profession.split(' ')[0], detailsX, detailsY + 50, true);
       drawDetailRow('మొబైల్ / Mobile', phoneNo, detailsX + 220, detailsY + 50);
-
-      // Registration Number
       drawDetailRow('రిజిస్ట్రేషన్ నెంబర్ / Reg No', kycState.registrationNumber || regNumber, detailsX, detailsY + 100);
-
-      // Experience & Reg Date
       drawDetailRow('అనుభవం / Service', `${expYears} Years`, detailsX, detailsY + 150);
       drawDetailRow('రిజిస్ట్రేషన్ తేదీ / Reg Date', registrationDate, detailsX + 220, detailsY + 150);
 
@@ -765,43 +772,50 @@ export function WorkerKYC({ kycState, onUpdateKYC, controlState = 'temp_on' }: K
       ctx.lineTo(800 - 35, footerY);
       ctx.stroke();
 
-      // Draw QR Code
+      // Draw Real Scannable QR Code
       const qrX = 45;
       const qrY = footerY + 15;
       const qrSize = 58;
 
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(qrX, qrY, qrSize, qrSize);
-      ctx.strokeStyle = 'rgba(8, 44, 117, 0.1)';
-      ctx.strokeRect(qrX, qrY, qrSize, qrSize);
+      const verificationUrl = window.location.origin + "/?verify=true&id=" + (kycState.idCardNumber || `CWB-2026-${shortId}`);
+      const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(verificationUrl)}`;
 
-      ctx.fillStyle = '#000000';
-      const drawQRMarker = (mx: number, my: number) => {
-        ctx.fillRect(mx, my, 18, 18);
+      let qrLoaded = false;
+      try {
+        const qrImg = await loadImage(qrImageUrl);
         ctx.fillStyle = '#ffffff';
-        ctx.fillRect(mx + 3, my + 3, 12, 12);
-        ctx.fillStyle = '#000000';
-        ctx.fillRect(mx + 6, my + 6, 6, 6);
-      };
-      drawQRMarker(qrX + 3, qrY + 3);
-      drawQRMarker(qrX + qrSize - 21, qrY + 3);
-      drawQRMarker(qrX + 3, qrY + qrSize - 21);
+        ctx.fillRect(qrX, qrY, qrSize, qrSize);
+        ctx.strokeStyle = 'rgba(8, 44, 117, 0.1)';
+        ctx.strokeRect(qrX, qrY, qrSize, qrSize);
+        ctx.drawImage(qrImg, qrX + 3, qrY + 3, qrSize - 6, qrSize - 6);
+        qrLoaded = true;
+      } catch (err) {
+        console.error("Failed to load QR code image for Canvas", err);
+      }
 
-      ctx.fillStyle = '#000000';
-      for (let i = 0; i < 8; i++) {
-        for (let j = 0; j < 8; j++) {
-          const dotX = qrX + 22 + i * 4;
-          const dotY = qrY + 22 + j * 4;
-          if (Math.random() > 0.4) {
-            ctx.fillRect(dotX, dotY, 3, 3);
-          }
-        }
+      if (!qrLoaded) {
+        // Fallback: beautiful placeholder QR markers
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(qrX, qrY, qrSize, qrSize);
+        ctx.strokeStyle = 'rgba(8, 44, 117, 0.1)';
+        ctx.strokeRect(qrX, qrY, qrSize, qrSize);
+        ctx.fillStyle = '#000000';
+        const drawQRMarker = (mx: number, my: number) => {
+          ctx.fillRect(mx, my, 18, 18);
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(mx + 3, my + 3, 12, 12);
+          ctx.fillStyle = '#000000';
+          ctx.fillRect(mx + 6, my + 6, 6, 6);
+        };
+        drawQRMarker(qrX + 3, qrY + 3);
+        drawQRMarker(qrX + qrSize - 21, qrY + 3);
+        drawQRMarker(qrX + 3, qrY + qrSize - 21);
       }
 
       ctx.fillStyle = labelColor;
       ctx.font = 'bold 9px monospace';
       ctx.textAlign = 'left';
-      ctx.fillText('CWB SECURE DIGITAL QR', qrX + qrSize + 15, qrY + 22);
+      ctx.fillText('CWRB OFFICIAL DIGITAL ID', qrX + qrSize + 15, qrY + 22);
 
       const fullRegNo = kycState.idCardNumber || `CWB-2026-${shortId}`;
       ctx.fillStyle = highlightColor;
@@ -830,20 +844,48 @@ export function WorkerKYC({ kycState, onUpdateKYC, controlState = 'temp_on' }: K
 
       ctx.restore();
 
-      // Trigger automatic file download
       const dataUrl = canvas.toDataURL('image/png');
-      const downloadLink = document.createElement('a');
-      downloadLink.href = dataUrl;
-      const cleanFileName = `CWB_ID_Card_${fullName.replace(/\s+/g, '_')}.png`;
-      downloadLink.download = cleanFileName;
-      document.body.appendChild(downloadLink);
-      downloadLink.click();
-      document.body.removeChild(downloadLink);
+      setIdCardDataUrl(dataUrl);
+    } catch (e) {
+      console.error("Failed to pre-render ID card image background", e);
+    }
+  };
 
-      setDownloadSuccess(true);
-      setTimeout(() => setDownloadSuccess(false), 3000);
+  useEffect(() => {
+    if (showIdCard) {
+      generateIdCardBackground();
+    }
+  }, [showIdCard, fullName, phoneNo, profession, registrationDate, regNumber, panFile, aadhaarFile, kycState]);
+
+  const handleDownloadIdCard = async () => {
+    setIsDownloading(true);
+    try {
+      if (idCardDataUrl) {
+        const downloadLink = document.createElement('a');
+        downloadLink.href = idCardDataUrl;
+        const cleanFileName = `CWB_ID_Card_${fullName.replace(/\s+/g, '_')}.png`;
+        downloadLink.download = cleanFileName;
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+        setDownloadSuccess(true);
+        setTimeout(() => setDownloadSuccess(false), 3000);
+      } else {
+        await generateIdCardBackground();
+        if (idCardDataUrl) {
+          const downloadLink = document.createElement('a');
+          downloadLink.href = idCardDataUrl;
+          const cleanFileName = `CWB_ID_Card_${fullName.replace(/\s+/g, '_')}.png`;
+          downloadLink.download = cleanFileName;
+          document.body.appendChild(downloadLink);
+          downloadLink.click();
+          document.body.removeChild(downloadLink);
+          setDownloadSuccess(true);
+          setTimeout(() => setDownloadSuccess(false), 3000);
+        }
+      }
     } catch (error) {
-      console.error("Error creating/downloading ID card:", error);
+      console.error("Error downloading ID card:", error);
       alert("డౌన్‌లోడ్ చేయడంలో సమస్య ఏర్పడింది. దయచేసి మళ్లీ ప్రయత్నించండి.");
     } finally {
       setIsDownloading(false);
@@ -1140,22 +1182,23 @@ export function WorkerKYC({ kycState, onUpdateKYC, controlState = 'temp_on' }: K
             </button>
           </div>
 
-          {/* Premium Metallic/Glossy ID Card Layout */}
-          <div className={`w-full max-w-sm mx-auto bg-gradient-to-br ${idBgGradient} text-white rounded-2xl p-4 shadow-2xl border-2 ${borderHighlight} relative overflow-hidden`}>
+          {/* Premium Metallic/Glossy ID Card Layout (Super Light) */}
+          <div className={`w-full max-w-sm mx-auto bg-gradient-to-br ${idBgGradient} rounded-2xl p-4 shadow-2xl border-2 ${borderHighlight} relative overflow-hidden text-slate-800`}>
             {/* Glossy Reflection overlay */}
             <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/5 to-white/10 pointer-events-none" />
-            <div className="absolute -left-10 -top-10 w-40 h-40 bg-white/5 rounded-full blur-xl pointer-events-none" />
-
+            
             {/* Top Bar of Card */}
-            <div className="flex justify-between items-center border-b border-white/20 pb-1.5 mb-2.5">
-              <div className="flex items-center gap-1.5">
-                <CWRBLogo iconOnly={true} className="w-5 h-5" />
+            <div className="flex justify-between items-center border-b border-slate-300/60 pb-1.5 mb-2.5">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-full overflow-hidden bg-white border border-amber-400 flex-shrink-0 flex items-center justify-center shadow-xs">
+                  <img src="https://i.ibb.co/7JnVZGLw/1784961900190.png" alt="CWRB Logo" className="w-full h-full object-contain scale-[1.2]" referrerPolicy="no-referrer" />
+                </div>
                 <div>
-                  <h3 className="text-[11px] font-black tracking-wider text-[#FFC000] leading-none">CWB సివిల్ వర్కర్స్ సమాఖ్య</h3>
-                  <p className="text-[5.5px] font-mono tracking-widest text-white/75 uppercase mt-0.5">CIVIL WORKER RELATION BOOK</p>
+                  <h3 className="text-[11.5px] font-extrabold tracking-wider text-[#082c75] leading-none">CWB సివిల్ వర్కర్స్ సమాఖ్య</h3>
+                  <p className="text-[5.5px] font-mono font-bold tracking-widest text-slate-600 uppercase mt-0.5">CIVIL WORKER RELATION BOOK</p>
                 </div>
               </div>
-              <span className="text-[7px] bg-white/15 px-1.5 py-0.5 rounded-full font-black tracking-wider text-white">
+              <span className="text-[7.5px] bg-slate-200/80 px-2.5 py-0.5 rounded-full font-black tracking-wider text-slate-700 border border-slate-300/40">
                 {badgeLabel}
               </span>
             </div>
@@ -1164,55 +1207,59 @@ export function WorkerKYC({ kycState, onUpdateKYC, controlState = 'temp_on' }: K
             <div className="flex gap-3">
               {/* Photo Area */}
               <div className="flex flex-col items-center">
-                <div className="w-14 h-14 rounded-lg bg-slate-900 border border-white/30 flex items-center justify-center overflow-hidden relative shadow-md">
+                <div className="w-14 h-14 rounded-lg bg-slate-100 border border-slate-300/70 flex items-center justify-center overflow-hidden relative shadow-sm">
                   {panFile ? (
-                    <img src={panFile} alt="Worker Profile" className="w-full h-full object-cover" />
+                    <img src={panFile} alt="Worker Profile" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                   ) : aadhaarFile ? (
-                    <img src={aadhaarFile} alt="Worker Profile" className="w-full h-full object-cover" />
+                    <img src={aadhaarFile} alt="Worker Profile" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                  ) : kycState.panImage ? (
+                    <img src={kycState.panImage} alt="Worker Profile" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                  ) : kycState.aadhaarImage ? (
+                    <img src={kycState.aadhaarImage} alt="Worker Profile" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                   ) : (
-                    <div className="w-10 h-10 rounded-full border border-amber-400 bg-white/10 flex items-center justify-center text-xl">
+                    <div className="w-10 h-10 rounded-full border border-amber-500 bg-white flex items-center justify-center text-xl shadow-xs">
                       👷
                     </div>
                   )}
-                  <div className="absolute bottom-0 inset-x-0 bg-black/60 text-[5px] py-0.5 text-center font-bold text-amber-400 tracking-wider">
+                  <div className="absolute bottom-0 inset-x-0 bg-emerald-600 text-[5.5px] py-0.5 text-center font-black text-white tracking-wider">
                     VERIFIED
                   </div>
                 </div>
-                <span className="text-[5px] font-mono text-white/50 mt-1 uppercase leading-none">ID CODE</span>
-                <span className="text-[7.5px] font-mono font-bold text-amber-300">#{kycState.idCardNumber ? kycState.idCardNumber.split('-')[2] : '827493'}</span>
+                <span className="text-[5px] font-mono text-slate-500 mt-1 uppercase leading-none">ID CODE</span>
+                <span className="text-[8px] font-mono font-black text-slate-700">#{kycState.idCardNumber ? kycState.idCardNumber.split('-')[2] : '827493'}</span>
               </div>
 
               {/* Data Rows */}
-              <div className="flex-1 space-y-1.5 text-[11px]">
+              <div className="flex-1 space-y-1.5 text-[11px] text-slate-800">
                 <div>
-                  <span className="text-[7px] text-white/50 block leading-none">పేరు / Name</span>
-                  <span className="font-extrabold text-[12px] text-white leading-tight block">{fullName}</span>
+                  <span className="text-[7px] text-slate-500 block leading-none font-bold">పేరు / Name</span>
+                  <span className="font-black text-[12.5px] text-slate-900 leading-tight block">{fullName}</span>
                 </div>
                 
                 <div className="grid grid-cols-2 gap-1 pt-0.5">
                   <div>
-                    <span className="text-[7px] text-white/50 block leading-none">వృత్తి / Trade</span>
-                    <span className="font-bold text-[9.5px] text-amber-300">{profession.split(' ')[0]}</span>
+                    <span className="text-[7px] text-slate-500 block leading-none font-bold">వృత్తి / Trade</span>
+                    <span className="font-bold text-[9.5px] text-blue-800">{profession.split(' ')[0]}</span>
                   </div>
                   <div>
-                    <span className="text-[7px] text-white/50 block leading-none">మొబైల్ / Mobile</span>
-                    <span className="font-bold text-[9.5px]">{phoneNo}</span>
+                    <span className="text-[7px] text-slate-500 block leading-none font-bold">మొబైల్ / Mobile</span>
+                    <span className="font-bold text-[9.5px] text-slate-800">{phoneNo}</span>
                   </div>
                 </div>
 
                 <div>
-                  <span className="text-[7px] text-white/50 block leading-none">రిజిస్ట్రేషన్ నెంబర్ / Reg No</span>
-                  <span className="font-bold font-mono text-[9.5px] text-amber-200 block break-all leading-normal">{kycState.registrationNumber || regNumber}</span>
+                  <span className="text-[7px] text-slate-500 block leading-none font-bold">రిజిస్ట్రేషన్ నెంబర్ / Reg No</span>
+                  <span className="font-bold font-mono text-[9.5px] text-red-700 block break-all leading-normal">{kycState.registrationNumber || regNumber}</span>
                 </div>
 
                 <div className="grid grid-cols-2 gap-1 pt-0.5">
                   <div>
-                    <span className="text-[7px] text-white/50 block leading-none">అనుభవం / Service</span>
-                    <span className="font-extrabold text-[9.5px] text-emerald-300">{expYears} Years</span>
+                    <span className="text-[7px] text-slate-500 block leading-none font-bold">అనుభవం / Service</span>
+                    <span className="font-black text-[9.5px] text-emerald-700">{expYears} Years</span>
                   </div>
                   <div>
-                    <span className="text-[7px] text-white/50 block leading-none">రిజిస్ట్రేషన్ తేదీ / Reg Date</span>
-                    <span className="font-bold font-mono text-[8px] text-white/80">{registrationDate}</span>
+                    <span className="text-[7px] text-slate-500 block leading-none font-bold">రిజిస్ట్రేషన్ తేదీ / Reg Date</span>
+                    <span className="font-bold font-mono text-[8px] text-slate-700">{registrationDate}</span>
                   </div>
                 </div>
               </div>
@@ -1220,79 +1267,20 @@ export function WorkerKYC({ kycState, onUpdateKYC, controlState = 'temp_on' }: K
 
             {/* Card Footer Bar */}
             <div className="flex justify-between items-center mt-2.5 pt-2 border-t border-white/10">
-              <div className="flex items-center gap-1.5">
-                {/* SVG Vector QR Code */}
-                <svg className="w-8 h-8 bg-white p-0.5 rounded-sm shadow-md" viewBox="0 0 29 29" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M1 1h5v5H1V1zm1 1v3h3V2H2z" fill="#000" />
-                  <path d="M23 1h5v5h-5V1zm1 1v3h3V2h-3z" fill="#000" />
-                  <path d="M1 23h5v5H1v-5zm1 1v3h3v-3H2z" fill="#000" />
-                  <rect x="3" y="3" width="1" height="1" fill="#000" />
-                  <rect x="25" y="3" width="1" height="1" fill="#000" />
-                  <rect x="3" y="25" width="1" height="1" fill="#000" />
-                  <rect x="8" y="1" width="1" height="1" fill="#000" />
-                  <rect x="10" y="2" width="2" height="1" fill="#000" />
-                  <rect x="14" y="1" width="1" height="3" fill="#000" />
-                  <rect x="17" y="3" width="2" height="1" fill="#000" />
-                  <rect x="20" y="1" width="1" height="1" fill="#000" />
-                  <rect x="8" y="5" width="2" height="1" fill="#000" />
-                  <rect x="11" y="4" width="1" height="1" fill="#000" />
-                  <rect x="13" y="5" width="3" height="1" fill="#000" />
-                  <rect x="18" y="5" width="1" height="1" fill="#000" />
-                  <rect x="20" y="4" width="2" height="2" fill="#000" />
-                  <rect x="1" y="8" width="2" height="1" fill="#000" />
-                  <rect x="4" y="8" width="1" height="2" fill="#000" />
-                  <rect x="7" y="9" width="3" height="1" fill="#000" />
-                  <rect x="11" y="8" width="1" height="1" fill="#000" />
-                  <rect x="13" y="8" width="2" height="2" fill="#000" />
-                  <rect x="16" y="9" width="3" height="1" fill="#000" />
-                  <rect x="20" y="8" width="1" height="1" fill="#000" />
-                  <rect x="22" y="9" width="2" height="1" fill="#000" />
-                  <rect x="25" y="8" width="3" height="1" fill="#000" />
-                  <rect x="2" y="12" width="1" height="1" fill="#000" />
-                  <rect x="5" y="11" width="2" height="1" fill="#000" />
-                  <rect x="8" y="12" width="1" height="1" fill="#000" />
-                  <rect x="10" y="11" width="2" height="2" fill="#000" />
-                  <rect x="14" y="12" width="1" height="1" fill="#000" />
-                  <rect x="16" y="11" width="2" height="1" fill="#000" />
-                  <rect x="19" y="12" width="3" height="1" fill="#000" />
-                  <rect x="23" y="11" width="1" height="2" fill="#000" />
-                  <rect x="25" y="13" width="2" height="1" fill="#000" />
-                  <rect x="1" y="15" width="3" height="1" fill="#000" />
-                  <rect x="5" y="15" width="1" height="1" fill="#000" />
-                  <rect x="7" y="14" width="1" height="2" fill="#000" />
-                  <rect x="9" y="16" width="2" height="1" fill="#000" />
-                  <rect x="12" y="15" width="1" height="1" fill="#000" />
-                  <rect x="14" y="15" width="3" height="1" fill="#000" />
-                  <rect x="18" y="14" width="1" height="2" fill="#000" />
-                  <rect x="20" y="16" width="2" height="1" fill="#000" />
-                  <rect x="23" y="15" width="1" height="1" fill="#000" />
-                  <rect x="25" y="16" width="3" height="1" fill="#000" />
-                  <rect x="1" y="19" width="1" height="2" fill="#000" />
-                  <rect x="3" y="18" width="2" height="1" fill="#000" />
-                  <rect x="6" y="19" width="1" height="1" fill="#000" />
-                  <rect x="8" y="18" width="1" height="2" fill="#000" />
-                  <rect x="10" y="20" width="3" height="1" fill="#000" />
-                  <rect x="14" y="19" width="1" height="1" fill="#000" />
-                  <rect x="16" y="18" width="2" height="2" fill="#000" />
-                  <rect x="19" y="20" width="1" height="1" fill="#000" />
-                  <rect x="21" y="18" width="1" height="2" fill="#000" />
-                  <rect x="23" y="19" width="2" height="1" fill="#000" />
-                  <rect x="26" y="18" width="2" height="2" fill="#000" />
-                  <rect x="8" y="23" width="1" height="1" fill="#000" />
-                  <rect x="10" y="22" width="2" height="1" fill="#000" />
-                  <rect x="13" y="24" width="1" height="2" fill="#000" />
-                  <rect x="15" y="23" width="3" height="1" fill="#000" />
-                  <rect x="19" y="24" width="1" height="1" fill="#000" />
-                  <rect x="21" y="22" width="2" height="2" fill="#000" />
-                  <rect x="24" y="24" width="1" height="1" fill="#000" />
-                  <rect x="26" y="23" width="2" height="1" fill="#000" />
-                </svg>
+              <div className="flex items-center gap-2">
+                {/* Real Scannable QR Code */}
+                <img 
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(window.location.origin + "/?verify=true&id=" + (kycState.idCardNumber || "CWB-2026-827493"))}`}
+                  alt="QR Code" 
+                  className="w-8 h-8 bg-white p-0.5 rounded shadow-sm"
+                  referrerPolicy="no-referrer"
+                />
                 <div className="leading-tight">
-                  <span className="text-[6px] text-white/50 block font-mono">CWB SECURE DIGITAL QR</span>
-                  <span className="text-[6.5px] font-mono font-bold text-amber-300">#{kycState.idCardNumber ? kycState.idCardNumber : `CWB-2026-${kycState.idCardNumber ? kycState.idCardNumber.split('-')[2] : '827493'}`}</span>
+                  <span className="text-[6px] text-slate-500 block font-mono font-bold">CWRB OFFICIAL DIGITAL ID</span>
+                  <span className="text-[7.5px] font-mono font-black text-blue-800">#{kycState.idCardNumber ? kycState.idCardNumber : `CWB-2026-${kycState.idCardNumber ? kycState.idCardNumber.split('-')[2] : '827493'}`}</span>
                 </div>
               </div>
-              <div className="text-[7px] font-extrabold text-amber-400 uppercase tracking-widest flex items-center gap-1.5 bg-black/30 px-2 py-1 rounded-md border border-white/10">
+              <div className="text-[7.5px] font-extrabold text-emerald-700 uppercase tracking-widest flex items-center gap-1.5 bg-emerald-50 px-2 py-1 rounded-md border border-emerald-200/60">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
                 <span>Active ID</span>
               </div>
@@ -1300,6 +1288,13 @@ export function WorkerKYC({ kycState, onUpdateKYC, controlState = 'temp_on' }: K
           </div>
 
           {/* Card Download Actions */}
+          {idCardDataUrl && (
+            <div className="text-center max-w-sm mx-auto px-2">
+              <p className="text-[9.5px] text-slate-600 font-bold bg-slate-100/90 py-1 px-3 rounded-lg border border-slate-200">
+                💡 మొబైల్ లో సేవ్ అవ్వకపోతే కార్డు పై నొక్కి పట్టుకుని "Download Image" ఎంచుకోండి! (Long-press image to save)
+              </p>
+            </div>
+          )}
           <div className="flex gap-2 justify-center max-w-sm mx-auto">
             <button
               onClick={handleDownloadIdCard}
