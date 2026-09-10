@@ -373,6 +373,38 @@ export function WorkerKYC({ kycState, onUpdateKYC, controlState = 'temp_on' }: K
     if (kycState.verified) setShowIdCard(true);
   }, [kycState]);
 
+  // Load registration from LocalStorage or Mobile Storage on initial mount
+  useEffect(() => {
+    if (!kycState.verified) {
+      const localDataStr = localStorage.getItem('cwb_worker_registration') || localStorage.getItem('cwb_mobile_local_storage');
+      if (localDataStr) {
+        try {
+          const localData = JSON.parse(localDataStr);
+          if (localData && localData.verified) {
+            onUpdateKYC({
+              verified: true,
+              issueDate: localData.registrationDate,
+              experienceYears: localData.experienceYears,
+              idCardType: localData.idCardType,
+              idCardNumber: localData.idCardNumber,
+              registrationNumber: localData.regNumber,
+              aadhaarImage: localData.aadhaarImage,
+              panImage: localData.panImage,
+              labourCardImage: localData.cardImage
+            });
+            if (localData.fullName) setFullName(localData.fullName);
+            if (localData.phoneNo) setPhoneNo(localData.phoneNo);
+            if (localData.profession) setProfession(localData.profession);
+            if (localData.registrationDate) setRegistrationDate(localData.registrationDate);
+            if (localData.regNumber) setRegNumber(localData.regNumber);
+          }
+        } catch (e) {
+          console.error("Failed to parse local stored registration", e);
+        }
+      }
+    }
+  }, []);
+
   // Dynamic service calculation (Current year is 2026)
   const calculateExperience = (dateStr: string): number => {
     if (!dateStr) return 0;
@@ -485,27 +517,61 @@ export function WorkerKYC({ kycState, onUpdateKYC, controlState = 'temp_on' }: K
     });
     setShowIdCard(true);
 
+    const registrationPayload = {
+      fullName: fullName || 'రాము ప్రసాద్',
+      phoneNo: phoneNo || '98480 22338',
+      profession: profession || 'మేస్త్రీ (Mason)',
+      registrationDate: registrationDate || '2018-05-12',
+      regNumber: regNumber || 'LBR-5492-2018',
+      idCardNumber: idCardNumber,
+      idCardType: idTier,
+      experienceYears: expYears,
+      aadhaarImage: aadhaarFile,
+      panImage: panFile,
+      cardImage: cardFile,
+      verified: true,
+      createdAt: new Date().toISOString()
+    };
+
+    // 1. Save to Browser LocalStorage
+    try {
+      localStorage.setItem('cwb_worker_registration', JSON.stringify(registrationPayload));
+      console.log("Registration successfully saved to Browser LocalStorage!");
+    } catch (err) {
+      console.error("Local Storage Save Error:", err);
+    }
+
+    // 2. Save to Mobile Storage (PWA Offline Storage)
+    try {
+      localStorage.setItem('cwb_mobile_local_storage', JSON.stringify(registrationPayload));
+      console.log("Registration successfully saved to Mobile Storage!");
+    } catch (err) {
+      console.error("Mobile Storage Save Error:", err);
+    }
+
+    // 3. Save to Firebase Firestore (Existing Cloud Db)
     try {
       const docId = `reg_${idCardNumber.split('-')[2]}`;
       await setDoc(doc(db, 'registrations', docId), {
         id: docId,
-        fullName: fullName || 'రాము ప్రసాద్',
-        phoneNo: phoneNo || '98480 22338',
-        profession: profession || 'మేస్త్రీ (Mason)',
-        registrationDate: registrationDate || '2018-05-12',
-        regNumber: regNumber || 'LBR-5492-2018',
-        idCardNumber: idCardNumber,
-        idCardType: idTier,
-        experienceYears: expYears,
-        aadhaarImage: aadhaarFile,
-        panImage: panFile,
-        cardImage: cardFile,
-        verified: true,
-        createdAt: new Date().toISOString()
+        ...registrationPayload
       });
       console.log("Registration successfully saved to Firebase Firestore!");
     } catch (err) {
       console.error("Firestore Save Error:", err);
+    }
+
+    // 4. Save to Express Node Server (Backend Database Sync)
+    try {
+      const docId = `reg_${idCardNumber.split('-')[2]}`;
+      await fetch('/api/db/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: docId, data: registrationPayload })
+      });
+      console.log("Registration successfully synced to Express Server!");
+    } catch (err) {
+      console.error("Server Sync Error:", err);
     }
   };
 
