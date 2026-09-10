@@ -42,7 +42,8 @@ const INITIAL_AGENT_BOARDS = [
     attendancePct: "100%",
     multiplier: "₹10000",
     revenue: 50000,
-    welcome: "🌐 గూగుల్ ఏజెంట్ సిద్ధంగా ఉంది. మీ శోధన మరియు సమాచార సేకరణకు సిద్ధం.",
+    welcome:
+      "🌐 గూగుల్ ఏజెంట్ సిద్ధంగా ఉంది. మీ శోధన మరియు సమాచార సేకరణకు సిద్ధం.",
   },
   {
     id: "dev_gemini",
@@ -64,7 +65,8 @@ const INITIAL_AGENT_BOARDS = [
     attendancePct: "100%",
     multiplier: "₹10000",
     revenue: 50000,
-    welcome: "🤖 చార్జీపీటీ ఏజెంట్ సిద్ధంగా ఉంది. సంభాషణ మరియు కోడింగ్ సలహాలకు సిద్ధం.",
+    welcome:
+      "🤖 చార్జీపీటీ ఏజెంట్ సిద్ధంగా ఉంది. సంభాషణ మరియు కోడింగ్ సలహాలకు సిద్ధం.",
   },
   {
     id: "dev_meta",
@@ -75,7 +77,8 @@ const INITIAL_AGENT_BOARDS = [
     attendancePct: "100%",
     multiplier: "₹10000",
     revenue: 50000,
-    welcome: "♾️ మీటా ఏజెంట్ సిద్ధంగా ఉంది. సోషల్ మరియు కనెక్టివిటీ పరిష్కారాలకు సిద్ధం.",
+    welcome:
+      "♾️ మీటా ఏజెంట్ సిద్ధంగా ఉంది. సోషల్ మరియు కనెక్టివిటీ పరిష్కారాలకు సిద్ధం.",
   },
   {
     id: "dev_builder",
@@ -163,23 +166,91 @@ const INITIAL_AGENT_BOARDS = [
   },
 ];
 const PREMIUM_FEATURE_BOARDS = [
-  { id: "feat_hybrid_radio", name: "📡 హైబ్రిడ్ రేడియో ఫ్రీక్వెన్సీ (Offline Radio)", nameEn: "Hybrid Radio Frequency Mode" },
-  { id: "feat_biopower", name: "🔋 స్మార్ట్ బయో-పవర్ మేనేజర్", nameEn: "Smart Bio-Power Manager" },
-  { id: "feat_bp_sugar", name: "❤️ రక్తపోటు & షుగర్ అంచనా (BP & Sugar Estimation)", nameEn: "BP & Sugar Estimation" },
-  { id: "feat_doctor_scan", name: "🩺 AI డాక్టర్ ఫేస్ హెల్త్ స్కానర్ (Face Health Scanner)", nameEn: "AI Doctor Face Health Scanner" },
-  { id: "feat_weather_report", name: "📻 వాతావరణ రేడియో నివేదిక (RF Weather Report)", nameEn: "RF Weather Radio Report" },
-  { id: "feat_premium_assistant", name: "🤖 అడ్వాన్స్డ్ AI అసిస్టెంట్", nameEn: "Advanced AI Assistant & Voice" },
-  { id: "feat_premium_tracking", name: "📍 రియల్ టైమ్ లైవ్ ట్రాకింగ్", nameEn: "Real-time Live Location Tracking" },
-  { id: "feat_premium_radio", name: "📻 అపరిమిత రేంజ్ వాకీ-టాకీ", nameEn: "Unlimited Range Walkie-Talkie" },
-  { id: "feat_premium_invoicing", name: "🧾 ఆటోమేటిక్ కొటేషన్ & ఇన్‌వాయిస్", nameEn: "Automated Quotation & GST Invoices" },
-  { id: "feat_premium_payments", name: "💳 జీరో కమిషన్ ఆన్‌లైన్ పేమెంట్స్", nameEn: "Zero Commission Online Payments" },
-  { id: "feat_premium_escrow", name: "🤝 ఎస్క్రో సేఫ్ పేమెంట్", nameEn: "Escrow Payment & Work Protection" },
-  { id: "feat_premium_multilingual", name: "🌐 ఆటోమేటిక్ భాషా అనువాదం", nameEn: "Auto Translation Support" },
-  { id: "feat_premium_verification", name: "✅ ప్రీమియం ట్రస్ట్ బ్యాడ్జ్", nameEn: "Premium Trust Badge Check" },
-  { id: "feat_premium_support", name: "🎧 24/7 కస్టమర్ సపోర్ట్", nameEn: "Priority 24/7 Dedicated Support" },
-  { id: "feat_premium_analytics", name: "📊 బిజినెస్ వర్క్ అనలిటిక్స్", nameEn: "Advanced Business Analytics" },
-  { id: "feat_premium_team", name: "👥 టీమ్/సబ్-వర్కర్ మేనేజ్‌మెంట్", nameEn: "Sub-worker / Team Management" },
-  { id: "feat_invisible_maintenance", name: "⚙️ ఇన్విజిబుల్ మెయింటెనెన్స్ అసిస్టెంట్ (ఆటో-హీలింగ్)", nameEn: "Invisible Maintenance Assistant" },
+  {
+    id: "feat_hybrid_radio",
+    name: "📡 హైబ్రిడ్ రేడియో ఫ్రీక్వెన్సీ (Offline Radio)",
+    nameEn: "Hybrid Radio Frequency Mode",
+  },
+  {
+    id: "feat_biopower",
+    name: "🔋 స్మార్ట్ బయో-పవర్ మేనేజర్",
+    nameEn: "Smart Bio-Power Manager",
+  },
+  {
+    id: "feat_bp_sugar",
+    name: "❤️ రక్తపోటు & షుగర్ అంచనా (BP & Sugar Estimation)",
+    nameEn: "BP & Sugar Estimation",
+  },
+  {
+    id: "feat_doctor_scan",
+    name: "🩺 AI డాక్టర్ ఫేస్ హెల్త్ స్కానర్ (Face Health Scanner)",
+    nameEn: "AI Doctor Face Health Scanner",
+  },
+  {
+    id: "feat_weather_report",
+    name: "📻 వాతావరణ రేడియో నివేదిక (RF Weather Report)",
+    nameEn: "RF Weather Radio Report",
+  },
+  {
+    id: "feat_premium_assistant",
+    name: "🤖 అడ్వాన్స్డ్ AI అసిస్టెంట్",
+    nameEn: "Advanced AI Assistant & Voice",
+  },
+  {
+    id: "feat_premium_tracking",
+    name: "📍 రియల్ టైమ్ లైవ్ ట్రాకింగ్",
+    nameEn: "Real-time Live Location Tracking",
+  },
+  {
+    id: "feat_premium_radio",
+    name: "📻 అపరిమిత రేంజ్ వాకీ-టాకీ",
+    nameEn: "Unlimited Range Walkie-Talkie",
+  },
+  {
+    id: "feat_premium_invoicing",
+    name: "🧾 ఆటోమేటిక్ కొటేషన్ & ఇన్‌వాయిస్",
+    nameEn: "Automated Quotation & GST Invoices",
+  },
+  {
+    id: "feat_premium_payments",
+    name: "💳 జీరో కమిషన్ ఆన్‌లైన్ పేమెంట్స్",
+    nameEn: "Zero Commission Online Payments",
+  },
+  {
+    id: "feat_premium_escrow",
+    name: "🤝 ఎస్క్రో సేఫ్ పేమెంట్",
+    nameEn: "Escrow Payment & Work Protection",
+  },
+  {
+    id: "feat_premium_multilingual",
+    name: "🌐 ఆటోమేటిక్ భాషా అనువాదం",
+    nameEn: "Auto Translation Support",
+  },
+  {
+    id: "feat_premium_verification",
+    name: "✅ ప్రీమియం ట్రస్ట్ బ్యాడ్జ్",
+    nameEn: "Premium Trust Badge Check",
+  },
+  {
+    id: "feat_premium_support",
+    name: "🎧 24/7 కస్టమర్ సపోర్ట్",
+    nameEn: "Priority 24/7 Dedicated Support",
+  },
+  {
+    id: "feat_premium_analytics",
+    name: "📊 బిజినెస్ వర్క్ అనలిటిక్స్",
+    nameEn: "Advanced Business Analytics",
+  },
+  {
+    id: "feat_premium_team",
+    name: "👥 టీమ్/సబ్-వర్కర్ మేనేజ్‌మెంట్",
+    nameEn: "Sub-worker / Team Management",
+  },
+  {
+    id: "feat_invisible_maintenance",
+    name: "⚙️ ఇన్విజిబుల్ మెయింటెనెన్స్ అసిస్టెంట్ (ఆటో-హీలింగ్)",
+    nameEn: "Invisible Maintenance Assistant",
+  },
 ];
 
 export default function BrahmastraSystemComponent({
@@ -220,7 +291,11 @@ export default function BrahmastraSystemComponent({
         uploadedFiles: [],
         audioPlaying: false,
         receivedMessages: [
-          { text: b.name + " బోర్డు సిద్ధంగా ఉంది.", sender: "system", timestamp: "ఇప్పుడే" },
+          {
+            text: b.name + " బోర్డు సిద్ధంగా ఉంది.",
+            sender: "system",
+            timestamp: "ఇప్పుడే",
+          },
         ],
       };
     });
@@ -235,42 +310,46 @@ export default function BrahmastraSystemComponent({
     PREMIUM_FEATURE_BOARDS.forEach((b) => (states[b.id] = true));
     return states;
   });
-  const [featurePrices, setFeaturePrices] = useState<Record<string, number>>(() => {
-    const saved = localStorage.getItem('cwb_feature_prices');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {}
-    }
-    const initial: Record<string, number> = {};
-    PREMIUM_FEATURE_BOARDS.forEach((b) => {
-      // Set very low default prices as requested
-      if (b.id === "feat_hybrid_radio") initial[b.id] = 99;
-      else if (b.id === "feat_biopower") initial[b.id] = 49;
-      else if (b.id === "feat_bp_sugar") initial[b.id] = 29;
-      else if (b.id === "feat_doctor_scan") initial[b.id] = 39;
-      else if (b.id === "feat_weather_report") initial[b.id] = 19;
-      else if (b.id === "feat_premium_assistant") initial[b.id] = 29;
-      else if (b.id === "feat_premium_tracking") initial[b.id] = 19;
-      else if (b.id === "feat_premium_radio") initial[b.id] = 9;
-      else if (b.id === "feat_premium_invoicing") initial[b.id] = 19;
-      else if (b.id === "feat_premium_payments") initial[b.id] = 0; // Zero commission
-      else if (b.id === "feat_premium_escrow") initial[b.id] = 49;
-      else if (b.id === "feat_premium_multilingual") initial[b.id] = 19;
-      else if (b.id === "feat_premium_verification") initial[b.id] = 99; // one-time
-      else if (b.id === "feat_premium_support") initial[b.id] = 49;
-      else if (b.id === "feat_premium_analytics") initial[b.id] = 29;
-      else if (b.id === "feat_premium_team") initial[b.id] = 39;
-      else initial[b.id] = 19;
-    });
-    return initial;
-  });
+  const [featurePrices, setFeaturePrices] = useState<Record<string, number>>(
+    () => {
+      const saved = localStorage.getItem("cwb_feature_prices");
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch (e) {}
+      }
+      const initial: Record<string, number> = {};
+      PREMIUM_FEATURE_BOARDS.forEach((b) => {
+        // Set very low default prices as requested
+        if (b.id === "feat_hybrid_radio") initial[b.id] = 99;
+        else if (b.id === "feat_biopower") initial[b.id] = 49;
+        else if (b.id === "feat_bp_sugar") initial[b.id] = 29;
+        else if (b.id === "feat_doctor_scan") initial[b.id] = 39;
+        else if (b.id === "feat_weather_report") initial[b.id] = 19;
+        else if (b.id === "feat_premium_assistant") initial[b.id] = 29;
+        else if (b.id === "feat_premium_tracking") initial[b.id] = 19;
+        else if (b.id === "feat_premium_radio") initial[b.id] = 9;
+        else if (b.id === "feat_premium_invoicing") initial[b.id] = 19;
+        else if (b.id === "feat_premium_payments")
+          initial[b.id] = 0; // Zero commission
+        else if (b.id === "feat_premium_escrow") initial[b.id] = 49;
+        else if (b.id === "feat_premium_multilingual") initial[b.id] = 19;
+        else if (b.id === "feat_premium_verification")
+          initial[b.id] = 99; // one-time
+        else if (b.id === "feat_premium_support") initial[b.id] = 49;
+        else if (b.id === "feat_premium_analytics") initial[b.id] = 29;
+        else if (b.id === "feat_premium_team") initial[b.id] = 39;
+        else initial[b.id] = 19;
+      });
+      return initial;
+    },
+  );
 
   // Keep synced if modified externally (e.g. in Admin Panel)
   useEffect(() => {
-    let lastSaved = localStorage.getItem('cwb_feature_prices');
+    let lastSaved = localStorage.getItem("cwb_feature_prices");
     const handleStorageChange = () => {
-      const saved = localStorage.getItem('cwb_feature_prices');
+      const saved = localStorage.getItem("cwb_feature_prices");
       if (saved && saved !== lastSaved) {
         try {
           setFeaturePrices(JSON.parse(saved));
@@ -278,26 +357,31 @@ export default function BrahmastraSystemComponent({
         } catch (e) {}
       }
     };
-    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener("storage", handleStorageChange);
     // Simple interval fallback for same-window updates
     const interval = setInterval(handleStorageChange, 1000);
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener("storage", handleStorageChange);
       clearInterval(interval);
     };
   }, []);
 
   const [savedPricesTotal, setSavedPricesTotal] = useState<number>(0);
   const handleSavePrices = () => {
-     const total = Object.values(featurePrices).reduce((sum: number, price) => sum + (Number(price) || 0), 0);
-     localStorage.setItem('cwb_feature_prices', JSON.stringify(featurePrices));
-     setSavedPricesTotal(total);
-     setExecutionStatus("PRICES_UPDATED_SUCCESS");
-     setExecutionOutput(["[సిస్టమ్ అప్‌డేట్] ప్రీమియం ఫీచర్ల ధరలు విజయవంతంగా సెట్ చేయబడ్డాయి.", `మొత్తం ప్రీమియం ప్యాకేజీ ధర: ₹${total}/నెల`]);
+    const total = Object.values(featurePrices).reduce(
+      (sum: number, price) => sum + (Number(price) || 0),
+      0,
+    );
+    localStorage.setItem("cwb_feature_prices", JSON.stringify(featurePrices));
+    setSavedPricesTotal(total);
+    setExecutionStatus("PRICES_UPDATED_SUCCESS");
+    setExecutionOutput([
+      "[సిస్టమ్ అప్‌డేట్] ప్రీమియం ఫీచర్ల ధరలు విజయవంతంగా సెట్ చేయబడ్డాయి.",
+      `మొత్తం ప్రీమియం ప్యాకేజీ ధర: ₹${total}/నెల`,
+    ]);
   };
 
-
- const [feedLogs, setFeedLogs] = useState<string[]>([]);
+  const [feedLogs, setFeedLogs] = useState<string[]>([]);
   const [externalData, setExternalData] = useState<string>("");
   const [secureQuery, setSecureQuery] = useState<string>("");
   const [secureQueryResult, setSecureQueryResult] = useState<string>("");
@@ -407,7 +491,11 @@ export default function BrahmastraSystemComponent({
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ boardId: currentAgent, deepseekApiKey: localStorage.getItem('cwb_deepseek_api_key'), message: userText }),
+        body: JSON.stringify({
+          boardId: currentAgent,
+          deepseekApiKey: localStorage.getItem("cwb_deepseek_api_key"),
+          message: userText,
+        }),
       });
       const data = await response.json();
       const replyText =
@@ -705,7 +793,11 @@ ask_agent()`;
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ boardId, deepseekApiKey: localStorage.getItem('cwb_deepseek_api_key'), message: userText }),
+        body: JSON.stringify({
+          boardId,
+          deepseekApiKey: localStorage.getItem("cwb_deepseek_api_key"),
+          message: userText,
+        }),
       });
       const data = await response.json();
       const responseText =
@@ -828,10 +920,16 @@ ask_agent()`;
       "========================================================================",
     );
     output.push("🚩 బ్రహ్మాస్్త్రం విజయవంతంగా ప్రయోగిచబడింది!");
-    output.push("🔒 సిస్టమ్ లాక్ చేయబడింది మరి్యు రక్షణ కవచం యాక్టివేట్ చేయబడింది.");
+    output.push(
+      "🔒 సిస్టమ్ లాక్ చేయబడింది మరి్యు రక్షణ కవచం యాక్టివేట్ చేయబడింది.",
+    );
     output.push("📡 మల్టీ-ఏజెంట్ సమక఻eలీనికరణ పునర్ప్రారంభిచబడింది.");
-    output.push("⚙️ ఆటోమ్యాటిక్ సెల్ఫ్-హీలింగ్ మరి్యు క్లీనప్ విజయవంతంగా ప్రాప్తించిల్శేదు.");
-    output.push("=======================================================================");
+    output.push(
+      "⚙️ ఆటోమ్యాటిక్ సెల్ఫ్-హీలింగ్ మరి్యు క్లీనప్ విజయవంతంగా ప్రాప్తించిల్శేదు.",
+    );
+    output.push(
+      "=======================================================================",
+    );
     setExecutionOutput(output);
   };
 
@@ -842,7 +940,9 @@ ask_agent()`;
         <div className="flex justify-between items-center">
           <h3 className="text-sm font-extrabold text-[#FFC000] flex items-center gap-1.5">
             <Users className="w-4 h-4 text-[#FFC000]" />
-            <span>మల్టీ-ఏజెంట్స్ నెట్వర్క్ ప్యానెల్ (Multi-Agent System Core)</span>
+            <span>
+              మల్టీ-ఏజెంట్స్ నెట్వర్క్ ప్యానెల్ (Multi-Agent System Core)
+            </span>
           </h3>
           <div className="flex gap-2">
             {onToggleAgentVisibility && (
@@ -901,10 +1001,17 @@ ask_agent()`;
                       </td>
                       <td className="py-2 px-2 text-center">
                         <button
-                          onClick={() => setOpenMediaBoards((prev) => ({ ...prev, [row.id]: !prev[row.id] }))}
+                          onClick={() =>
+                            setOpenMediaBoards((prev) => ({
+                              ...prev,
+                              [row.id]: !prev[row.id],
+                            }))
+                          }
                           className={`w-8 h-4 rounded-full relative inline-flex items-center transition-colors ${isOpen ? "bg-emerald-500" : "bg-slate-700"}`}
                         >
-                          <span className={`w-3 h-3 rounded-full bg-white transition-transform ${isOpen ? "translate-x-4" : "translate-x-1"}`} />
+                          <span
+                            className={`w-3 h-3 rounded-full bg-white transition-transform ${isOpen ? "translate-x-4" : "translate-x-1"}`}
+                          />
                         </button>
                       </td>
                       <td className="py-2 px-3 text-right">
@@ -923,59 +1030,99 @@ ask_agent()`;
                             {/* Chat History */}
                             <div className="p-3 overflow-y-auto flex-1 flex flex-col gap-2 min-h-[120px] scrollbar-thin scrollbar-thumb-slate-700">
                               {commState.receivedMessages.map((msg, idx) => (
-                                <div key={idx} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                  <div className={`max-w-[85%] rounded-lg px-2.5 py-1.5 text-[10px] ${msg.sender === 'user' ? 'bg-amber-600/20 text-amber-100 border border-amber-600/30' : 'bg-slate-800 text-slate-200 border border-slate-700'}`}>
+                                <div
+                                  key={idx}
+                                  className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
+                                >
+                                  <div
+                                    className={`max-w-[85%] rounded-lg px-2.5 py-1.5 text-[10px] ${msg.sender === "user" ? "bg-amber-600/20 text-amber-100 border border-amber-600/30" : "bg-slate-800 text-slate-200 border border-slate-700"}`}
+                                  >
                                     <div className="font-medium text-[9px] mb-0.5 opacity-60 flex justify-between gap-4">
-                                      <span>{msg.sender === 'user' ? 'మీరు (You)' : row.name}</span>
+                                      <span>
+                                        {msg.sender === "user"
+                                          ? "మీరు (You)"
+                                          : row.name}
+                                      </span>
                                       <span>{msg.timestamp}</span>
                                     </div>
-                                    <div className="whitespace-pre-wrap">{msg.text}</div>
+                                    <div className="whitespace-pre-wrap">
+                                      {msg.text}
+                                    </div>
                                   </div>
                                 </div>
                               ))}
-                              
+
                               {/* Show Uploaded Files */}
                               {commState.uploadedFiles.length > 0 && (
                                 <div className="flex justify-end">
                                   <div className="max-w-[85%] rounded-lg px-2.5 py-1.5 text-[10px] bg-slate-800/80 border border-slate-700 flex flex-wrap gap-2">
                                     {commState.uploadedFiles.map((f, i) => (
-                                      <div key={i} className="flex flex-col items-center gap-1 bg-slate-900 p-1.5 rounded">
-                                        {f.type.startsWith('image/') ? (
-                                          <img loading="lazy" decoding="async" src={f.url} alt="upload" className="w-12 h-12 object-cover rounded border border-slate-700" referrerPolicy="no-referrer" />
+                                      <div
+                                        key={i}
+                                        className="flex flex-col items-center gap-1 bg-slate-900 p-1.5 rounded"
+                                      >
+                                        {f.type.startsWith("image/") ? (
+                                          <img
+                                            loading="lazy"
+                                            decoding="async"
+                                            src={f.url}
+                                            alt="upload"
+                                            className="w-12 h-12 object-cover rounded border border-slate-700"
+                                            referrerPolicy="no-referrer"
+                                          />
                                         ) : (
                                           <FileText className="w-6 h-6 text-emerald-400" />
                                         )}
-                                        <span className="text-[8px] max-w-[60px] truncate text-slate-400">{f.name}</span>
+                                        <span className="text-[8px] max-w-[60px] truncate text-slate-400">
+                                          {f.name}
+                                        </span>
                                       </div>
                                     ))}
                                   </div>
                                 </div>
                               )}
-                              
+
                               {/* Loading indicator */}
                               {isGenerating[row.id] && (
                                 <div className="flex justify-start">
                                   <div className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 flex gap-1">
                                     <div className="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce" />
-                                    <div className="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
-                                    <div className="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }} />
+                                    <div
+                                      className="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce"
+                                      style={{ animationDelay: "0.2s" }}
+                                    />
+                                    <div
+                                      className="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce"
+                                      style={{ animationDelay: "0.4s" }}
+                                    />
                                   </div>
                                 </div>
                               )}
                             </div>
-                            
+
                             {/* Input Area */}
                             <div className="p-2 bg-slate-900 border-t border-slate-800 flex items-center gap-2">
-                              <label className="cursor-pointer p-1.5 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 transition shrink-0" title="ఫ్య్ల్ అప్‍ల్ళోడ్">
+                              <label
+                                className="cursor-pointer p-1.5 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 transition shrink-0"
+                                title="ఫ్య్ల్ అప్‍ల్ళోడ్"
+                              >
                                 <Upload className="w-3.5 h-3.5" />
-                                <input type="file" className="hidden" onChange={(e) => handleFileUpload(row.id, e)} />
+                                <input
+                                  type="file"
+                                  className="hidden"
+                                  onChange={(e) => handleFileUpload(row.id, e)}
+                                />
                               </label>
                               <button
                                 onClick={() => startListening(row.id)}
                                 className={`p-1.5 rounded transition shrink-0 ${isListening[row.id] ? "bg-red-500/20 text-red-500 animate-pulse" : "bg-slate-800 hover:bg-slate-700 text-slate-300"}`}
                                 title="వాయిస్ తో మాట్లాడండి"
                               >
-                                {isListening[row.id] ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
+                                {isListening[row.id] ? (
+                                  <MicOff className="w-3.5 h-3.5" />
+                                ) : (
+                                  <Mic className="w-3.5 h-3.5" />
+                                )}
                               </button>
                               <input
                                 value={commState.message}
@@ -989,14 +1136,18 @@ ask_agent()`;
                                   }))
                                 }
                                 onKeyDown={(e) => {
-                                  if (e.key === 'Enter') handleSendMessage(row.id);
+                                  if (e.key === "Enter")
+                                    handleSendMessage(row.id);
                                 }}
                                 className="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-[10px] text-slate-200 focus:border-amber-500/50 outline-none"
                                 placeholder={`${row.name} ఏజెంట్‍కు ఫ్య్ల్స్ లేదా సందేశం పంపల్శేదు...`}
                               />
                               <button
                                 onClick={() => handleSendMessage(row.id)}
-                                disabled={!commState.message.trim() && commState.uploadedFiles.length === 0}
+                                disabled={
+                                  !commState.message.trim() &&
+                                  commState.uploadedFiles.length === 0
+                                }
                                 className="p-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-slate-950 disabled:opacity-50 disabled:cursor-not-allowed transition shrink-0"
                               >
                                 <Send className="w-3.5 h-3.5" />
@@ -1012,7 +1163,6 @@ ask_agent()`;
             </tbody>
           </table>
         </div>
-
       </div>
       {/* 2. SECURITY & CONTROL PANEL */}
       <div className="grid md:grid-cols-2 gap-4">

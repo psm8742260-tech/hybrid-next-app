@@ -1,81 +1,126 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import {  
-  Phone, Lock, Fingerprint, Shield, ShieldCheck, ShieldAlert, Key, 
-  X, Check, AlertCircle, Timer, Sliders, LogOut, Download, Play,
-  CreditCard, Code, Globe, Send, Eye, EyeOff, Wrench, Cpu, Terminal, Sparkles, Loader2
-, Store, Bot, Camera, Database, Users, Settings, Mail } from 'lucide-react';
-import {  ControlState, FeatureControl } from '../types';
-import {  INITIAL_FEATURES } from '../data';
-import {  ManualFeatureTimer } from './ManualFeatureTimer';
-import BrahmastraSystemComponent from './BrahmastraSystem';
-import EcommerceVendorDashboard from './EcommerceVendorDashboard';
-import CWRBLogo from './CWRBLogo';
-import {  auth, RecaptchaVerifier, db } from '../lib/firebase';
-import {  signInWithPhoneNumber, ConfirmationResult, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { doc, getDoc, setDoc, onSnapshot, collection, deleteDoc, updateDoc } from 'firebase/firestore';
-import { sendCustomerWorkerOtp } from '../services/phrsCloudEngine';
+import React, { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import {
+  Phone,
+  Lock,
+  Fingerprint,
+  Shield,
+  ShieldCheck,
+  ShieldAlert,
+  Key,
+  X,
+  Check,
+  AlertCircle,
+  Timer,
+  Sliders,
+  LogOut,
+  Download,
+  Play,
+  CreditCard,
+  Code,
+  Globe,
+  Send,
+  Eye,
+  EyeOff,
+  Wrench,
+  Cpu,
+  Terminal,
+  Sparkles,
+  Loader2,
+  Store,
+  Bot,
+  Camera,
+  Database,
+  Users,
+  Settings,
+  Mail,
+} from "lucide-react";
+import { ControlState, FeatureControl } from "../types";
+import { INITIAL_FEATURES } from "../data";
+import { ManualFeatureTimer } from "./ManualFeatureTimer";
+import BrahmastraSystemComponent from "./BrahmastraSystem";
+import EcommerceVendorDashboard from "./EcommerceVendorDashboard";
+import CWRBLogo from "./CWRBLogo";
+import { auth, RecaptchaVerifier, db } from "../lib/firebase";
+import {
+  signInWithPhoneNumber,
+  ConfirmationResult,
+  GoogleAuthProvider,
+  signInWithPopup,
+} from "firebase/auth";
+import {
+  doc,
+  getDoc,
+  setDoc,
+  onSnapshot,
+  collection,
+  deleteDoc,
+  updateDoc,
+} from "firebase/firestore";
+import { sendCustomerWorkerOtp } from "../services/phrsCloudEngine";
 
 // Toggle to route real SMS OTP via PHRS Crowd Server engine
 const USE_SIMULATED_AUTH = true;
 
 const FEATURE_ICONS: Record<string, string> = {
-  'feat_hybrid_radio': '📡',
-  'feat_biopower': '🔋',
-  'feat_bp_sugar': '🩸',
-  'feat_doctor_scan': '👨‍⚕️',
-  'feat_weather_report': '⛈️',
-  'feat_premium_assistant': '🤖',
-  'feat_premium_tracking': '📍',
-  'feat_premium_radio': '📻',
-  'feat_premium_invoicing': '🧾',
-  'feat_premium_payments': '💳',
-  'feat_premium_escrow': '🤝',
-  'feat_premium_multilingual': '🌐',
-  'feat_premium_verification': '✅',
-  'feat_premium_support': '🎧',
-  'feat_premium_analytics': '📊',
-  'feat_premium_team': '👥',
-  'feat_invisible_maintenance': '⚙️',
-  'feat_brahmastra': '🔮',
-  'feat_invoice_generator': '🧾'
+  feat_hybrid_radio: "📡",
+  feat_biopower: "🔋",
+  feat_bp_sugar: "🩸",
+  feat_doctor_scan: "👨‍⚕️",
+  feat_weather_report: "⛈️",
+  feat_premium_assistant: "🤖",
+  feat_premium_tracking: "📍",
+  feat_premium_radio: "📻",
+  feat_premium_invoicing: "🧾",
+  feat_premium_payments: "💳",
+  feat_premium_escrow: "🤝",
+  feat_premium_multilingual: "🌐",
+  feat_premium_verification: "✅",
+  feat_premium_support: "🎧",
+  feat_premium_analytics: "📊",
+  feat_premium_team: "👥",
+  feat_invisible_maintenance: "⚙️",
+  feat_brahmastra: "🔮",
+  feat_invoice_generator: "🧾",
 };
-
 
 interface PhoneLoginProps {
   onLoginSuccess: (phoneNumber: string) => void;
   transparent?: boolean;
 }
 
-export const PhoneLogin: React.FC<PhoneLoginProps> = ({ onLoginSuccess, transparent = false }) => {
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [countryCode, setCountryCode] = useState('+91');
+export const PhoneLogin: React.FC<PhoneLoginProps> = ({
+  onLoginSuccess,
+  transparent = false,
+}) => {
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [countryCode, setCountryCode] = useState("+91");
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
 
   const triggerVerification = async (targetPhone: string) => {
     if (isLoading || isSuccess) return;
-    setError('');
+    setError("");
     setIsLoading(true);
     try {
       const fullPhone = `${countryCode} ${targetPhone}`;
       await sendCustomerWorkerOtp(fullPhone, "గౌరవనీయ యూజర్", "కస్టమర్/వర్కర్");
-      
+
       setIsSuccess(true);
       setTimeout(() => {
         onLoginSuccess(fullPhone);
       }, 1000);
     } catch (err: any) {
       console.error(err);
-      setError('వెరిఫికేషన్‌లో సమస్య ఏర్పడింది. దయచేసి మళ్లీ ప్రయత్నించండి.');
+      setError("వెరిఫికేషన్‌లో సమస్య ఏర్పడింది. దయచేసి మళ్లీ ప్రయత్నించండి.");
       setIsLoading(false);
     }
   };
 
   const handleGoogleLogin = async () => {
     if (isLoading || isSuccess) return;
-    setError('');
+    setError("");
     setIsLoading(true);
     try {
       const provider = new GoogleAuthProvider();
@@ -87,12 +132,14 @@ export const PhoneLogin: React.FC<PhoneLoginProps> = ({ onLoginSuccess, transpar
           onLoginSuccess(user.email);
         }, 1000);
       } else {
-        setError('Google ఖాతా నుండి ఇమెయిల్ పొందడం విఫలమైంది.');
+        setError("Google ఖాతా నుండి ఇమెయిల్ పొందడం విఫలమైంది.");
         setIsLoading(false);
       }
     } catch (err: any) {
       console.error(err);
-      setError('జిమెయిల్ లాగిన్ ప్రాసెస్‌లో సమస్య ఏర్పడింది. దయచేసి మళ్లీ ప్రయత్నించండి.');
+      setError(
+        "జిమెయిల్ లాగిన్ ప్రాసెస్‌లో సమస్య ఏర్పడింది. దయచేసి మళ్లీ ప్రయత్నించండి.",
+      );
       setIsLoading(false);
     }
   };
@@ -108,27 +155,32 @@ export const PhoneLogin: React.FC<PhoneLoginProps> = ({ onLoginSuccess, transpar
     if (phoneNumber.length === 10) {
       triggerVerification(phoneNumber);
     } else {
-      setError('దయచేసి సరైన 10 అంకెల మొబైల్ నెంబర్ నమోదు చేయండి!');
+      setError("దయచేసి సరైన 10 అంకెల మొబైల్ నెంబర్ నమోదు చేయండి!");
     }
   };
 
   return (
-    <div className={transparent 
-      ? "relative w-full flex flex-col justify-between p-2" 
-      : "relative w-full min-h-[500px] flex flex-col justify-between bg-gradient-to-b from-[#082c75]/5 to-white p-6 rounded-[28px]"
-    }>
+    <div
+      className={
+        transparent
+          ? "relative w-full flex flex-col justify-between p-2"
+          : "relative w-full min-h-[500px] flex flex-col justify-between bg-gradient-to-b from-[#2563eb]/5 to-white p-6 rounded-[28px]"
+      }
+    >
       <div className="space-y-6 pt-2">
         {!transparent && (
           <div className="text-center space-y-2">
             <CWRBLogo stacked={true} className="mx-auto" />
             <div>
-              <p className="text-[10px] text-gray-500 font-bold tracking-wider mt-1">రక్షిత లాగిన్ వ్యవస్థ / Secure Verification Panel</p>
+              <p className="text-[10px] text-gray-500 font-bold tracking-wider mt-1">
+                రక్షిత లాగిన్ వ్యవస్థ / Secure Verification Panel
+              </p>
             </div>
           </div>
         )}
 
         {isSuccess ? (
-          <motion.div 
+          <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             className="text-center py-8 space-y-4"
@@ -137,26 +189,36 @@ export const PhoneLogin: React.FC<PhoneLoginProps> = ({ onLoginSuccess, transpar
               <ShieldCheck className="w-10 h-10 animate-bounce" />
             </div>
             <div className="space-y-1">
-              <h4 className={`font-black text-sm ${transparent ? 'text-emerald-400' : 'text-emerald-800'}`}>సిమ్ వెరిఫికేషన్ విజయవంతమైంది!</h4>
-              <p className={`text-[10px] ${transparent ? 'text-white/60' : 'text-gray-500'}`}>యాప్ పోర్టల్ ఓపెన్ అవుతోంది...</p>
+              <h4
+                className={`font-black text-sm ${transparent ? "text-emerald-400" : "text-emerald-800"}`}
+              >
+                సిమ్ వెరిఫికేషన్ విజయవంతమైంది!
+              </h4>
+              <p
+                className={`text-[10px] ${transparent ? "text-white/60" : "text-gray-500"}`}
+              >
+                యాప్ పోర్టల్ ఓపెన్ అవుతోంది...
+              </p>
             </div>
           </motion.div>
         ) : (
-          <motion.form 
+          <motion.form
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             onSubmit={handleDirectLogin}
             className="space-y-3.5 -mt-2 md:-mt-4"
           >
             <div className="space-y-2">
-              <label className={`block text-[11px] font-extrabold uppercase ${transparent ? 'text-[#FFC000]' : 'text-[#082c75]'}`}>
+              <label
+                className={`block text-[11px] font-extrabold uppercase ${transparent ? "text-[#FFC000]" : "text-[#2563eb]"}`}
+              >
                 మీ మొబైల్ నంబర్ / Mobile Number
               </label>
               <div className="flex gap-2">
-                <select 
+                <select
                   value={countryCode}
                   onChange={(e) => setCountryCode(e.target.value)}
-                  className="bg-white border border-gray-300 text-gray-800 text-xs font-bold rounded-xl px-2.5 py-3 focus:outline-none focus:ring-2 focus:ring-[#082c75]"
+                  className="bg-white border border-gray-300 text-gray-800 text-xs font-bold rounded-xl px-2.5 py-3 focus:outline-none focus:ring-2 focus:ring-[#2563eb]"
                 >
                   <option value="+91">🇮🇳 +91</option>
                   <option value="+1">🇺🇸 +1</option>
@@ -167,7 +229,7 @@ export const PhoneLogin: React.FC<PhoneLoginProps> = ({ onLoginSuccess, transpar
 
                 <div className="relative flex-1">
                   <Phone className="absolute left-3 top-3.5 w-4.5 h-4.5 text-gray-400" />
-                  <input 
+                  <input
                     type="tel"
                     maxLength={10}
                     pattern="[0-9]*"
@@ -175,11 +237,13 @@ export const PhoneLogin: React.FC<PhoneLoginProps> = ({ onLoginSuccess, transpar
                     placeholder="10 అంకెల నెంబర్"
                     value={phoneNumber}
                     disabled={isLoading || isSuccess}
-                    onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, ''))}
-                    className="w-full bg-white border border-gray-300 rounded-xl py-3 pl-10 pr-10 text-xs font-mono font-bold text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#082c75] disabled:opacity-75"
+                    onChange={(e) =>
+                      setPhoneNumber(e.target.value.replace(/\D/g, ""))
+                    }
+                    className="w-full bg-white border border-gray-300 rounded-xl py-3 pl-10 pr-10 text-xs font-mono font-bold text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#2563eb] disabled:opacity-75"
                   />
                   {isLoading && (
-                    <Loader2 className="absolute right-3 top-3.5 w-4.5 h-4.5 animate-spin text-[#082c75]" />
+                    <Loader2 className="absolute right-3 top-3.5 w-4.5 h-4.5 animate-spin text-[#2563eb]" />
                   )}
                 </div>
               </div>
@@ -190,17 +254,19 @@ export const PhoneLogin: React.FC<PhoneLoginProps> = ({ onLoginSuccess, transpar
               type="button"
               onClick={handleGoogleLogin}
               disabled={isLoading || isSuccess}
-              className="w-full py-2 bg-[#FFC000] hover:bg-[#e0a800] text-[#082c75] font-black text-[11px] rounded-xl shadow-md transition active:scale-95 flex items-center justify-center gap-1.5 border border-[#FFC000]/30 cursor-pointer"
+              className="w-full py-2 bg-[#FFC000] hover:bg-[#e0a800] text-[#2563eb] font-black text-[11px] rounded-xl shadow-md transition active:scale-95 flex items-center justify-center gap-1.5 border border-[#FFC000]/30 cursor-pointer"
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="w-3.5 h-3.5 animate-spin text-[#082c75]" />
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-[#2563eb]" />
                   <span>కనెక్ట్ అవుతోంది... (Connecting...)</span>
                 </>
               ) : (
                 <>
-                  <Mail className="w-3.5 h-3.5 text-[#082c75]" />
-                  <span>జిమెయిల్ ద్వారా సురక్షిత లాగిన్ (Login with Gmail)</span>
+                  <Mail className="w-3.5 h-3.5 text-[#2563eb]" />
+                  <span>
+                    జిమెయిల్ ద్వారా సురక్షిత లాగిన్ (Login with Gmail)
+                  </span>
                 </>
               )}
             </button>
@@ -218,7 +284,9 @@ export const PhoneLogin: React.FC<PhoneLoginProps> = ({ onLoginSuccess, transpar
       {!transparent && (
         <div className="pt-4 border-t border-gray-200/50 flex items-center justify-center gap-2 text-gray-400 text-[9px] font-bold">
           <Shield className="w-3.5 h-3.5 text-emerald-500" />
-          <span>భారత ప్రభుత్వ నిబంధనల ప్రకారం సురక్షితమైన ఆటోమేటిక్ సిమ్ వెరిఫికేషన్</span>
+          <span>
+            భారత ప్రభుత్వ నిబంధనల ప్రకారం సురక్షితమైన ఆటోమేటిక్ సిమ్ వెరిఫికేషన్
+          </span>
         </div>
       )}
     </div>
@@ -227,9 +295,16 @@ export const PhoneLogin: React.FC<PhoneLoginProps> = ({ onLoginSuccess, transpar
 
 // Chevron helper
 const ChevronRightIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg {...props} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+  <svg
+    {...props}
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+    strokeWidth="3"
+  >
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+  </svg>
 );
-
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -255,59 +330,77 @@ interface SettingsModalProps {
   feedbackGoogleForm: string;
   setFeedbackGoogleForm: (url: string) => void;
   supportNumbersList: { id: string; name: string; phone: string }[];
-  setSupportNumbersList: React.Dispatch<React.SetStateAction<{ id: string; name: string; phone: string }[]>>;
+  setSupportNumbersList: React.Dispatch<
+    React.SetStateAction<{ id: string; name: string; phone: string }[]>
+  >;
   isMaintenanceEnabled: boolean;
   onToggleMaintenance: () => void;
-  maintenanceLogs: { id: string; timestamp: string; type: 'bug' | 'error'; description: string; status: 'resolved' | 'cleaned' }[];
+  maintenanceLogs: {
+    id: string;
+    timestamp: string;
+    type: "bug" | "error";
+    description: string;
+    status: "resolved" | "cleaned";
+  }[];
   onClearMaintenanceLogs: () => void;
   secretSwitchBypass?: boolean;
   onToggleSecretSwitchBypass?: () => void;
   featureTimers?: Record<string, number>;
-  onUpdateFeatureTimer?: (featureId: string, hours: number, isOn: boolean) => void;
+  onUpdateFeatureTimer?: (
+    featureId: string,
+    hours: number,
+    isOn: boolean,
+  ) => void;
   onBulkUpdateFeatureStates?: (updates: Record<string, ControlState>) => void;
 }
 
 const RegistrationsManager: React.FC = () => {
   const [regs, setRegs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [roleFilter, setRoleFilter] = useState<'all' | 'worker' | 'customer' | 'vendor'>('all');
+  const [roleFilter, setRoleFilter] = useState<
+    "all" | "worker" | "customer" | "vendor"
+  >("all");
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
   // Form for adding a new user
   const [addForm, setAddForm] = useState({
-    fullName: '',
-    phoneNo: '',
-    role: 'worker' as 'worker' | 'customer' | 'vendor',
-    profession: '',
-    regNumber: '',
+    fullName: "",
+    phoneNo: "",
+    role: "worker" as "worker" | "customer" | "vendor",
+    profession: "",
+    regNumber: "",
     experienceYears: 0,
-    idCardType: 'BRONZE'
+    idCardType: "BRONZE",
   });
   const [addPhoto, setAddPhoto] = useState<string | null>(null);
 
   // Form for editing existing user
   const [editForm, setEditForm] = useState({
-    fullName: '',
-    phoneNo: '',
-    role: 'worker' as 'worker' | 'customer' | 'vendor',
-    profession: '',
-    regNumber: '',
-    experienceYears: 0
+    fullName: "",
+    phoneNo: "",
+    role: "worker" as "worker" | "customer" | "vendor",
+    profession: "",
+    regNumber: "",
+    experienceYears: 0,
   });
 
   useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, 'registrations'), (snapshot) => {
-      const list: any[] = [];
-      snapshot.forEach((doc) => {
-        list.push({ id: doc.id, ...doc.data() });
-      });
-      setRegs(list);
-      setLoading(false);
-    }, (err) => {
-      console.error("Firestore Registrations Load Error:", err);
-      setLoading(false);
-    });
+    const unsubscribe = onSnapshot(
+      collection(db, "registrations"),
+      (snapshot) => {
+        const list: any[] = [];
+        snapshot.forEach((doc) => {
+          list.push({ id: doc.id, ...doc.data() });
+        });
+        setRegs(list);
+        setLoading(false);
+      },
+      (err) => {
+        console.error("Firestore Registrations Load Error:", err);
+        setLoading(false);
+      },
+    );
     return unsubscribe;
   }, []);
 
@@ -317,7 +410,7 @@ const RegistrationsManager: React.FC = () => {
       const img = new Image();
       img.src = base64Str;
       img.onload = () => {
-        const canvas = document.createElement('canvas');
+        const canvas = document.createElement("canvas");
         let width = img.width;
         let height = img.height;
         const max = 300; // compact dimensions
@@ -332,9 +425,9 @@ const RegistrationsManager: React.FC = () => {
         }
         canvas.width = width;
         canvas.height = height;
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext("2d");
         ctx?.drawImage(img, 0, 0, width, height);
-        resolve(canvas.toDataURL('image/jpeg', 0.6)); // compressed jpeg
+        resolve(canvas.toDataURL("image/jpeg", 0.6)); // compressed jpeg
       };
     });
   };
@@ -365,35 +458,38 @@ const RegistrationsManager: React.FC = () => {
       // Default trade based on role if blank
       let defaultProfession = addForm.profession;
       if (!defaultProfession) {
-        if (addForm.role === 'customer') defaultProfession = 'కస్టమర్ (Customer Profile)';
-        else if (addForm.role === 'vendor') defaultProfession = 'హార్డ్‌వేర్ వెండర్ (Hardware Store)';
-        else defaultProfession = 'మేస్త్రీ (Mason)';
+        if (addForm.role === "customer")
+          defaultProfession = "కస్టమర్ (Customer Profile)";
+        else if (addForm.role === "vendor")
+          defaultProfession = "హార్డ్‌వేర్ వెండర్ (Hardware Store)";
+        else defaultProfession = "మేస్త్రీ (Mason)";
       }
 
-      await setDoc(doc(db, 'registrations', docId), {
+      await setDoc(doc(db, "registrations", docId), {
         id: docId,
         fullName: addForm.fullName,
         phoneNo: addForm.phoneNo,
         role: addForm.role,
         profession: defaultProfession,
-        regNumber: addForm.regNumber || `REG-${Math.floor(1000 + Math.random() * 9000)}`,
+        regNumber:
+          addForm.regNumber || `REG-${Math.floor(1000 + Math.random() * 9000)}`,
         idCardNumber: idCode,
         idCardType: addForm.idCardType,
         experienceYears: Number(addForm.experienceYears) || 0,
         aadhaarImage: addPhoto, // Use compressed base64 profile photo
         verified: true,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
       });
 
       // Clear Form
       setAddForm({
-        fullName: '',
-        phoneNo: '',
-        role: 'worker',
-        profession: '',
-        regNumber: '',
+        fullName: "",
+        phoneNo: "",
+        role: "worker",
+        profession: "",
+        regNumber: "",
         experienceYears: 0,
-        idCardType: 'BRONZE'
+        idCardType: "BRONZE",
       });
       setAddPhoto(null);
       setShowAddForm(false);
@@ -405,9 +501,11 @@ const RegistrationsManager: React.FC = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (window.confirm("ఈ రిజిస్ట్రేషన్‌ను శాశ్వతంగా తొలగించాలనుకుంటున్నారా?")) {
+    if (
+      window.confirm("ఈ రిజిస్ట్రేషన్‌ను శాశ్వతంగా తొలగించాలనుకుంటున్నారా?")
+    ) {
       try {
-        await deleteDoc(doc(db, 'registrations', id));
+        await deleteDoc(doc(db, "registrations", id));
         alert("రిజిస్ట్రేషన్ విజయవంతంగా తొలగించబడింది!");
       } catch (err) {
         console.error("Delete Error:", err);
@@ -419,24 +517,24 @@ const RegistrationsManager: React.FC = () => {
   const startEdit = (reg: any) => {
     setEditingId(reg.id);
     setEditForm({
-      fullName: reg.fullName || '',
-      phoneNo: reg.phoneNo || '',
-      role: reg.role || 'worker',
-      profession: reg.profession || '',
-      regNumber: reg.regNumber || '',
-      experienceYears: Number(reg.experienceYears) || 0
+      fullName: reg.fullName || "",
+      phoneNo: reg.phoneNo || "",
+      role: reg.role || "worker",
+      profession: reg.profession || "",
+      regNumber: reg.regNumber || "",
+      experienceYears: Number(reg.experienceYears) || 0,
     });
   };
 
   const handleSaveEdit = async (id: string) => {
     try {
-      await updateDoc(doc(db, 'registrations', id), {
+      await updateDoc(doc(db, "registrations", id), {
         fullName: editForm.fullName,
         phoneNo: editForm.phoneNo,
         role: editForm.role,
         profession: editForm.profession,
         regNumber: editForm.regNumber,
-        experienceYears: Number(editForm.experienceYears)
+        experienceYears: Number(editForm.experienceYears),
       });
       setEditingId(null);
       alert("వివరాలు విజయవంతంగా సవరించబడ్డాయి!");
@@ -447,78 +545,98 @@ const RegistrationsManager: React.FC = () => {
   };
 
   // Safe Category Resolver (fallback for older legacy records without a 'role' field)
-  const getResolvedRole = (reg: any): 'worker' | 'customer' | 'vendor' => {
+  const getResolvedRole = (reg: any): "worker" | "customer" | "vendor" => {
     if (reg.role) return reg.role;
-    const prof = (reg.profession || '').toLowerCase();
-    if (prof.includes('customer') || prof.includes('కస్టమర్')) return 'customer';
-    if (prof.includes('vendor') || prof.includes('వెండర్') || prof.includes('store') || prof.includes('షాప్')) return 'vendor';
-    return 'worker';
+    const prof = (reg.profession || "").toLowerCase();
+    if (prof.includes("customer") || prof.includes("కస్టమర్"))
+      return "customer";
+    if (
+      prof.includes("vendor") ||
+      prof.includes("వెండర్") ||
+      prof.includes("store") ||
+      prof.includes("షాప్")
+    )
+      return "vendor";
+    return "worker";
   };
 
   // Filtered List
   const filteredRegs = regs.filter((reg) => {
-    if (roleFilter === 'all') return true;
+    if (roleFilter === "all") return true;
     return getResolvedRole(reg) === roleFilter;
   });
 
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-10 space-y-2 text-gray-500">
-        <Loader2 className="w-8 h-8 animate-spin text-[#082c75]" />
-        <span className="text-xs font-bold font-sans">డేటా లోడ్ అవుతోంది...</span>
+        <Loader2 className="w-8 h-8 animate-spin text-[#2563eb]" />
+        <span className="text-xs font-bold font-sans">
+          డేటా లోడ్ అవుతోంది...
+        </span>
       </div>
     );
   }
 
   return (
     <div className="animate-fade-in space-y-4 max-h-[440px] overflow-y-auto pr-1 text-xs text-gray-700 font-sans">
-      
       {/* Header Banner */}
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-150 p-3.5 rounded-2xl flex justify-between items-start">
         <div className="space-y-1">
-          <h5 className="font-extrabold text-[#082c75] flex items-center gap-1.5 text-xs">
-            <Users className="w-4 h-4 text-[#082c75]" />
+          <h5 className="font-extrabold text-[#2563eb] flex items-center gap-1.5 text-xs">
+            <Users className="w-4 h-4 text-[#2563eb]" />
             <span>రిజిస్ట్రేషన్స్ మేనేజ్‌మెంట్ / Registrations Hub</span>
           </h5>
           <p className="text-[10px] text-blue-800 leading-normal max-w-[280px]">
-            యాప్‌లో నమోదైన వర్కర్లు, కస్టమర్లు మరియు ఈ-కామర్స్ వెండర్ల వివరాలను ఒకే చోట నిర్వహించండి.
+            యాప్‌లో నమోదైన వర్కర్లు, కస్టమర్లు మరియు ఈ-కామర్స్ వెండర్ల వివరాలను
+            ఒకే చోట నిర్వహించండి.
           </p>
         </div>
         <button
           onClick={() => setShowAddForm(!showAddForm)}
-          className="px-2.5 py-1.5 bg-[#082c75] text-white hover:bg-blue-900 font-extrabold rounded-xl text-[10px] shadow-xs flex items-center gap-1 transition-all active:scale-95"
+          className="px-2.5 py-1.5 bg-[#2563eb] text-white hover:bg-blue-900 font-extrabold rounded-xl text-[10px] shadow-xs flex items-center gap-1 transition-all active:scale-95"
         >
-          {showAddForm ? 'రద్దు / Close' : '➕ కొత్త రిజిస్ట్రేషన్'}
+          {showAddForm ? "రద్దు / Close" : "➕ కొత్త రిజిస్ట్రేషన్"}
         </button>
       </div>
 
       {/* manual Add Registration Form */}
       {showAddForm && (
-        <form onSubmit={handleCreateRegistration} className="bg-slate-50 border border-slate-200 p-4 rounded-2xl space-y-3.5 animate-slide-in">
-          <h6 className="font-black text-[#082c75] text-[11px] border-b pb-1.5 flex items-center gap-1">
+        <form
+          onSubmit={handleCreateRegistration}
+          className="bg-slate-50 border border-slate-200 p-4 rounded-2xl space-y-3.5 animate-slide-in"
+        >
+          <h6 className="font-black text-[#2563eb] text-[11px] border-b pb-1.5 flex items-center gap-1">
             ✍️ కొత్త రిజిస్ట్రేషన్ ఫారమ్ (New Registration Form)
           </h6>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-[9px] font-bold text-gray-500 block mb-1">పూర్తి పేరు / Full Name *</label>
+              <label className="text-[9px] font-bold text-gray-500 block mb-1">
+                పూర్తి పేరు / Full Name *
+              </label>
               <input
                 type="text"
                 required
                 placeholder="ఉదా: రాఘవ రెడ్డి"
                 value={addForm.fullName}
-                onChange={(e) => setAddForm({ ...addForm, fullName: e.target.value })}
+                onChange={(e) =>
+                  setAddForm({ ...addForm, fullName: e.target.value })
+                }
                 className="w-full px-2 py-1.5 rounded-xl border bg-white focus:outline-blue-500 text-xs"
               />
             </div>
             <div>
-              <label className="text-[9px] font-bold text-gray-500 block mb-1">మొబైల్ నెంబర్ / Mobile *</label>
+              <label className="text-[9px] font-bold text-gray-500 block mb-1">
+                మొబైల్ నెంబర్ / Mobile *
+              </label>
               <input
                 type="text"
                 required
                 placeholder="ఉదా: 98480xxxxx"
                 value={addForm.phoneNo}
-                onChange={(e) => setAddForm({ ...addForm, phoneNo: e.target.value })}
+                onChange={(e) =>
+                  setAddForm({ ...addForm, phoneNo: e.target.value })
+                }
                 className="w-full px-2 py-1.5 rounded-xl border bg-white focus:outline-blue-500 text-xs"
               />
             </div>
@@ -526,10 +644,14 @@ const RegistrationsManager: React.FC = () => {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-[9px] font-bold text-gray-500 block mb-1">రిజిస్ట్రేషన్ టైప్ / Account Type</label>
+              <label className="text-[9px] font-bold text-gray-500 block mb-1">
+                రిజిస్ట్రేషన్ టైప్ / Account Type
+              </label>
               <select
                 value={addForm.role}
-                onChange={(e) => setAddForm({ ...addForm, role: e.target.value as any })}
+                onChange={(e) =>
+                  setAddForm({ ...addForm, role: e.target.value as any })
+                }
                 className="w-full px-2 py-1.5 rounded-xl border bg-white text-xs font-bold"
               >
                 <option value="worker">👷 వర్కర్ (Civil Worker)</option>
@@ -538,12 +660,16 @@ const RegistrationsManager: React.FC = () => {
               </select>
             </div>
             <div>
-              <label className="text-[9px] font-bold text-gray-500 block mb-1">వృత్తి / Trade / Business</label>
+              <label className="text-[9px] font-bold text-gray-500 block mb-1">
+                వృత్తి / Trade / Business
+              </label>
               <input
                 type="text"
                 placeholder="ఉదా: కార్పెంటర్, ప్లంబర్, షాప్ పేరు"
                 value={addForm.profession}
-                onChange={(e) => setAddForm({ ...addForm, profession: e.target.value })}
+                onChange={(e) =>
+                  setAddForm({ ...addForm, profession: e.target.value })
+                }
                 className="w-full px-2 py-1.5 rounded-xl border bg-white focus:outline-blue-500 text-xs"
               />
             </div>
@@ -551,30 +677,45 @@ const RegistrationsManager: React.FC = () => {
 
           <div className="grid grid-cols-3 gap-2">
             <div>
-              <label className="text-[9px] font-bold text-gray-500 block mb-1">రిజిస్ట్రేషన్ నెం.</label>
+              <label className="text-[9px] font-bold text-gray-500 block mb-1">
+                రిజిస్ట్రేషన్ నెం.
+              </label>
               <input
                 type="text"
                 placeholder="REG-0943"
                 value={addForm.regNumber}
-                onChange={(e) => setAddForm({ ...addForm, regNumber: e.target.value })}
+                onChange={(e) =>
+                  setAddForm({ ...addForm, regNumber: e.target.value })
+                }
                 className="w-full px-2 py-1.5 rounded-xl border bg-white focus:outline-blue-500 text-xs"
               />
             </div>
             <div>
-              <label className="text-[9px] font-bold text-gray-500 block mb-1">అనుభవం (Yr)</label>
+              <label className="text-[9px] font-bold text-gray-500 block mb-1">
+                అనుభవం (Yr)
+              </label>
               <input
                 type="number"
                 min="0"
                 value={addForm.experienceYears}
-                onChange={(e) => setAddForm({ ...addForm, experienceYears: Number(e.target.value) })}
+                onChange={(e) =>
+                  setAddForm({
+                    ...addForm,
+                    experienceYears: Number(e.target.value),
+                  })
+                }
                 className="w-full px-2 py-1.5 rounded-xl border bg-white focus:outline-blue-500 text-xs"
               />
             </div>
             <div>
-              <label className="text-[9px] font-bold text-gray-500 block mb-1">కార్డు గ్రేడ్ / Tier</label>
+              <label className="text-[9px] font-bold text-gray-500 block mb-1">
+                కార్డు గ్రేడ్ / Tier
+              </label>
               <select
                 value={addForm.idCardType}
-                onChange={(e) => setAddForm({ ...addForm, idCardType: e.target.value })}
+                onChange={(e) =>
+                  setAddForm({ ...addForm, idCardType: e.target.value })
+                }
                 className="w-full px-2 py-1.5 rounded-xl border bg-white text-xs"
               >
                 <option value="BRONZE">Bronze (సాధారణ)</option>
@@ -587,7 +728,9 @@ const RegistrationsManager: React.FC = () => {
 
           <div className="flex gap-3 items-center border-t pt-3">
             <div className="flex-1">
-              <label className="text-[9px] font-bold text-gray-500 block mb-1">ప్రొఫైల్ ఫోటో / Profile Photo</label>
+              <label className="text-[9px] font-bold text-gray-500 block mb-1">
+                ప్రొఫైల్ ఫోటో / Profile Photo
+              </label>
               <input
                 type="file"
                 accept="image/*"
@@ -597,7 +740,12 @@ const RegistrationsManager: React.FC = () => {
             </div>
             {addPhoto && (
               <div className="w-12 h-12 rounded-lg border overflow-hidden shrink-0 relative bg-white">
-                <img src={addPhoto} alt="Compressed preview" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                <img
+                  src={addPhoto}
+                  alt="Compressed preview"
+                  className="w-full h-full object-cover"
+                  referrerPolicy="no-referrer"
+                />
                 <button
                   type="button"
                   onClick={() => setAddPhoto(null)}
@@ -621,26 +769,26 @@ const RegistrationsManager: React.FC = () => {
       {/* Filter Tabs */}
       <div className="flex bg-slate-100 p-1 rounded-xl gap-1">
         <button
-          onClick={() => setRoleFilter('all')}
-          className={`flex-1 py-1.5 rounded-lg text-[10px] font-extrabold transition-all ${roleFilter === 'all' ? 'bg-[#082c75] text-white shadow-xs' : 'text-slate-500 hover:text-slate-800'}`}
+          onClick={() => setRoleFilter("all")}
+          className={`flex-1 py-1.5 rounded-lg text-[10px] font-extrabold transition-all ${roleFilter === "all" ? "bg-[#2563eb] text-white shadow-xs" : "text-slate-500 hover:text-slate-800"}`}
         >
           👥 మొత్తం
         </button>
         <button
-          onClick={() => setRoleFilter('worker')}
-          className={`flex-1 py-1.5 rounded-lg text-[10px] font-extrabold transition-all ${roleFilter === 'worker' ? 'bg-[#082c75] text-white shadow-xs' : 'text-slate-500 hover:text-slate-800'}`}
+          onClick={() => setRoleFilter("worker")}
+          className={`flex-1 py-1.5 rounded-lg text-[10px] font-extrabold transition-all ${roleFilter === "worker" ? "bg-[#2563eb] text-white shadow-xs" : "text-slate-500 hover:text-slate-800"}`}
         >
           👷 వర్కర్లు
         </button>
         <button
-          onClick={() => setRoleFilter('customer')}
-          className={`flex-1 py-1.5 rounded-lg text-[10px] font-extrabold transition-all ${roleFilter === 'customer' ? 'bg-[#082c75] text-white shadow-xs' : 'text-slate-500 hover:text-slate-800'}`}
+          onClick={() => setRoleFilter("customer")}
+          className={`flex-1 py-1.5 rounded-lg text-[10px] font-extrabold transition-all ${roleFilter === "customer" ? "bg-[#2563eb] text-white shadow-xs" : "text-slate-500 hover:text-slate-800"}`}
         >
           👤 కస్టమర్లు
         </button>
         <button
-          onClick={() => setRoleFilter('vendor')}
-          className={`flex-1 py-1.5 rounded-lg text-[10px] font-extrabold transition-all ${roleFilter === 'vendor' ? 'bg-[#082c75] text-white shadow-xs' : 'text-slate-500 hover:text-slate-800'}`}
+          onClick={() => setRoleFilter("vendor")}
+          className={`flex-1 py-1.5 rounded-lg text-[10px] font-extrabold transition-all ${roleFilter === "vendor" ? "bg-[#2563eb] text-white shadow-xs" : "text-slate-500 hover:text-slate-800"}`}
         >
           🏪 వెండర్లు
         </button>
@@ -658,17 +806,34 @@ const RegistrationsManager: React.FC = () => {
             const isEditing = editingId === reg.id;
 
             return (
-              <div key={reg.id} className="bg-white p-3 rounded-xl border border-gray-150 shadow-xs flex flex-col space-y-2">
+              <div
+                key={reg.id}
+                className="bg-white p-3 rounded-xl border border-gray-150 shadow-xs flex flex-col space-y-2"
+              >
                 <div className="flex items-start gap-3">
                   {/* Photo or Default Avatar */}
                   <div className="w-14 h-14 rounded-lg bg-gray-50 border border-gray-200 flex-shrink-0 overflow-hidden flex items-center justify-center relative">
                     {reg.aadhaarImage ? (
-                      <img src={reg.aadhaarImage} alt="Profile" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                      <img
+                        src={reg.aadhaarImage}
+                        alt="Profile"
+                        className="w-full h-full object-cover"
+                        referrerPolicy="no-referrer"
+                      />
                     ) : reg.panImage ? (
-                      <img src={reg.panImage} alt="Profile" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                      <img
+                        src={reg.panImage}
+                        alt="Profile"
+                        className="w-full h-full object-cover"
+                        referrerPolicy="no-referrer"
+                      />
                     ) : (
                       <span className="text-xl">
-                        {role === 'customer' ? '👤' : role === 'vendor' ? '🏪' : '👷'}
+                        {role === "customer"
+                          ? "👤"
+                          : role === "vendor"
+                            ? "🏪"
+                            : "👷"}
                       </span>
                     )}
                     {reg.idCardType && (
@@ -682,29 +847,50 @@ const RegistrationsManager: React.FC = () => {
                     {isEditing ? (
                       <div className="space-y-2 p-1.5 bg-gray-50 rounded-lg border">
                         <div>
-                          <label className="text-[8px] font-bold text-gray-400 block">పేరు / Name</label>
+                          <label className="text-[8px] font-bold text-gray-400 block">
+                            పేరు / Name
+                          </label>
                           <input
                             type="text"
                             value={editForm.fullName}
-                            onChange={(e) => setEditForm({ ...editForm, fullName: e.target.value })}
+                            onChange={(e) =>
+                              setEditForm({
+                                ...editForm,
+                                fullName: e.target.value,
+                              })
+                            }
                             className="w-full px-1.5 py-0.5 text-xs rounded border bg-white"
                           />
                         </div>
                         <div className="grid grid-cols-2 gap-1">
                           <div>
-                            <label className="text-[8px] font-bold text-gray-400 block">మొబైల్ / Mobile</label>
+                            <label className="text-[8px] font-bold text-gray-400 block">
+                              మొబైల్ / Mobile
+                            </label>
                             <input
                               type="text"
                               value={editForm.phoneNo}
-                              onChange={(e) => setEditForm({ ...editForm, phoneNo: e.target.value })}
+                              onChange={(e) =>
+                                setEditForm({
+                                  ...editForm,
+                                  phoneNo: e.target.value,
+                                })
+                              }
                               className="w-full px-1.5 py-0.5 text-xs rounded border bg-white"
                             />
                           </div>
                           <div>
-                            <label className="text-[8px] font-bold text-gray-400 block">రిజిస్ట్రేషన్ టైప్</label>
+                            <label className="text-[8px] font-bold text-gray-400 block">
+                              రిజిస్ట్రేషన్ టైప్
+                            </label>
                             <select
                               value={editForm.role}
-                              onChange={(e) => setEditForm({ ...editForm, role: e.target.value as any })}
+                              onChange={(e) =>
+                                setEditForm({
+                                  ...editForm,
+                                  role: e.target.value as any,
+                                })
+                              }
                               className="w-full px-1.5 py-0.5 text-xs rounded border bg-white font-bold"
                             >
                               <option value="worker">👷 వర్కర్</option>
@@ -715,30 +901,51 @@ const RegistrationsManager: React.FC = () => {
                         </div>
                         <div className="grid grid-cols-2 gap-1">
                           <div>
-                            <label className="text-[8px] font-bold text-gray-400 block">వృత్తి / Trade / Business</label>
+                            <label className="text-[8px] font-bold text-gray-400 block">
+                              వృత్తి / Trade / Business
+                            </label>
                             <input
                               type="text"
                               value={editForm.profession}
-                              onChange={(e) => setEditForm({ ...editForm, profession: e.target.value })}
+                              onChange={(e) =>
+                                setEditForm({
+                                  ...editForm,
+                                  profession: e.target.value,
+                                })
+                              }
                               className="w-full px-1.5 py-0.5 text-xs rounded border bg-white"
                             />
                           </div>
                           <div className="grid grid-cols-2 gap-1">
                             <div>
-                              <label className="text-[8px] font-bold text-gray-400 block">అనుభవం (Yrs)</label>
+                              <label className="text-[8px] font-bold text-gray-400 block">
+                                అనుభవం (Yrs)
+                              </label>
                               <input
                                 type="number"
                                 value={editForm.experienceYears}
-                                onChange={(e) => setEditForm({ ...editForm, experienceYears: Number(e.target.value) })}
+                                onChange={(e) =>
+                                  setEditForm({
+                                    ...editForm,
+                                    experienceYears: Number(e.target.value),
+                                  })
+                                }
                                 className="w-full px-1.5 py-0.5 text-xs rounded border bg-white"
                               />
                             </div>
                             <div>
-                              <label className="text-[8px] font-bold text-gray-400 block">రిజిస్ట్రేషన్ నెం.</label>
+                              <label className="text-[8px] font-bold text-gray-400 block">
+                                రిజిస్ట్రేషన్ నెం.
+                              </label>
                               <input
                                 type="text"
                                 value={editForm.regNumber}
-                                onChange={(e) => setEditForm({ ...editForm, regNumber: e.target.value })}
+                                onChange={(e) =>
+                                  setEditForm({
+                                    ...editForm,
+                                    regNumber: e.target.value,
+                                  })
+                                }
                                 className="w-full px-1.5 py-0.5 text-xs rounded border bg-white"
                               />
                             </div>
@@ -755,7 +962,7 @@ const RegistrationsManager: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => handleSaveEdit(reg.id)}
-                            className="px-2 py-1 bg-[#082c75] text-white font-bold rounded text-[10px]"
+                            className="px-2 py-1 bg-[#2563eb] text-white font-bold rounded text-[10px]"
                           >
                             సేవ్ / Save
                           </button>
@@ -767,19 +974,32 @@ const RegistrationsManager: React.FC = () => {
                           <h6 className="font-extrabold text-xs text-gray-950 truncate leading-snug flex items-center gap-1">
                             <span>{reg.fullName}</span>
                             <span className="px-1 text-[8px] font-extrabold bg-blue-50 text-blue-700 rounded border border-blue-200 scale-90">
-                              {role === 'customer' ? 'Customer 👤' : role === 'vendor' ? 'Vendor 🏪' : 'Worker 👷'}
+                              {role === "customer"
+                                ? "Customer 👤"
+                                : role === "vendor"
+                                  ? "Vendor 🏪"
+                                  : "Worker 👷"}
                             </span>
                           </h6>
-                          <span className="text-[8px] font-mono text-gray-400">ID: {reg.idCardNumber || 'N/A'}</span>
+                          <span className="text-[8px] font-mono text-gray-400">
+                            ID: {reg.idCardNumber || "N/A"}
+                          </span>
                         </div>
                         <p className="text-[10px] text-gray-500 font-bold">
-                          📞 {reg.phoneNo} | 🛠️ <span className="text-[#082c75]">{reg.profession}</span>
+                          📞 {reg.phoneNo} | 🛠️{" "}
+                          <span className="text-[#2563eb]">
+                            {reg.profession}
+                          </span>
                         </p>
                         <p className="text-[9px] text-gray-400 font-mono">
-                          Reg No: {reg.regNumber} | Exp: {reg.experienceYears} Yrs
+                          Reg No: {reg.regNumber} | Exp: {reg.experienceYears}{" "}
+                          Yrs
                         </p>
                         {reg.createdAt && (
-                          <p className="text-[8px] text-gray-400">Registered: {new Date(reg.createdAt).toLocaleDateString()}</p>
+                          <p className="text-[8px] text-gray-400">
+                            Registered:{" "}
+                            {new Date(reg.createdAt).toLocaleDateString()}
+                          </p>
                         )}
                       </>
                     )}
@@ -830,10 +1050,10 @@ const RegistrationsManager: React.FC = () => {
 // 3D ANIMATED TOY WIDGETS
 // ==========================================
 
-export const SettingsModal: React.FC<SettingsModalProps> = ({ 
-  isOpen, 
-  onClose, 
-  featureStates, 
+export const SettingsModal: React.FC<SettingsModalProps> = ({
+  isOpen,
+  onClose,
+  featureStates,
   onUpdateFeatureState,
   onBulkUpdateFeatureStates,
   hybridModeEnabled,
@@ -867,56 +1087,81 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 }) => {
   // Security authentication states
   const [isAdminUnlocked, setIsAdminUnlocked] = useState(false);
-  const [password, setPassword] = useState('');
+  const [password, setPassword] = useState("");
   const [showLockScreenPassword, setShowLockScreenPassword] = useState(false);
   const [showAdminPwd, setShowAdminPwd] = useState(false);
   const [showBrahmastraPwd, setShowBrahmastraPwd] = useState(false);
   const [showVaultPwd, setShowVaultPwd] = useState(false);
   const [fingerprintScanning, setFingerprintScanning] = useState(false);
   const [fingerprintScanned, setFingerprintScanned] = useState(false);
-  const [error, setError] = useState('');
-  const [activeSubTab, setActiveSubTab] = useState<'features' | 'gateways' | 'vendor' | 'brahmastra' | 'passwords' | 'support' | 'maintenance' | 'agents' | 'pwa' | 'apikeys' | 'registrations'>('features');
-  const [agentCommandOutput, setAgentCommandOutput] = useState<string | null>(null);
-  const [agentCommandInput, setAgentCommandInput] = useState('');
+  const [error, setError] = useState("");
+  const [activeSubTab, setActiveSubTab] = useState<
+    | "features"
+    | "gateways"
+    | "vendor"
+    | "brahmastra"
+    | "passwords"
+    | "support"
+    | "maintenance"
+    | "agents"
+    | "pwa"
+    | "apikeys"
+    | "registrations"
+  >("features");
+  const [agentCommandOutput, setAgentCommandOutput] = useState<string | null>(
+    null,
+  );
+  const [agentCommandInput, setAgentCommandInput] = useState("");
   const [isAgentProcessing, setIsAgentProcessing] = useState(false);
-  const [deepseekApiKey, setDeepseekApiKey] = useState(() => localStorage.getItem('cwb_deepseek_api_key') || '');
+  const [deepseekApiKey, setDeepseekApiKey] = useState(
+    () => localStorage.getItem("cwb_deepseek_api_key") || "",
+  );
 
   const handleInvisibleAgentCommand = async (command: string) => {
     if (!command.trim()) return;
     setIsAgentProcessing(true);
     const userInput = command;
-    setAgentCommandInput('');
+    setAgentCommandInput("");
     try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          boardId: 'invisible_agent', deepseekApiKey: localStorage.getItem('cwb_deepseek_api_key'),
-          message: userInput
-        })
+          boardId: "invisible_agent",
+          deepseekApiKey: localStorage.getItem("cwb_deepseek_api_key"),
+          message: userInput,
+        }),
       });
       const data = await response.json();
-      setAgentCommandOutput(`> ${userInput}\n\n${data.response || 'సిస్టమ్ ప్రాసెస్ చేసింది.'}`);
+      setAgentCommandOutput(
+        `> ${userInput}\n\n${data.response || "సిస్టమ్ ప్రాసెస్ చేసింది."}`,
+      );
     } catch (err) {
       console.error("Agent error:", err);
-      setAgentCommandOutput(`> ${userInput}\n\nకనెక్షన్ ఎర్రర్. ఏజెంట్ తాత్కాలికంగా ఆఫ్‌లైన్‌లో ఉంది.`);
+      setAgentCommandOutput(
+        `> ${userInput}\n\nకనెక్షన్ ఎర్రర్. ఏజెంట్ తాత్కాలికంగా ఆఫ్‌లైన్‌లో ఉంది.`,
+      );
     } finally {
       setIsAgentProcessing(false);
     }
   };
 
   const [pwaEnabled, setPwaEnabled] = useState<boolean>(() => {
-    return localStorage.getItem('cwb_pwa_enabled') !== 'false';
+    return localStorage.getItem("cwb_pwa_enabled") !== "false";
   });
-  const [pwaNotificationTitle, setPwaNotificationTitle] = useState('CWRB Final Update v2.6');
-  const [pwaNotificationBody, setPwaNotificationBody] = useState('కోడ్, లోగో మరియు మేనిఫెస్టో అప్డేట్స్ తో కూడిన ఫైనల్ PWA వెర్షన్ పబ్లిష్ చేయబడింది.');
+  const [pwaNotificationTitle, setPwaNotificationTitle] = useState(
+    "CWRB Final Update v2.6",
+  );
+  const [pwaNotificationBody, setPwaNotificationBody] = useState(
+    "కోడ్, లోగో మరియు మేనిఫెస్టో అప్డేట్స్ తో కూడిన ఫైనల్ PWA వెర్షన్ పబ్లిష్ చేయబడింది.",
+  );
   const [isPushingUpdate, setIsPushingUpdate] = useState(false);
-  const [currentLiveVersion, setCurrentLiveVersion] = useState<string>('v2.0');
+  const [currentLiveVersion, setCurrentLiveVersion] = useState<string>("v2.0");
 
   // Sync with Firestore for PWA live version
   useEffect(() => {
     if (!db) return;
-    const unsub = onSnapshot(doc(db, 'settings', 'pwa_update'), (snap) => {
+    const unsub = onSnapshot(doc(db, "settings", "pwa_update"), (snap) => {
       if (snap.exists()) {
         const data = snap.data();
         if (data.version) {
@@ -926,22 +1171,29 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     });
     return () => unsub();
   }, []);
-  const [featuresSubTab, setFeaturesSubTab] = useState<'normal' | 'premium' | 'postpaid' | 'rates'>('normal');
+  const [featuresSubTab, setFeaturesSubTab] = useState<
+    "normal" | "premium" | "postpaid" | "rates"
+  >("normal");
 
   const [preferredAgent, setPreferredAgent] = useState<string>(() => {
-    return localStorage.getItem('cwb_preferred_primary_agent') || 'Gemini 3.1 Pro (ప్రధాన ఏజెంట్ / Primary Agent)';
+    return (
+      localStorage.getItem("cwb_preferred_primary_agent") ||
+      "Gemini 3.1 Pro (ప్రధాన ఏజెంట్ / Primary Agent)"
+    );
   });
   const [agentSaveStatus, setAgentSaveStatus] = useState<string | null>(null);
 
   const handleSavePreferredAgent = (agentName: string) => {
     setPreferredAgent(agentName);
-    localStorage.setItem('cwb_preferred_primary_agent', agentName);
-    setAgentSaveStatus(`✓ ${agentName} అడ్మిన్ గారు కోరినట్లుగా ప్రధాన ఏజెంట్‌గా సెట్ చేయబడింది!`);
+    localStorage.setItem("cwb_preferred_primary_agent", agentName);
+    setAgentSaveStatus(
+      `✓ ${agentName} అడ్మిన్ గారు కోరినట్లుగా ప్రధాన ఏజెంట్‌గా సెట్ చేయబడింది!`,
+    );
     setTimeout(() => setAgentSaveStatus(null), 3000);
   };
 
   const [localPrices, setLocalPrices] = useState<Record<string, number>>(() => {
-    const saved = localStorage.getItem('cwb_feature_prices');
+    const saved = localStorage.getItem("cwb_feature_prices");
     if (saved) {
       try {
         return JSON.parse(saved);
@@ -970,45 +1222,59 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [priceSaveStatus, setPriceSaveStatus] = useState<string | null>(null);
 
   const handleSaveLocalPrices = () => {
-    localStorage.setItem('cwb_feature_prices', JSON.stringify(localPrices));
-    setPriceSaveStatus('✓ రేట్లు విజయవంతంగా సేవ్ చేయబడ్డాయి! (Rates saved!)');
+    localStorage.setItem("cwb_feature_prices", JSON.stringify(localPrices));
+    setPriceSaveStatus("✓ రేట్లు విజయవంతంగా సేవ్ చేయబడ్డాయి! (Rates saved!)");
     setTimeout(() => setPriceSaveStatus(null), 3000);
   };
 
   useEffect(() => {
     const handleStorage = () => {
-      const saved = localStorage.getItem('cwb_feature_prices');
+      const saved = localStorage.getItem("cwb_feature_prices");
       if (saved) {
         try {
           setLocalPrices(JSON.parse(saved));
         } catch (e) {}
       }
     };
-    window.addEventListener('storage', handleStorage);
-    return () => window.removeEventListener('storage', handleStorage);
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
   }, []);
 
   // Password configuration states
-  const [newAdminPwd, setNewAdminPwd] = useState(() => localStorage.getItem('cwb_admin_pwd') || '8466');
-  const [newBrahmastraPwd, setNewBrahmastraPwd] = useState(() => localStorage.getItem('cwb_brahmastra_pwd') || '8466');
-  const [newVaultPwd, setNewVaultPwd] = useState(() => localStorage.getItem('cwb_vault_pwd') || '8466');
+  const [newAdminPwd, setNewAdminPwd] = useState(
+    () => localStorage.getItem("cwb_admin_pwd") || "8466",
+  );
+  const [newBrahmastraPwd, setNewBrahmastraPwd] = useState(
+    () => localStorage.getItem("cwb_brahmastra_pwd") || "8466",
+  );
+  const [newVaultPwd, setNewVaultPwd] = useState(
+    () => localStorage.getItem("cwb_vault_pwd") || "8466",
+  );
 
   // Phone contact form states
-  const [newContactName, setNewContactName] = useState('');
-  const [newContactPhone, setNewContactPhone] = useState('')
+  const [newContactName, setNewContactName] = useState("");
+  const [newContactPhone, setNewContactPhone] = useState("");
 
   const [adminSaved, setAdminSaved] = useState(false);
   const [brahmastraSaved, setBrahmastraSaved] = useState(false);
   const [vaultSaved, setVaultSaved] = useState(false);
 
   // Admin Security Management States (Firestore settings/admin_security sync)
-  const [biometricCredentialId, setBiometricCredentialId] = useState(() => localStorage.getItem('cwb_biometric_credential_id') || '');
-  const [masterPhotoUrl, setMasterPhotoUrl] = useState(() => localStorage.getItem('cwb_master_photo_url') || '');
-  const [cameraVerificationEnabled, setCameraVerificationEnabled] = useState(() => localStorage.getItem('cwb_camera_verification_enabled') !== 'false');
-  const [mobileSettingsIconVisible, setMobileSettingsIconVisible] = useState(() => localStorage.getItem('cwb_mobile_settings_icon_visible') !== 'false');
+  const [biometricCredentialId, setBiometricCredentialId] = useState(
+    () => localStorage.getItem("cwb_biometric_credential_id") || "",
+  );
+  const [masterPhotoUrl, setMasterPhotoUrl] = useState(
+    () => localStorage.getItem("cwb_master_photo_url") || "",
+  );
+  const [cameraVerificationEnabled, setCameraVerificationEnabled] = useState(
+    () => localStorage.getItem("cwb_camera_verification_enabled") !== "false",
+  );
+  const [mobileSettingsIconVisible, setMobileSettingsIconVisible] = useState(
+    () => localStorage.getItem("cwb_mobile_settings_icon_visible") !== "false",
+  );
   const [loginAuditPhotos, setLoginAuditPhotos] = useState<string[]>(() => {
     try {
-      const saved = localStorage.getItem('cwb_login_audit_photos');
+      const saved = localStorage.getItem("cwb_login_audit_photos");
       return saved ? JSON.parse(saved) : [];
     } catch {
       return [];
@@ -1019,14 +1285,18 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [isSavedRecently, setIsSavedRecently] = useState(false);
 
   // Gateway integration configuration states
-  const [smsGatewayUrl, setSmsGatewayUrl] = useState('https://api.sms-gateway.telugu.in/v2/otp');
-  const [smsApiKey, setSmsApiKey] = useState('CWRB_SMS_KEY_9848032910_PROD');
+  const [smsGatewayUrl, setSmsGatewayUrl] = useState(
+    "https://api.sms-gateway.telugu.in/v2/otp",
+  );
+  const [smsApiKey, setSmsApiKey] = useState("CWRB_SMS_KEY_9848032910_PROD");
   const [smsStatus, setSmsStatus] = useState<string | null>(null);
   const [isSmsTesting, setIsSmsTesting] = useState(false);
 
-  const [paymentGateway, setPaymentGateway] = useState('phonepe');
-  const [merchantId, setMerchantId] = useState('MERCHANT_CWRB_LIVE_3910');
-  const [paymentSalt, setPaymentSalt] = useState('SALT_PHNPE_KEY_8742260_SECURE');
+  const [paymentGateway, setPaymentGateway] = useState("phonepe");
+  const [merchantId, setMerchantId] = useState("MERCHANT_CWRB_LIVE_3910");
+  const [paymentSalt, setPaymentSalt] = useState(
+    "SALT_PHNPE_KEY_8742260_SECURE",
+  );
   const [payStatus, setPayStatus] = useState<string | null>(null);
   const [isPayTesting, setIsPayTesting] = useState(false);
 
@@ -1034,116 +1304,182 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   useEffect(() => {
     const fetchCloudSecurity = async () => {
       try {
-        const docRef = doc(db, 'settings', 'admin_security');
+        const docRef = doc(db, "settings", "admin_security");
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
           const data = docSnap.data();
           if (data.adminPwd) {
             setNewAdminPwd(data.adminPwd);
-            localStorage.setItem('cwb_admin_pwd', data.adminPwd);
+            localStorage.setItem("cwb_admin_pwd", data.adminPwd);
           }
           if (data.brahmastraPwd) {
             setNewBrahmastraPwd(data.brahmastraPwd);
-            localStorage.setItem('cwb_brahmastra_pwd', data.brahmastraPwd);
+            localStorage.setItem("cwb_brahmastra_pwd", data.brahmastraPwd);
           }
           if (data.vaultPwd) {
             setNewVaultPwd(data.vaultPwd);
-            localStorage.setItem('cwb_vault_pwd', data.vaultPwd);
+            localStorage.setItem("cwb_vault_pwd", data.vaultPwd);
           }
           if (data.biometricCredentialId !== undefined) {
             setBiometricCredentialId(data.biometricCredentialId);
-            localStorage.setItem('cwb_biometric_credential_id', data.biometricCredentialId);
+            localStorage.setItem(
+              "cwb_biometric_credential_id",
+              data.biometricCredentialId,
+            );
           }
           if (data.masterPhotoUrl !== undefined) {
             setMasterPhotoUrl(data.masterPhotoUrl);
-            localStorage.setItem('cwb_master_photo_url', data.masterPhotoUrl);
+            localStorage.setItem("cwb_master_photo_url", data.masterPhotoUrl);
           }
           if (data.cameraVerificationEnabled !== undefined) {
             setCameraVerificationEnabled(data.cameraVerificationEnabled);
-            localStorage.setItem('cwb_camera_verification_enabled', String(data.cameraVerificationEnabled));
+            localStorage.setItem(
+              "cwb_camera_verification_enabled",
+              String(data.cameraVerificationEnabled),
+            );
           }
           if (data.mobileSettingsIconVisible !== undefined) {
             setMobileSettingsIconVisible(data.mobileSettingsIconVisible);
-            localStorage.setItem('cwb_mobile_settings_icon_visible', String(data.mobileSettingsIconVisible));
+            localStorage.setItem(
+              "cwb_mobile_settings_icon_visible",
+              String(data.mobileSettingsIconVisible),
+            );
           }
           if (Array.isArray(data.loginAuditPhotos)) {
             setLoginAuditPhotos(data.loginAuditPhotos);
-            localStorage.setItem('cwb_login_audit_photos', JSON.stringify(data.loginAuditPhotos));
+            localStorage.setItem(
+              "cwb_login_audit_photos",
+              JSON.stringify(data.loginAuditPhotos),
+            );
           }
-          setCloudSyncStatus('✓ క్లౌడ్ డేటాబేస్ నుండి సెక్యూరిటీ నిబంధనలు సింక్ చేయబడ్డాయి');
+          setCloudSyncStatus(
+            "✓ క్లౌడ్ డేటాబేస్ నుండి సెక్యూరిటీ నిబంధనలు సింక్ చేయబడ్డాయి",
+          );
         }
       } catch (err) {
-        setCloudSyncStatus('ℹ లోకల్ స్టోరేజ్ మోడ్ (Offline Mode)');
-        console.log('Cloud security fetch offline/skipped:', err);
+        setCloudSyncStatus("ℹ లోకల్ స్టోరేజ్ మోడ్ (Offline Mode)");
+        console.log("Cloud security fetch offline/skipped:", err);
       }
     };
     fetchCloudSecurity();
   }, []);
 
-  const saveSecurityToCloudAndLocal = async (updates: {
-    adminPwd?: string;
-    brahmastraPwd?: string;
-    vaultPwd?: string;
-    biometricCredentialId?: string;
-    masterPhotoUrl?: string;
-    cameraVerificationEnabled?: boolean;
-    mobileSettingsIconVisible?: boolean;
-    loginAuditPhotos?: string[];
-  }, showAlert: boolean = true) => {
+  const saveSecurityToCloudAndLocal = async (
+    updates: {
+      adminPwd?: string;
+      brahmastraPwd?: string;
+      vaultPwd?: string;
+      biometricCredentialId?: string;
+      masterPhotoUrl?: string;
+      cameraVerificationEnabled?: boolean;
+      mobileSettingsIconVisible?: boolean;
+      loginAuditPhotos?: string[];
+    },
+    showAlert: boolean = true,
+  ) => {
     setIsCloudSyncing(true);
     setCloudSyncStatus(null);
     try {
       const payload = {
-        adminPwd: updates.adminPwd !== undefined ? updates.adminPwd : newAdminPwd,
-        brahmastraPwd: updates.brahmastraPwd !== undefined ? updates.brahmastraPwd : newBrahmastraPwd,
-        vaultPwd: updates.vaultPwd !== undefined ? updates.vaultPwd : newVaultPwd,
-        biometricCredentialId: updates.biometricCredentialId !== undefined ? updates.biometricCredentialId : biometricCredentialId,
-        masterPhotoUrl: updates.masterPhotoUrl !== undefined ? updates.masterPhotoUrl : masterPhotoUrl,
-        cameraVerificationEnabled: updates.cameraVerificationEnabled !== undefined ? updates.cameraVerificationEnabled : cameraVerificationEnabled,
-        mobileSettingsIconVisible: updates.mobileSettingsIconVisible !== undefined ? updates.mobileSettingsIconVisible : mobileSettingsIconVisible,
-        loginAuditPhotos: updates.loginAuditPhotos !== undefined ? updates.loginAuditPhotos : loginAuditPhotos,
-        updatedAt: new Date().toISOString()
+        adminPwd:
+          updates.adminPwd !== undefined ? updates.adminPwd : newAdminPwd,
+        brahmastraPwd:
+          updates.brahmastraPwd !== undefined
+            ? updates.brahmastraPwd
+            : newBrahmastraPwd,
+        vaultPwd:
+          updates.vaultPwd !== undefined ? updates.vaultPwd : newVaultPwd,
+        biometricCredentialId:
+          updates.biometricCredentialId !== undefined
+            ? updates.biometricCredentialId
+            : biometricCredentialId,
+        masterPhotoUrl:
+          updates.masterPhotoUrl !== undefined
+            ? updates.masterPhotoUrl
+            : masterPhotoUrl,
+        cameraVerificationEnabled:
+          updates.cameraVerificationEnabled !== undefined
+            ? updates.cameraVerificationEnabled
+            : cameraVerificationEnabled,
+        mobileSettingsIconVisible:
+          updates.mobileSettingsIconVisible !== undefined
+            ? updates.mobileSettingsIconVisible
+            : mobileSettingsIconVisible,
+        loginAuditPhotos:
+          updates.loginAuditPhotos !== undefined
+            ? updates.loginAuditPhotos
+            : loginAuditPhotos,
+        updatedAt: new Date().toISOString(),
       };
 
-      if (payload.adminPwd) localStorage.setItem('cwb_admin_pwd', payload.adminPwd);
-      if (payload.brahmastraPwd) localStorage.setItem('cwb_brahmastra_pwd', payload.brahmastraPwd);
-      if (payload.vaultPwd) localStorage.setItem('cwb_vault_pwd', payload.vaultPwd);
-      if (payload.biometricCredentialId !== undefined) localStorage.setItem('cwb_biometric_credential_id', payload.biometricCredentialId);
-      if (payload.masterPhotoUrl !== undefined) localStorage.setItem('cwb_master_photo_url', payload.masterPhotoUrl);
-      localStorage.setItem('cwb_camera_verification_enabled', String(payload.cameraVerificationEnabled));
-      localStorage.setItem('cwb_mobile_settings_icon_visible', String(payload.mobileSettingsIconVisible));
+      if (payload.adminPwd)
+        localStorage.setItem("cwb_admin_pwd", payload.adminPwd);
+      if (payload.brahmastraPwd)
+        localStorage.setItem("cwb_brahmastra_pwd", payload.brahmastraPwd);
+      if (payload.vaultPwd)
+        localStorage.setItem("cwb_vault_pwd", payload.vaultPwd);
+      if (payload.biometricCredentialId !== undefined)
+        localStorage.setItem(
+          "cwb_biometric_credential_id",
+          payload.biometricCredentialId,
+        );
+      if (payload.masterPhotoUrl !== undefined)
+        localStorage.setItem("cwb_master_photo_url", payload.masterPhotoUrl);
+      localStorage.setItem(
+        "cwb_camera_verification_enabled",
+        String(payload.cameraVerificationEnabled),
+      );
+      localStorage.setItem(
+        "cwb_mobile_settings_icon_visible",
+        String(payload.mobileSettingsIconVisible),
+      );
       // Truncate audit photos if too large for quota/localStorage
       const safePhotos = (payload.loginAuditPhotos || []).slice(-10);
-      localStorage.setItem('cwb_login_audit_photos', JSON.stringify(safePhotos));
+      localStorage.setItem(
+        "cwb_login_audit_photos",
+        JSON.stringify(safePhotos),
+      );
 
       try {
         if (db) {
-          const docRef = doc(db, 'settings', 'admin_security');
+          const docRef = doc(db, "settings", "admin_security");
           // Omit heavy base64 audit photos from firestore to prevent quota exceeded
-          const cloudPayload = { ...payload, loginAuditPhotos: safePhotos.slice(-3) };
+          const cloudPayload = {
+            ...payload,
+            loginAuditPhotos: safePhotos.slice(-3),
+          };
           await setDoc(docRef, cloudPayload, { merge: true });
-          setCloudSyncStatus('✓ అడ్మిన్ సెక్యూరిటీ నిబంధనలు క్లౌడ్‌లో పర్మనెంట్‌గా సేవ్ చేయబడ్డాయి!');
+          setCloudSyncStatus(
+            "✓ అడ్మిన్ సెక్యూరిటీ నిబంధనలు క్లౌడ్‌లో పర్మనెంట్‌గా సేవ్ చేయబడ్డాయి!",
+          );
         }
       } catch (cloudErr) {
-        setCloudSyncStatus('✓ లోకల్ స్టోరేజ్‌లో సురక్షితంగా సేవ్ చేయబడింది (Quota Safe Mode)');
-        console.log('Cloud save quota/offline handled:', cloudErr);
+        setCloudSyncStatus(
+          "✓ లోకల్ స్టోరేజ్‌లో సురక్షితంగా సేవ్ చేయబడింది (Quota Safe Mode)",
+        );
+        console.log("Cloud save quota/offline handled:", cloudErr);
       }
 
       setIsSavedRecently(true);
       setTimeout(() => setIsSavedRecently(false), 3000);
       setIsCloudSyncing(false);
-      if (showAlert) alert('✓ అన్ని అడ్మిన్ సెక్యూరిటీ సెట్టింగ్స్ క్లౌడ్ & లోకల్‌లో విజయవంతంగా సేవ్ చేయబడ్డాయి!');
+      if (showAlert)
+        alert(
+          "✓ అన్ని అడ్మిన్ సెక్యూరిటీ సెట్టింగ్స్ క్లౌడ్ & లోకల్‌లో విజయవంతంగా సేవ్ చేయబడ్డాయి!",
+        );
     } catch (err) {
       setIsCloudSyncing(false);
-      setCloudSyncStatus('⚠️ లోకల్ సేవ్ విజయవంతమైంది');
-      console.error('Security save error:', err);
-      if (showAlert) alert('✓ అడ్మిన్ సెక్యూరిటీ సెట్టింగ్స్ లోకల్‌లో సేవ్ చేయబడ్డాయి!');
+      setCloudSyncStatus("⚠️ లోకల్ సేవ్ విజయవంతమైంది");
+      console.error("Security save error:", err);
+      if (showAlert)
+        alert("✓ అడ్మిన్ సెక్యూరిటీ సెట్టింగ్స్ లోకల్‌లో సేవ్ చేయబడ్డాయి!");
     }
   };
 
   const handleRegisterFingerprint = async () => {
     try {
-      let credId = 'cwb-bio-cred-' + Math.random().toString(36).substring(2, 10);
+      let credId =
+        "cwb-bio-cred-" + Math.random().toString(36).substring(2, 10);
       if (window.PublicKeyCredential) {
         try {
           const pubKeyCredParams = {
@@ -1152,33 +1488,37 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             user: {
               id: new Uint8Array(16),
               name: "admin@cwrb.in",
-              displayName: "అడ్మిన్ గారు"
+              displayName: "అడ్మిన్ గారు",
             },
             pubKeyCredParams: [{ alg: -7, type: "public-key" as const }],
             timeout: 60000,
-            attestation: "direct" as const
+            attestation: "direct" as const,
           };
-          const credential = await navigator.credentials.create({ publicKey: pubKeyCredParams });
+          const credential = await navigator.credentials.create({
+            publicKey: pubKeyCredParams,
+          });
           if (credential && credential.id) {
             credId = credential.id;
           }
         } catch (e) {
-          console.log('WebAuthn prompt fallback used:', e);
+          console.log("WebAuthn prompt fallback used:", e);
         }
       }
       setBiometricCredentialId(credId);
       await saveSecurityToCloudAndLocal({ biometricCredentialId: credId });
-      alert('✓ కొత్త ఫింగర్‌ప్రింట్ / బయోమెట్రిక్ విజయవంతంగా రికార్డ్ చేయబడింది మరియు క్లౌడ్‌లో సేవ్ అయింది!');
+      alert(
+        "✓ కొత్త ఫింగర్‌ప్రింట్ / బయోమెట్రిక్ విజయవంతంగా రికార్డ్ చేయబడింది మరియు క్లౌడ్‌లో సేవ్ అయింది!",
+      );
     } catch (e) {
-      alert('బయోమెట్రిక్ నమోదులో లోపం ఏర్పడింది.');
+      alert("బయోమెట్రిక్ నమోదులో లోపం ఏర్పడింది.");
     }
   };
 
   const handleResetBiometrics = async () => {
-    if (confirm('అన్ని నమోదిత ఫింగర్‌ప్రింట్‌లను తొలగించి రీసెట్ చేయాలా?')) {
-      setBiometricCredentialId('');
-      await saveSecurityToCloudAndLocal({ biometricCredentialId: '' });
-      alert('✓ బయోమెట్రిక్స్ విజయవంతంగా రీసెట్ చేయబడ్డాయి.');
+    if (confirm("అన్ని నమోదిత ఫింగర్‌ప్రింట్‌లను తొలగించి రీసెట్ చేయాలా?")) {
+      setBiometricCredentialId("");
+      await saveSecurityToCloudAndLocal({ biometricCredentialId: "" });
+      alert("✓ బయోమెట్రిక్స్ విజయవంతంగా రీసెట్ చేయబడ్డాయి.");
     }
   };
 
@@ -1189,7 +1529,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       reader.onload = (event) => {
         const img = new Image();
         img.onload = async () => {
-          const canvas = document.createElement('canvas');
+          const canvas = document.createElement("canvas");
           const MAX_WIDTH = 300;
           const MAX_HEIGHT = 300;
           let width = img.width;
@@ -1209,13 +1549,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
           canvas.width = width;
           canvas.height = height;
-          const ctx = canvas.getContext('2d');
+          const ctx = canvas.getContext("2d");
           ctx?.drawImage(img, 0, 0, width, height);
-          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.85);
+          const compressedBase64 = canvas.toDataURL("image/jpeg", 0.85);
 
           setMasterPhotoUrl(compressedBase64);
-          await saveSecurityToCloudAndLocal({ masterPhotoUrl: compressedBase64 });
-          alert('✓ మాస్టర్ ఫోటో విజయవంతంగా కంప్రెస్ చేయబడి క్లౌడ్‌కు సింక్ చేయబడింది!');
+          await saveSecurityToCloudAndLocal({
+            masterPhotoUrl: compressedBase64,
+          });
+          alert(
+            "✓ మాస్టర్ ఫోటో విజయవంతంగా కంప్రెస్ చేయబడి క్లౌడ్‌కు సింక్ చేయబడింది!",
+          );
         };
         img.src = event.target?.result as string;
       };
@@ -1223,34 +1567,63 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     }
   };
 
-  const handleSaveSinglePassword = async (type: 'admin' | 'brahmastra' | 'vault') => {
-    if (type === 'admin') {
+  const handleSaveSinglePassword = async (
+    type: "admin" | "brahmastra" | "vault",
+  ) => {
+    if (type === "admin") {
       if (!newAdminPwd.trim()) {
-        alert('దయచేసి పాస్‌వర్డ్ ఎంటర్ చేయండి. (Please enter a password)');
+        alert("దయచేసి పాస్‌వర్డ్ ఎంటర్ చేయండి. (Please enter a password)");
         return;
       }
       setAdminSaved(true);
-      localStorage.setItem('cwb_admin_pwd', newAdminPwd.trim());
-      await saveSecurityToCloudAndLocal({ adminPwd: newAdminPwd.trim() }, false);
-      setTimeout(() => alert('అడ్మిన్ పాస్‌వర్డ్ విజయవంతంగా సేవ్ చేయబడింది మరియు క్లౌడ్‌కు సింక్ అయింది!'), 100);
-    } else if (type === 'brahmastra') {
+      localStorage.setItem("cwb_admin_pwd", newAdminPwd.trim());
+      await saveSecurityToCloudAndLocal(
+        { adminPwd: newAdminPwd.trim() },
+        false,
+      );
+      setTimeout(
+        () =>
+          alert(
+            "అడ్మిన్ పాస్‌వర్డ్ విజయవంతంగా సేవ్ చేయబడింది మరియు క్లౌడ్‌కు సింక్ అయింది!",
+          ),
+        100,
+      );
+    } else if (type === "brahmastra") {
       if (!newBrahmastraPwd.trim()) {
-        alert('దయచేసి బ్రహ్మాస్త్ర కోడ్ ఎంటర్ చేయండి. (Please enter a code)');
+        alert("దయచేసి బ్రహ్మాస్త్ర కోడ్ ఎంటర్ చేయండి. (Please enter a code)");
         return;
       }
       setBrahmastraSaved(true);
-      localStorage.setItem('cwb_brahmastra_pwd', newBrahmastraPwd.trim());
-      await saveSecurityToCloudAndLocal({ brahmastraPwd: newBrahmastraPwd.trim() }, false);
-      setTimeout(() => alert('బ్రహ్మాస్త్ర కోడ్ విజయవంతంగా సేవ్ చేయబడింది మరియు క్లౌడ్‌కు సింక్ అయింది!'), 100);
-    } else if (type === 'vault') {
+      localStorage.setItem("cwb_brahmastra_pwd", newBrahmastraPwd.trim());
+      await saveSecurityToCloudAndLocal(
+        { brahmastraPwd: newBrahmastraPwd.trim() },
+        false,
+      );
+      setTimeout(
+        () =>
+          alert(
+            "బ్రహ్మాస్త్ర కోడ్ విజయవంతంగా సేవ్ చేయబడింది మరియు క్లౌడ్‌కు సింక్ అయింది!",
+          ),
+        100,
+      );
+    } else if (type === "vault") {
       if (!newVaultPwd.trim()) {
-        alert('దయచేసి సీక్రెట్ వాల్ట్ పిన్ ఎంటర్ చేయండి. (Please enter a PIN)');
+        alert("దయచేసి సీక్రెట్ వాల్ట్ పిన్ ఎంటర్ చేయండి. (Please enter a PIN)");
         return;
       }
       setVaultSaved(true);
-      localStorage.setItem('cwb_vault_pwd', newVaultPwd.trim());
-      await saveSecurityToCloudAndLocal({ vaultPwd: newVaultPwd.trim() }, false);
-      setTimeout(() => alert('సీక్రెట్ వాల్ట్ పిన్ విజయవంతంగా సేవ్ చేయబడింది మరియు క్లౌడ్‌కు సింక్ అయింది!'), 100);
+      localStorage.setItem("cwb_vault_pwd", newVaultPwd.trim());
+      await saveSecurityToCloudAndLocal(
+        { vaultPwd: newVaultPwd.trim() },
+        false,
+      );
+      setTimeout(
+        () =>
+          alert(
+            "సీక్రెట్ వాల్ట్ పిన్ విజయవంతంగా సేవ్ చేయబడింది మరియు క్లౌడ్‌కు సింక్ అయింది!",
+          ),
+        100,
+      );
     }
   };
 
@@ -1258,71 +1631,81 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       setIsAdminUnlocked(false);
-      setPassword('');
+      setPassword("");
       setShowLockScreenPassword(false);
       setShowAdminPwd(false);
       setShowBrahmastraPwd(false);
       setShowVaultPwd(false);
       setFingerprintScanning(false);
       setFingerprintScanned(false);
-      setError('');
-      setActiveSubTab('features');
+      setError("");
+      setActiveSubTab("features");
       setSmsStatus(null);
       setPayStatus(null);
       setAdminSaved(false);
       setBrahmastraSaved(false);
       setVaultSaved(false);
-      setNewAdminPwd(localStorage.getItem('cwb_admin_pwd') || '8466');
-      setNewBrahmastraPwd(localStorage.getItem('cwb_brahmastra_pwd') || '8466');
-      setNewVaultPwd(localStorage.getItem('cwb_vault_pwd') || '8466');
+      setNewAdminPwd(localStorage.getItem("cwb_admin_pwd") || "8466");
+      setNewBrahmastraPwd(localStorage.getItem("cwb_brahmastra_pwd") || "8466");
+      setNewVaultPwd(localStorage.getItem("cwb_vault_pwd") || "8466");
     }
   }, [isOpen]);
 
-  const [isCameraVerificationModalOpen, setIsCameraVerificationModalOpen] = useState(false);
+  const [isCameraVerificationModalOpen, setIsCameraVerificationModalOpen] =
+    useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
 
   const startCameraStream = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "user" },
+      });
       setCameraStream(stream);
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
       }
     } catch (err) {
-      console.log('Camera stream fallback used:', err);
+      console.log("Camera stream fallback used:", err);
     }
   };
 
   const stopCameraStream = () => {
     if (cameraStream) {
-      cameraStream.getTracks().forEach(track => track.stop());
+      cameraStream.getTracks().forEach((track) => track.stop());
       setCameraStream(null);
     }
   };
 
   const captureAndVerifyCamera = () => {
-    let capturedPhoto = masterPhotoUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300';
+    let capturedPhoto =
+      masterPhotoUrl ||
+      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300";
     if (videoRef.current) {
       const video = videoRef.current;
-      const canvas = document.createElement('canvas');
+      const canvas = document.createElement("canvas");
       canvas.width = video.videoWidth || 300;
       canvas.height = video.videoHeight || 300;
-      const ctx = canvas.getContext('2d');
+      const ctx = canvas.getContext("2d");
       if (ctx) {
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        capturedPhoto = canvas.toDataURL('image/jpeg', 0.85);
+        capturedPhoto = canvas.toDataURL("image/jpeg", 0.85);
       }
     }
 
     const updatedPhotos = [capturedPhoto, ...loginAuditPhotos].slice(0, 10);
     setLoginAuditPhotos(updatedPhotos);
-    localStorage.setItem('cwb_login_audit_photos', JSON.stringify(updatedPhotos));
+    localStorage.setItem(
+      "cwb_login_audit_photos",
+      JSON.stringify(updatedPhotos),
+    );
 
     stopCameraStream();
     setIsCameraVerificationModalOpen(false);
     setIsAdminUnlocked(true);
-    alert('✓ అడ్మిన్ లైవ్ కెమెరా వెరిఫికేషన్ విజయవంతంగా పూర్తయింది! (Admin Face Auto-Verified)');
+    alert(
+      "✓ అడ్మిన్ లైవ్ కెమెరా వెరిఫికేషన్ విజయవంతంగా పూర్తయింది! (Admin Face Auto-Verified)",
+    );
   };
 
   // Automatically trigger camera capture & verify after 2 seconds when modal opens (Admin garu requirement: no manual button click)
@@ -1343,7 +1726,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const handleFingerprintTouch = () => {
     if (fingerprintScanned || fingerprintScanning) return;
     setFingerprintScanning(true);
-    setError('');
+    setError("");
 
     // Simulate laser scanning animation delay
     setTimeout(() => {
@@ -1354,22 +1737,30 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
   const handleVerifyAccess = (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    
-    const savedAdminPwd = localStorage.getItem('cwb_admin_pwd') || '8466';
-    
+    setError("");
+
+    const savedAdminPwd = localStorage.getItem("cwb_admin_pwd") || "8466";
+
     if (password !== savedAdminPwd) {
-      setError('తప్పుడు పాస్‌వర్డ్! దయచేసి సరైన కోడ్ ఎంటర్ చేయండి. (Incorrect password!)');
+      setError(
+        "తప్పుడు పాస్‌వర్డ్! దయచేసి సరైన కోడ్ ఎంటర్ చేయండి. (Incorrect password!)",
+      );
       return;
     }
 
     if (!fingerprintScanned) {
-      setError('దయచేసి బయోమెట్రిక్ వెరిఫికేషన్ కోసం ఫింగర్‌ప్రింట్ ఐకాన్ నొక్కండి! (Please touch the fingerprint scanner)');
+      setError(
+        "దయచేసి బయోమెట్రిక్ వెరిఫికేషన్ కోసం ఫింగర్‌ప్రింట్ ఐకాన్ నొక్కండి! (Please touch the fingerprint scanner)",
+      );
       return;
     }
 
     // Trigger Live Camera Verification Modal ONLY if masterPhotoUrl has been saved inside admin panel
-    if (cameraVerificationEnabled && masterPhotoUrl && masterPhotoUrl.length > 20) {
+    if (
+      cameraVerificationEnabled &&
+      masterPhotoUrl &&
+      masterPhotoUrl.length > 20
+    ) {
       setIsCameraVerificationModalOpen(true);
       startCameraStream();
     } else {
@@ -1379,20 +1770,22 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
   return (
     <div className="absolute inset-0 bg-slate-900/85 backdrop-blur-xs z-50 flex flex-col justify-end">
-      
       {/* Settings Panel Body */}
-      <div className="bg-white rounded-t-[32px] max-h-[92%] overflow-hidden flex flex-col shadow-2xl border-t-4 border-[#082c75]">
-        
+      <div className="bg-white rounded-t-[32px] max-h-[92%] overflow-hidden flex flex-col shadow-2xl border-t-4 border-[#2563eb]">
         {/* Settings Modal Header */}
         <div className="bg-slate-50 border-b border-gray-100 py-3.5 px-5 flex justify-between items-center shrink-0">
           <div className="flex items-center gap-2">
-            <Sliders className="w-4 h-4 text-[#082c75]" />
+            <Sliders className="w-4 h-4 text-[#2563eb]" />
             <div>
-              <h3 className="text-xs font-black text-[#082c75] uppercase">సిస్టమ్ సెట్టింగ్స్ / settings</h3>
-              <p className="text-[8px] text-gray-500 font-bold">ద్విభాషా నియంత్రణ ప్యానెల్ (Dual Control Panel)</p>
+              <h3 className="text-xs font-black text-[#2563eb] uppercase">
+                సిస్టమ్ సెట్టింగ్స్ / settings
+              </h3>
+              <p className="text-[8px] text-gray-500 font-bold">
+                ద్విభాషా నియంత్రణ ప్యానెల్ (Dual Control Panel)
+              </p>
             </div>
           </div>
-          <button 
+          <button
             onClick={onClose}
             className="p-1.5 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 transition"
           >
@@ -1402,7 +1795,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
         {/* Scrollable Container */}
         <div className="flex-1 overflow-y-auto p-5 space-y-5">
-          
           {!isAdminUnlocked ? (
             /* SECURITY LOCK SCREEN VIEW */
             <div className="space-y-5">
@@ -1411,9 +1803,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <ShieldAlert className="w-8 h-8 animate-pulse" />
                 </div>
                 <div className="space-y-1">
-                  <h4 className="font-extrabold text-sm text-gray-800">అడ్మిన్ అథెంటికేషన్ అవసరం</h4>
+                  <h4 className="font-extrabold text-sm text-gray-800">
+                    అడ్మిన్ అథెంటికేషన్ అవసరం
+                  </h4>
                   <p className="text-[10px] text-gray-500 leading-relaxed">
-                    సిస్టమ్ నియంత్రణలను మార్చడానికి పాస్‌వర్డ్ మరియు బయోమెట్రిక్ వెరిఫికేషన్ చేయండి.
+                    సిస్టమ్ నియంత్రణలను మార్చడానికి పాస్‌వర్డ్ మరియు బయోమెట్రిక్
+                    వెరిఫికేషన్ చేయండి.
                   </p>
                 </div>
               </div>
@@ -1421,42 +1816,55 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               <form onSubmit={handleVerifyAccess} className="space-y-4">
                 {/* Password field */}
                 <div className="space-y-1.5">
-                  <label className="block text-[10px] font-extrabold text-gray-500 uppercase tracking-wider">పాస్‌వర్డ్ నమోదు చేయండి (Enter Password)</label>
+                  <label className="block text-[10px] font-extrabold text-gray-500 uppercase tracking-wider">
+                    పాస్‌వర్డ్ నమోదు చేయండి (Enter Password)
+                  </label>
                   <div className="relative flex items-center">
                     <Key className="absolute left-3.5 w-4 h-4 text-gray-400" />
-                    <input 
+                    <input
                       type={showLockScreenPassword ? "text" : "password"}
                       maxLength={32}
                       placeholder="పాస్‌వర్డ్ నమోదు చేయండి"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full bg-slate-50 border border-gray-200 rounded-xl py-3 pl-10 pr-10 text-xs font-semibold text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#082c75] focus:bg-white"
+                      className="w-full bg-slate-50 border border-gray-200 rounded-xl py-3 pl-10 pr-10 text-xs font-semibold text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:bg-white"
                     />
                     <button
                       type="button"
-                      onClick={() => setShowLockScreenPassword(!showLockScreenPassword)}
+                      onClick={() =>
+                        setShowLockScreenPassword(!showLockScreenPassword)
+                      }
                       className="absolute right-3 p-1 text-gray-400 hover:text-gray-600 transition"
                     >
-                      {showLockScreenPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      {showLockScreenPassword ? (
+                        <EyeOff className="w-4 h-4" />
+                      ) : (
+                        <Eye className="w-4 h-4" />
+                      )}
                     </button>
                   </div>
-                  <div className="text-[9px] text-[#082c75] font-black bg-blue-50 py-1 px-2.5 rounded-lg border border-blue-200 inline-block">
+                  <div className="text-[9px] text-[#2563eb] font-black bg-blue-50 py-1 px-2.5 rounded-lg border border-blue-200 inline-block">
                     🔒 ప్రస్తుత పాస్‌వర్డ్: ++++
                   </div>
                 </div>
 
                 {/* Fingerprint Biometrics Area */}
                 <div className="space-y-2">
-                  <label className="block text-[10px] font-extrabold text-gray-500 uppercase tracking-wider text-center">బయోమెట్రిక్ వేలిముద్ర (Touch Fingerprint Scanner)</label>
-                  
+                  <label className="block text-[10px] font-extrabold text-gray-500 uppercase tracking-wider text-center">
+                    బయోమెట్రిక్ వేలిముద్ర (Touch Fingerprint Scanner)
+                  </label>
+
                   <div className="flex flex-col items-center justify-center p-4 bg-slate-50 rounded-2xl border border-gray-100 relative overflow-hidden">
-                    
                     {/* Laser Scanner Line (Scanning state) */}
                     {fingerprintScanning && (
-                      <motion.div 
-                        initial={{ top: '0%' }}
-                        animate={{ top: '100%' }}
-                        transition={{ repeat: Infinity, duration: 1.2, ease: 'easeInOut' }}
+                      <motion.div
+                        initial={{ top: "0%" }}
+                        animate={{ top: "100%" }}
+                        transition={{
+                          repeat: Infinity,
+                          duration: 1.2,
+                          ease: "easeInOut",
+                        }}
                         className="absolute left-0 right-0 h-0.5 bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.8)] z-10"
                       />
                     )}
@@ -1465,34 +1873,37 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       type="button"
                       onClick={handleFingerprintTouch}
                       className={`w-20 h-20 rounded-full border-2 flex items-center justify-center transition-all ${
-                        fingerprintScanned 
-                          ? 'bg-emerald-50 border-emerald-400 text-emerald-600 shadow-[0_0_15px_rgba(16,185,129,0.2)]' 
-                          : fingerprintScanning 
-                            ? 'bg-cyan-50 border-cyan-400 text-cyan-500 animate-pulse'
-                            : 'bg-white border-gray-200 text-[#082c75] hover:border-[#082c75] hover:bg-[#082c75]/5'
+                        fingerprintScanned
+                          ? "bg-emerald-50 border-emerald-400 text-emerald-600 shadow-[0_0_15px_rgba(16,185,129,0.2)]"
+                          : fingerprintScanning
+                            ? "bg-cyan-50 border-cyan-400 text-cyan-500 animate-pulse"
+                            : "bg-white border-gray-200 text-[#2563eb] hover:border-[#2563eb] hover:bg-[#2563eb]/5"
                       } active:scale-95`}
                     >
                       {fingerprintScanned ? (
                         <ShieldCheck className="w-11 h-11" />
                       ) : (
-                        <Fingerprint className={`w-11 h-11 ${fingerprintScanning ? 'animate-pulse text-cyan-500' : ''}`} />
+                        <Fingerprint
+                          className={`w-11 h-11 ${fingerprintScanning ? "animate-pulse text-cyan-500" : ""}`}
+                        />
                       )}
                     </button>
 
                     <div className="text-center mt-2.5 space-y-0.5">
-                      <span className={`text-[10px] font-black uppercase ${
-                        fingerprintScanned 
-                          ? 'text-emerald-700' 
-                          : fingerprintScanning 
-                            ? 'text-cyan-600 animate-pulse' 
-                            : 'text-gray-400'
-                      }`}>
-                        {fingerprintScanned 
-                          ? 'వేలిముద్ర వెరిఫై చేయబడింది! (Verified)' 
-                          : fingerprintScanning 
-                            ? 'స్కాన్ చేస్తోంది... (Scanning...)' 
-                            : 'వేలిముద్ర ఐకాన్‌ని నొక్కండి (Touch Scanner)'
-                        }
+                      <span
+                        className={`text-[10px] font-black uppercase ${
+                          fingerprintScanned
+                            ? "text-emerald-700"
+                            : fingerprintScanning
+                              ? "text-cyan-600 animate-pulse"
+                              : "text-gray-400"
+                        }`}
+                      >
+                        {fingerprintScanned
+                          ? "వేలిముద్ర వెరిఫై చేయబడింది! (Verified)"
+                          : fingerprintScanning
+                            ? "స్కాన్ చేస్తోంది... (Scanning...)"
+                            : "వేలిముద్ర ఐకాన్‌ని నొక్కండి (Touch Scanner)"}
                       </span>
                     </div>
                   </div>
@@ -1507,7 +1918,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
                 <button
                   type="submit"
-                  className="w-full py-3 bg-[#082c75] hover:bg-[#001040] text-white font-black text-xs rounded-xl shadow-md transition active:scale-95 flex items-center justify-center gap-1.5"
+                  className="w-full py-3 bg-[#2563eb] hover:bg-[#001040] text-white font-black text-xs rounded-xl shadow-md transition active:scale-95 flex items-center justify-center gap-1.5"
                 >
                   <ShieldCheck className="w-4 h-4" />
                   <span>అడ్మిన్ ప్యానెల్ అన్‌లాక్ చేయండి (Unlock Panel)</span>
@@ -1517,9 +1928,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           ) : (
             /* NESTED ADMIN PANEL VIEW (SWITCHBOARD CONTROL SYSTEM) */
             <div className="space-y-4 animate-fade-in">
-              <div className="bg-[#082c75]/5 rounded-2xl p-3.5 border border-[#082c75]/10 space-y-1">
+              <div className="bg-[#2563eb]/5 rounded-2xl p-3.5 border border-[#2563eb]/10 space-y-1">
                 <div className="flex items-center justify-between">
-                  <h4 className="font-extrabold text-xs text-[#082c75] uppercase">🛡️ అడ్మిన్ కంట్రోల్ ప్యానెల్</h4>
+                  <h4 className="font-extrabold text-xs text-[#2563eb] uppercase">
+                    🛡️ అడ్మిన్ కంట్రోల్ ప్యానెల్
+                  </h4>
                   <button
                     onClick={() => setIsAdminUnlocked(false)}
                     className="text-[9px] font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg py-1 px-2 transition active:scale-95"
@@ -1527,128 +1940,130 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     🔒 లాక్ చేయండి
                   </button>
                 </div>
-                <p className="text-[10px] text-gray-500">సిస్టమ్ భద్రత మరియు నియంత్రణల సమూహం</p>
+                <p className="text-[10px] text-gray-500">
+                  సిస్టమ్ భద్రత మరియు నియంత్రణల సమూహం
+                </p>
               </div>
 
               {/* Mobile Admin Subtabs */}
               <div className="flex gap-2 border-b border-gray-200 overflow-x-auto whitespace-nowrap scrollbar-none pb-1">
                 <button
                   type="button"
-                  onClick={() => setActiveSubTab('features')}
+                  onClick={() => setActiveSubTab("features")}
                   className={`px-2 pb-2 text-[10px] font-extrabold transition-all border-b-2 shrink-0 ${
-                    activeSubTab === 'features'
-                      ? 'border-[#082c75] text-[#082c75]'
-                      : 'border-transparent text-gray-400 hover:text-gray-500'
+                    activeSubTab === "features"
+                      ? "border-[#2563eb] text-[#2563eb]"
+                      : "border-transparent text-gray-400 hover:text-gray-500"
                   }`}
                 >
                   ఫీచర్స్ / Features
                 </button>
                 <button
                   type="button"
-                  onClick={() => setActiveSubTab('vendor')}
+                  onClick={() => setActiveSubTab("vendor")}
                   className={`px-2 pb-2 text-[10px] font-extrabold transition-all border-b-2 shrink-0 ${
-                    activeSubTab === 'vendor'
-                      ? 'border-[#082c75] text-[#082c75]'
-                      : 'border-transparent text-gray-400 hover:text-gray-500'
+                    activeSubTab === "vendor"
+                      ? "border-[#2563eb] text-[#2563eb]"
+                      : "border-transparent text-gray-400 hover:text-gray-500"
                   }`}
                 >
                   వెండర్స్ / Vendors
                 </button>
                 <button
                   type="button"
-                  onClick={() => setActiveSubTab('registrations')}
+                  onClick={() => setActiveSubTab("registrations")}
                   className={`px-2 pb-2 text-[10px] font-extrabold transition-all border-b-2 shrink-0 ${
-                    activeSubTab === 'registrations'
-                      ? 'border-[#082c75] text-[#082c75]'
-                      : 'border-transparent text-gray-400 hover:text-gray-500'
+                    activeSubTab === "registrations"
+                      ? "border-[#2563eb] text-[#2563eb]"
+                      : "border-transparent text-gray-400 hover:text-gray-500"
                   }`}
                 >
                   రిజిస్ట్రేషన్స్ / Registrations 📋
                 </button>
                 <button
                   type="button"
-                  onClick={() => setActiveSubTab('gateways')}
+                  onClick={() => setActiveSubTab("gateways")}
                   className={`px-2 pb-2 text-[10px] font-extrabold transition-all border-b-2 shrink-0 ${
-                    activeSubTab === 'gateways'
-                      ? 'border-emerald-600 text-emerald-700'
-                      : 'border-transparent text-gray-400 hover:text-gray-500'
+                    activeSubTab === "gateways"
+                      ? "border-emerald-600 text-emerald-700"
+                      : "border-transparent text-gray-400 hover:text-gray-500"
                   }`}
                 >
                   గేట్‌వేస్ & కోడింగ్ / Gateways 🔌
                 </button>
                 <button
                   type="button"
-                  onClick={() => setActiveSubTab('brahmastra')}
+                  onClick={() => setActiveSubTab("brahmastra")}
                   className={`px-2 pb-2 text-[10px] font-extrabold transition-all border-b-2 shrink-0 ${
-                    activeSubTab === 'brahmastra'
-                      ? 'border-amber-500 text-amber-600'
-                      : 'border-transparent text-gray-400 hover:text-gray-500'
+                    activeSubTab === "brahmastra"
+                      ? "border-amber-500 text-amber-600"
+                      : "border-transparent text-gray-400 hover:text-gray-500"
                   }`}
                 >
                   బ్రహ్మాస్త్ర / AI
                 </button>
                 <button
                   type="button"
-                  onClick={() => setActiveSubTab('passwords')}
+                  onClick={() => setActiveSubTab("passwords")}
                   className={`px-2 pb-2 text-[10px] font-extrabold transition-all border-b-2 shrink-0 ${
-                    activeSubTab === 'passwords'
-                      ? 'border-red-500 text-red-600'
-                      : 'border-transparent text-gray-400 hover:text-gray-500'
+                    activeSubTab === "passwords"
+                      ? "border-red-500 text-red-600"
+                      : "border-transparent text-gray-400 hover:text-gray-500"
                   }`}
                 >
                   పాస్‌వర్డ్స్ / Passwords
                 </button>
                 <button
                   type="button"
-                  onClick={() => setActiveSubTab('support')}
+                  onClick={() => setActiveSubTab("support")}
                   className={`px-2 pb-2 text-[10px] font-extrabold transition-all border-b-2 shrink-0 ${
-                    activeSubTab === 'support'
-                      ? 'border-teal-600 text-teal-600'
-                      : 'border-transparent text-gray-400 hover:text-gray-500'
+                    activeSubTab === "support"
+                      ? "border-teal-600 text-teal-600"
+                      : "border-transparent text-gray-400 hover:text-gray-500"
                   }`}
                 >
                   సపోర్ట్ / Support 📞
                 </button>
                 <button
                   type="button"
-                  onClick={() => setActiveSubTab('maintenance')}
+                  onClick={() => setActiveSubTab("maintenance")}
                   className={`px-2 pb-2 text-[10px] font-extrabold transition-all border-b-2 shrink-0 ${
-                    activeSubTab === 'maintenance'
-                      ? 'border-indigo-600 text-indigo-600'
-                      : 'border-transparent text-gray-400 hover:text-gray-500'
+                    activeSubTab === "maintenance"
+                      ? "border-indigo-600 text-indigo-600"
+                      : "border-transparent text-gray-400 hover:text-gray-500"
                   }`}
                 >
                   మెయింటెనెన్స్ / Maintenance ⚙️
                 </button>
                 <button
                   type="button"
-                  onClick={() => setActiveSubTab('agents')}
+                  onClick={() => setActiveSubTab("agents")}
                   className={`px-2 pb-2 text-[10px] font-extrabold transition-all border-b-2 shrink-0 ${
-                    activeSubTab === 'agents'
-                      ? 'border-purple-600 text-purple-700'
-                      : 'border-transparent text-gray-400 hover:text-gray-500'
+                    activeSubTab === "agents"
+                      ? "border-purple-600 text-purple-700"
+                      : "border-transparent text-gray-400 hover:text-gray-500"
                   }`}
                 >
                   ప్రధాన ఏజెంట్లు / Agents 🤖
                 </button>
                 <button
                   type="button"
-                  onClick={() => setActiveSubTab('pwa')}
+                  onClick={() => setActiveSubTab("pwa")}
                   className={`px-2 pb-2 text-[10px] font-extrabold transition-all border-b-2 shrink-0 ${
-                    activeSubTab === 'pwa'
-                      ? 'border-cyan-600 text-cyan-700'
-                      : 'border-transparent text-gray-400 hover:text-gray-500'
+                    activeSubTab === "pwa"
+                      ? "border-cyan-600 text-cyan-700"
+                      : "border-transparent text-gray-400 hover:text-gray-500"
                   }`}
                 >
                   PWA మేనేజ్‌మెంట్ / PWA 📱
                 </button>
                 <button
                   type="button"
-                  onClick={() => setActiveSubTab('apikeys')}
+                  onClick={() => setActiveSubTab("apikeys")}
                   className={`px-2 pb-2 text-[10px] font-extrabold transition-all border-b-2 shrink-0 ${
-                    activeSubTab === 'apikeys'
-                      ? 'border-fuchsia-600 text-fuchsia-700'
-                      : 'border-transparent text-gray-400 hover:text-gray-500'
+                    activeSubTab === "apikeys"
+                      ? "border-fuchsia-600 text-fuchsia-700"
+                      : "border-transparent text-gray-400 hover:text-gray-500"
                   }`}
                 >
                   AI API Keys 🔑
@@ -1658,171 +2073,222 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               {/* Hybrid Mode Toggle */}
               <div className="p-3 bg-indigo-50 border border-indigo-100 rounded-xl flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <h5 className="text-[11px] font-extrabold text-indigo-900">హైబ్రిడ్ మోడ్ (Hybrid Mode Control)</h5>
-                  <p className="text-[9px] text-indigo-700">ఈ మోడ్ ద్వారా సిస్టమ్ ఫీచర్లను ఎనేబుల్/డిసేబుల్ చేయండి.</p>
+                  <h5 className="text-[11px] font-extrabold text-indigo-900">
+                    హైబ్రిడ్ మోడ్ (Hybrid Mode Control)
+                  </h5>
+                  <p className="text-[9px] text-indigo-700">
+                    ఈ మోడ్ ద్వారా సిస్టమ్ ఫీచర్లను ఎనేబుల్/డిసేబుల్ చేయండి.
+                  </p>
                 </div>
                 <button
                   onClick={onToggleHybridMode}
-                  className={`w-10 h-5 rounded-full transition-colors flex items-center px-0.5 ${hybridModeEnabled ? 'bg-indigo-600' : 'bg-gray-300'}`}
+                  className={`w-10 h-5 rounded-full transition-colors flex items-center px-0.5 ${hybridModeEnabled ? "bg-indigo-600" : "bg-gray-300"}`}
                 >
-                  <div className={`w-4 h-4 rounded-full bg-white transition-transform ${hybridModeEnabled ? 'translate-x-5' : 'translate-x-0'}`} />
+                  <div
+                    className={`w-4 h-4 rounded-full bg-white transition-transform ${hybridModeEnabled ? "translate-x-5" : "translate-x-0"}`}
+                  />
                 </button>
               </div>
 
               {/* Chat Assistant Toggle */}
               <div className="p-3 bg-emerald-50 border border-emerald-100 rounded-xl flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <h5 className="text-[11px] font-extrabold text-emerald-900">AI చాట్ అసిస్టెంట్ (AI Chat Assistant)</h5>
-                  <p className="text-[9px] text-emerald-700">అడ్మిన్ ప్యానెల్ బయట అసిస్టెంట్ను ఎనేబుల్ చేయండి.</p>
+                  <h5 className="text-[11px] font-extrabold text-emerald-900">
+                    AI చాట్ అసిస్టెంట్ (AI Chat Assistant)
+                  </h5>
+                  <p className="text-[9px] text-emerald-700">
+                    అడ్మిన్ ప్యానెల్ బయట అసిస్టెంట్ను ఎనేబుల్ చేయండి.
+                  </p>
                 </div>
                 <button
                   onClick={onToggleChatAssistant}
-                  className={`w-10 h-5 rounded-full transition-colors flex items-center px-0.5 ${isChatAssistantEnabled ? 'bg-emerald-600' : 'bg-gray-300'}`}
+                  className={`w-10 h-5 rounded-full transition-colors flex items-center px-0.5 ${isChatAssistantEnabled ? "bg-emerald-600" : "bg-gray-300"}`}
                 >
-                  <div className={`w-4 h-4 rounded-full bg-white transition-transform ${isChatAssistantEnabled ? 'translate-x-5' : 'translate-x-0'}`} />
+                  <div
+                    className={`w-4 h-4 rounded-full bg-white transition-transform ${isChatAssistantEnabled ? "translate-x-5" : "translate-x-0"}`}
+                  />
                 </button>
               </div>
 
               {/* Secret Switch Bypass Toggle (For Developer Control) */}
               <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <h5 className="text-[11px] font-extrabold text-slate-700">సిస్టమ్ స్విచ్ ప్రొటెక్షన్ (Safe Override Switch)</h5>
-                  <p className="text-[9px] text-slate-500">సిస్టమ్ యొక్క అన్ని స్విచ్లను బగ్స్ లేకుండా డైరెక్ట్‌గా ఆన్ చేస్తుంది.</p>
+                  <h5 className="text-[11px] font-extrabold text-slate-700">
+                    సిస్టమ్ స్విచ్ ప్రొటెక్షన్ (Safe Override Switch)
+                  </h5>
+                  <p className="text-[9px] text-slate-500">
+                    సిస్టమ్ యొక్క అన్ని స్విచ్లను బగ్స్ లేకుండా డైరెక్ట్‌గా ఆన్
+                    చేస్తుంది.
+                  </p>
                 </div>
                 <button
                   onClick={onToggleSecretSwitchBypass}
-                  className={`w-10 h-5 rounded-full transition-colors flex items-center px-0.5 ${secretSwitchBypass ? 'bg-amber-500' : 'bg-gray-300'}`}
+                  className={`w-10 h-5 rounded-full transition-colors flex items-center px-0.5 ${secretSwitchBypass ? "bg-amber-500" : "bg-gray-300"}`}
                 >
-                  <div className={`w-4 h-4 rounded-full bg-white transition-transform ${secretSwitchBypass ? 'translate-x-5' : 'translate-x-0'}`} />
+                  <div
+                    className={`w-4 h-4 rounded-full bg-white transition-transform ${secretSwitchBypass ? "translate-x-5" : "translate-x-0"}`}
+                  />
                 </button>
               </div>
 
-              {activeSubTab === 'features' ? (
+              {activeSubTab === "features" ? (
                 <div className="space-y-4 animate-fade-in">
                   {/* Features Sub-Sub-Tabs */}
                   <div className="flex bg-slate-100 p-1 rounded-xl border border-gray-200 gap-1 flex-wrap">
                     <button
                       type="button"
-                      onClick={() => setFeaturesSubTab('normal')}
+                      onClick={() => setFeaturesSubTab("normal")}
                       className={`flex-1 min-w-[80px] py-1.5 text-[9px] font-extrabold rounded-lg transition-all ${
-                        featuresSubTab === 'normal'
-                          ? 'bg-white shadow-xs text-slate-800'
-                          : 'text-gray-500 hover:text-gray-700'
+                        featuresSubTab === "normal"
+                          ? "bg-white shadow-xs text-slate-800"
+                          : "text-gray-500 hover:text-gray-700"
                       }`}
                     >
                       సాధారణ ఫీచర్స్ (Free/Normal)
                     </button>
                     <button
                       type="button"
-                      onClick={() => setFeaturesSubTab('premium')}
+                      onClick={() => setFeaturesSubTab("premium")}
                       className={`flex-1 min-w-[80px] py-1.5 text-[9px] font-extrabold rounded-lg transition-all ${
-                        featuresSubTab === 'premium'
-                          ? 'bg-[#082c75] text-white shadow-xs'
-                          : 'text-gray-500 hover:text-gray-700'
+                        featuresSubTab === "premium"
+                          ? "bg-[#2563eb] text-white shadow-xs"
+                          : "text-gray-500 hover:text-gray-700"
                       }`}
                     >
                       ప్రీమియం ఫీచర్స్ (Premium)
                     </button>
                     <button
                       type="button"
-                      onClick={() => setFeaturesSubTab('postpaid')}
+                      onClick={() => setFeaturesSubTab("postpaid")}
                       className={`flex-1 min-w-[80px] py-1.5 text-[9px] font-extrabold rounded-lg transition-all ${
-                        featuresSubTab === 'postpaid'
-                          ? 'bg-amber-600 text-white shadow-xs'
-                          : 'text-gray-500 hover:text-gray-700'
+                        featuresSubTab === "postpaid"
+                          ? "bg-amber-600 text-white shadow-xs"
+                          : "text-gray-500 hover:text-gray-700"
                       }`}
                     >
                       పోస్ట్‌పెయిడ్ సేవలు (Postpaid)
                     </button>
                     <button
                       type="button"
-                      onClick={() => setFeaturesSubTab('rates')}
+                      onClick={() => setFeaturesSubTab("rates")}
                       className={`flex-1 min-w-[80px] py-1.5 text-[9px] font-extrabold rounded-lg transition-all ${
-                        featuresSubTab === 'rates'
-                          ? 'bg-emerald-600 text-white shadow-xs'
-                          : 'text-gray-500 hover:text-gray-700'
+                        featuresSubTab === "rates"
+                          ? "bg-emerald-600 text-white shadow-xs"
+                          : "text-gray-500 hover:text-gray-700"
                       }`}
                     >
                       ప్రీమియం రేట్ల పట్టిక (Premium Rates)
                     </button>
                   </div>
 
-                  {featuresSubTab === 'normal' ? (
+                  {featuresSubTab === "normal" ? (
                     <div className="space-y-4 animate-fade-in">
                       {/* Quick Mode Explanation List */}
                       <div className="bg-slate-50 p-2.5 rounded-xl border border-gray-200 grid grid-cols-2 gap-1 text-[8px] font-black text-center">
-                        <span className="bg-emerald-50 text-emerald-800 p-1 rounded border border-emerald-200">T-ON: తాత్కాలికంగా ఆన్</span>
-                        <span className="bg-amber-50 text-amber-800 p-1 rounded border border-amber-200">T-OF: తాత్కాలికంగా ఆఫ్</span>
-                        <span className="bg-[#FFC000]/10 text-amber-900 p-1 rounded border border-yellow-300">UPG: పర్మనెంట్ అప్గ్రేడ్</span>
-                        <span className="bg-teal-50 text-teal-800 p-1 rounded border border-teal-200">P-ON: పర్మనెంట్ ఆన్</span>
-                        <span className="bg-rose-50 text-rose-800 p-1 rounded border border-rose-200">P-OF: పర్మనెంట్ ఆఫ్</span>
-                        <span className="bg-slate-100 text-slate-800 p-1 rounded border border-gray-300">S-DEL: తాత్కాలిక డిలీట్</span>
-                        <span className="bg-black text-white p-1 rounded col-span-2">H-DEL: పర్మనెంట్ డిలీట్</span>
+                        <span className="bg-emerald-50 text-emerald-800 p-1 rounded border border-emerald-200">
+                          T-ON: తాత్కాలికంగా ఆన్
+                        </span>
+                        <span className="bg-amber-50 text-amber-800 p-1 rounded border border-amber-200">
+                          T-OF: తాత్కాలికంగా ఆఫ్
+                        </span>
+                        <span className="bg-[#FFC000]/10 text-amber-900 p-1 rounded border border-yellow-300">
+                          UPG: పర్మనెంట్ అప్గ్రేడ్
+                        </span>
+                        <span className="bg-teal-50 text-teal-800 p-1 rounded border border-teal-200">
+                          P-ON: పర్మనెంట్ ఆన్
+                        </span>
+                        <span className="bg-rose-50 text-rose-800 p-1 rounded border border-rose-200">
+                          P-OF: పర్మనెంట్ ఆఫ్
+                        </span>
+                        <span className="bg-slate-100 text-slate-800 p-1 rounded border border-gray-300">
+                          S-DEL: తాత్కాలిక డిలీట్
+                        </span>
+                        <span className="bg-black text-white p-1 rounded col-span-2">
+                          H-DEL: పర్మనెంట్ డిలీట్
+                        </span>
                       </div>
 
                       {/* Master Switches control list */}
                       <div className="space-y-2 max-h-[340px] overflow-y-auto pr-1">
-                        {INITIAL_FEATURES.filter(f => [
-                          'feat_splash',
-                          'feat_attendance',
-                          'feat_service_1',
-                          'feat_service_2',
-                          'feat_service_3',
-                          'feat_service_4',
-                          'feat_service_5',
-                          'feat_service_6',
-                          'feat_service_7',
-                          'feat_service_8',
-                          'feat_service_9',
-                          'feat_service_10',
-                          'feat_service_11',
-                          'feat_service_12',
-                          'feat_service_13',
-                          'feat_service_14',
-                          'feat_service_15',
-                          'feat_service_16',
-                          'feat_service_17',
-                          'feat_service_18',
-                          'feat_service_19',
-                          'feat_service_20',
-                          'feat_service_21',
-                          'feat_service_22',
-                          'feat_service_23',
-                          'feat_service_24',
-                          'feat_service_25',
-                          'feat_service_26',
-                          'feat_service_27',
-                          'feat_service_28',
-                          'feat_calendar',
-                          'feat_geofencing',
-                          'feat_calling',
-                          'feat_sos',
-                          'feat_kyc',
-                          'feat_wallet',
-                          'feat_ratings',
-                          'feat_walkietalkie',
-                          'feat_subscriptions',
-                          'feat_diary',
-                          'feat_social',
-                          'feat_profile_menu'
-                        ].includes(f.id)).map((feat) => {
-                          const currState = featureStates[feat.id] || 'temp_on';
+                        {INITIAL_FEATURES.filter((f) =>
+                          [
+                            "feat_splash",
+                            "feat_attendance",
+                            "feat_service_1",
+                            "feat_service_2",
+                            "feat_service_3",
+                            "feat_service_4",
+                            "feat_service_5",
+                            "feat_service_6",
+                            "feat_service_7",
+                            "feat_service_8",
+                            "feat_service_9",
+                            "feat_service_10",
+                            "feat_service_11",
+                            "feat_service_12",
+                            "feat_service_13",
+                            "feat_service_14",
+                            "feat_service_15",
+                            "feat_service_16",
+                            "feat_service_17",
+                            "feat_service_18",
+                            "feat_service_19",
+                            "feat_service_20",
+                            "feat_service_21",
+                            "feat_service_22",
+                            "feat_service_23",
+                            "feat_service_24",
+                            "feat_service_25",
+                            "feat_service_26",
+                            "feat_service_27",
+                            "feat_service_28",
+                            "feat_calendar",
+                            "feat_geofencing",
+                            "feat_calling",
+                            "feat_sos",
+                            "feat_kyc",
+                            "feat_wallet",
+                            "feat_ratings",
+                            "feat_walkietalkie",
+                            "feat_subscriptions",
+                            "feat_diary",
+                            "feat_social",
+                            "feat_profile_menu",
+                          ].includes(f.id),
+                        ).map((feat) => {
+                          const currState = featureStates[feat.id] || "temp_on";
 
                           return (
-                            <div key={feat.id} className="p-3 bg-white rounded-xl border border-gray-150 space-y-2 hover:bg-slate-50/50 transition font-sans">
+                            <div
+                              key={feat.id}
+                              className="p-3 bg-white rounded-xl border border-gray-150 space-y-2 hover:bg-slate-50/50 transition font-sans"
+                            >
                               <div className="flex justify-between items-start">
                                 <div>
-                                  <div className="text-xs font-bold text-gray-800">{feat.nameTe}</div>
-                                  <div className="text-[9px] text-gray-400 font-mono">{feat.nameEn}</div>
+                                  <div className="text-xs font-bold text-gray-800">
+                                    {feat.nameTe}
+                                  </div>
+                                  <div className="text-[9px] text-gray-400 font-mono">
+                                    {feat.nameEn}
+                                  </div>
                                 </div>
-                                <span className={`inline-block px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider ${
-                                  currState === 'temp_on' ? 'bg-emerald-100 text-emerald-800' :
-                                  currState === 'temp_off' ? 'bg-amber-100 text-amber-800' :
-                                  currState === 'perm_upgrade' ? 'bg-[#FFC000]/20 text-[#082c75] font-black' :
-                                  currState === 'perm_on' ? 'bg-teal-100 text-teal-800' :
-                                  currState === 'perm_off' ? 'bg-rose-100 text-rose-800' :
-                                  currState === 'soft_delete' ? 'bg-slate-100 text-slate-800' : 'bg-black text-white'
-                                }`}>
+                                <span
+                                  className={`inline-block px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider ${
+                                    currState === "temp_on"
+                                      ? "bg-emerald-100 text-emerald-800"
+                                      : currState === "temp_off"
+                                        ? "bg-amber-100 text-amber-800"
+                                        : currState === "perm_upgrade"
+                                          ? "bg-[#FFC000]/20 text-[#2563eb] font-black"
+                                          : currState === "perm_on"
+                                            ? "bg-teal-100 text-teal-800"
+                                            : currState === "perm_off"
+                                              ? "bg-rose-100 text-rose-800"
+                                              : currState === "soft_delete"
+                                                ? "bg-slate-100 text-slate-800"
+                                                : "bg-black text-white"
+                                  }`}
+                                >
                                   {currState}
                                 </span>
                               </div>
@@ -1830,63 +2296,94 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                               <div className="grid grid-cols-4 sm:grid-cols-7 gap-1 mt-2">
                                 <button
                                   type="button"
-                                  onClick={() => onUpdateFeatureState(feat.id, 'temp_on')}
+                                  onClick={() =>
+                                    onUpdateFeatureState(feat.id, "temp_on")
+                                  }
                                   className={`py-1 text-[8px] font-bold rounded-lg transition-all duration-300 active:scale-95 text-center ${
-                                    currState === 'temp_on' ? 'bg-emerald-600 text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                                    currState === "temp_on"
+                                      ? "bg-emerald-600 text-white"
+                                      : "bg-gray-100 text-gray-500 hover:bg-gray-200"
                                   }`}
                                 >
                                   T-ON
                                 </button>
                                 <button
                                   type="button"
-                                  onClick={() => onUpdateFeatureState(feat.id, 'temp_off')}
+                                  onClick={() =>
+                                    onUpdateFeatureState(feat.id, "temp_off")
+                                  }
                                   className={`py-1 text-[8px] font-bold rounded-lg transition-all duration-300 active:scale-95 text-center ${
-                                    currState === 'temp_off' ? 'bg-amber-500 text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                                    currState === "temp_off"
+                                      ? "bg-amber-500 text-white"
+                                      : "bg-gray-100 text-gray-500 hover:bg-gray-200"
                                   }`}
                                 >
                                   T-OF
                                 </button>
                                 <button
                                   type="button"
-                                  onClick={() => onUpdateFeatureState(feat.id, 'perm_upgrade')}
+                                  onClick={() =>
+                                    onUpdateFeatureState(
+                                      feat.id,
+                                      "perm_upgrade",
+                                    )
+                                  }
                                   className={`py-1 text-[8px] font-bold rounded-lg transition-all duration-300 active:scale-95 text-center ${
-                                    currState === 'perm_upgrade' ? 'bg-[#FFC000] text-[#082c75]' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                                    currState === "perm_upgrade"
+                                      ? "bg-[#FFC000] text-[#2563eb]"
+                                      : "bg-gray-100 text-gray-500 hover:bg-gray-200"
                                   }`}
                                 >
                                   UPG
                                 </button>
                                 <button
                                   type="button"
-                                  onClick={() => onUpdateFeatureState(feat.id, 'perm_on')}
+                                  onClick={() =>
+                                    onUpdateFeatureState(feat.id, "perm_on")
+                                  }
                                   className={`py-1 text-[8px] font-bold rounded-lg transition-all duration-300 active:scale-95 text-center ${
-                                    currState === 'perm_on' ? 'bg-teal-600 text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                                    currState === "perm_on"
+                                      ? "bg-teal-600 text-white"
+                                      : "bg-gray-100 text-gray-500 hover:bg-gray-200"
                                   }`}
                                 >
                                   P-ON
                                 </button>
                                 <button
                                   type="button"
-                                  onClick={() => onUpdateFeatureState(feat.id, 'perm_off')}
+                                  onClick={() =>
+                                    onUpdateFeatureState(feat.id, "perm_off")
+                                  }
                                   className={`py-1 text-[8px] font-bold rounded-lg transition-all duration-300 active:scale-95 text-center ${
-                                    currState === 'perm_off' ? 'bg-rose-600 text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                                    currState === "perm_off"
+                                      ? "bg-rose-600 text-white"
+                                      : "bg-gray-100 text-gray-500 hover:bg-gray-200"
                                   }`}
                                 >
                                   P-OF
                                 </button>
                                 <button
                                   type="button"
-                                  onClick={() => onUpdateFeatureState(feat.id, 'soft_delete')}
+                                  onClick={() =>
+                                    onUpdateFeatureState(feat.id, "soft_delete")
+                                  }
                                   className={`py-1 text-[8px] font-bold rounded-lg transition-all duration-300 active:scale-95 text-center ${
-                                    currState === 'soft_delete' ? 'bg-slate-600 text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                                    currState === "soft_delete"
+                                      ? "bg-slate-600 text-white"
+                                      : "bg-gray-100 text-gray-500 hover:bg-gray-200"
                                   }`}
                                 >
                                   S-DEL
                                 </button>
                                 <button
                                   type="button"
-                                  onClick={() => onUpdateFeatureState(feat.id, 'hard_delete')}
+                                  onClick={() =>
+                                    onUpdateFeatureState(feat.id, "hard_delete")
+                                  }
                                   className={`py-1 text-[8px] font-bold rounded-lg transition-all duration-300 active:scale-95 text-center ${
-                                    currState === 'hard_delete' ? 'bg-black text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                                    currState === "hard_delete"
+                                      ? "bg-black text-white"
+                                      : "bg-gray-100 text-gray-500 hover:bg-gray-200"
                                   }`}
                                 >
                                   H-DEL
@@ -1897,10 +2394,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         })}
                       </div>
                     </div>
-                  ) : featuresSubTab === 'premium' ? (
+                  ) : featuresSubTab === "premium" ? (
                     <div className="space-y-3 animate-fade-in">
                       <div className="flex justify-between items-center bg-slate-50 p-2 rounded-xl border border-gray-200">
-                        <div className="text-[10px] font-extrabold text-[#082c75]">
+                        <div className="text-[10px] font-extrabold text-[#2563eb]">
                           ప్రీమియం రేట్ కంట్రోల్ ప్యానెల్ (Premium Prices)
                         </div>
                       </div>
@@ -1915,57 +2412,97 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         <table className="w-full text-left border-collapse text-[10px]">
                           <thead>
                             <tr className="bg-slate-50 border-b border-gray-200 text-gray-500 font-extrabold sticky top-0">
-                              <th className="py-2 px-3 bg-slate-50">ఫీచర్ పేరు</th>
-                              <th className="py-2 px-2 text-center bg-slate-50">స్టేటస్ (Status)</th>
-                              <th className="py-2 px-3 text-center bg-slate-50">నెలవారీ ధర (₹)</th>
+                              <th className="py-2 px-3 bg-slate-50">
+                                ఫీచర్ పేరు
+                              </th>
+                              <th className="py-2 px-2 text-center bg-slate-50">
+                                స్టేటస్ (Status)
+                              </th>
+                              <th className="py-2 px-3 text-center bg-slate-50">
+                                నెలవారీ ధర (₹)
+                              </th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-gray-100 font-bold text-gray-700">
-                            {INITIAL_FEATURES.filter(f => [
-                              'feat_premium_assistant',
-                              'feat_premium_tracking',
-                              'feat_premium_radio',
-                              'feat_premium_invoicing',
-                              'feat_premium_payments',
-                              'feat_premium_escrow',
-                              'feat_premium_multilingual',
-                              'feat_premium_verification',
-                              'feat_premium_support',
-                              'feat_premium_analytics',
-                              'feat_premium_team',
-                              'feat_invisible_maintenance',
-                              'feat_hybrid_radio',
-                              'feat_brahmastra'
-                            ].includes(f.id)).map((feat) => {
-                              const currState = featureStates[feat.id] || 'temp_on';
-                              const isOpen = currState !== 'temp_off' && currState !== 'perm_off';
+                            {INITIAL_FEATURES.filter((f) =>
+                              [
+                                "feat_premium_assistant",
+                                "feat_premium_tracking",
+                                "feat_premium_radio",
+                                "feat_premium_invoicing",
+                                "feat_premium_payments",
+                                "feat_premium_escrow",
+                                "feat_premium_multilingual",
+                                "feat_premium_verification",
+                                "feat_premium_support",
+                                "feat_premium_analytics",
+                                "feat_premium_team",
+                                "feat_invisible_maintenance",
+                                "feat_hybrid_radio",
+                                "feat_brahmastra",
+                              ].includes(f.id),
+                            ).map((feat) => {
+                              const currState =
+                                featureStates[feat.id] || "temp_on";
+                              const isOpen =
+                                currState !== "temp_off" &&
+                                currState !== "perm_off";
 
                               return (
-                                <tr key={feat.id} className="hover:bg-slate-50/50 transition">
+                                <tr
+                                  key={feat.id}
+                                  className="hover:bg-slate-50/50 transition"
+                                >
                                   <td className="py-2 px-3">
                                     <div className="flex items-start gap-2">
                                       {FEATURE_ICONS[feat.id] && (
                                         <div className="w-8 h-8 shrink-0 bg-gradient-to-br from-white to-slate-50 rounded-lg shadow-[0_2px_4px_rgba(0,0,0,0.05)] border border-slate-100 flex items-center justify-center transform transition-transform hover:scale-105">
-                                          <span className="text-lg drop-shadow-sm">{FEATURE_ICONS[feat.id]}</span>
+                                          <span className="text-lg drop-shadow-sm">
+                                            {FEATURE_ICONS[feat.id]}
+                                          </span>
                                         </div>
                                       )}
                                       <div className="flex flex-col gap-1">
                                         <div>
-                                          <div className="font-extrabold text-gray-800 text-[10px] leading-tight">{feat.nameTe}</div>
-                                          <div className="text-[8px] text-gray-400 font-mono mt-0.5">{feat.nameEn}</div>
+                                          <div className="font-extrabold text-gray-800 text-[10px] leading-tight">
+                                            {feat.nameTe}
+                                          </div>
+                                          <div className="text-[8px] text-gray-400 font-mono mt-0.5">
+                                            {feat.nameEn}
+                                          </div>
                                         </div>
-                                        {currState === 'temp_on' && (
+                                        {currState === "temp_on" && (
                                           <div className="mt-0.5">
                                             <ManualFeatureTimer
                                               featureId={feat.id}
                                               type="premium"
-                                              initialHours={featureTimers?.[feat.id] ? Math.max(1, Math.round((featureTimers?.[feat.id] - Date.now()) / (1000 * 60 * 60))) : 24}
+                                              initialHours={
+                                                featureTimers?.[feat.id]
+                                                  ? Math.max(
+                                                      1,
+                                                      Math.round(
+                                                        (featureTimers?.[
+                                                          feat.id
+                                                        ] -
+                                                          Date.now()) /
+                                                          (1000 * 60 * 60),
+                                                      ),
+                                                    )
+                                                  : 24
+                                              }
                                               onSave={(hours, isOn) => {
                                                 if (onUpdateFeatureTimer) {
-                                                  onUpdateFeatureTimer(feat.id, hours, isOn);
+                                                  onUpdateFeatureTimer(
+                                                    feat.id,
+                                                    hours,
+                                                    isOn,
+                                                  );
                                                 }
                                                 if (!isOn) {
-                                                  onUpdateFeatureState(feat.id, 'temp_off');
+                                                  onUpdateFeatureState(
+                                                    feat.id,
+                                                    "temp_off",
+                                                  );
                                                 }
                                               }}
                                             />
@@ -1978,25 +2515,37 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                                     <button
                                       type="button"
                                       onClick={() => {
-                                        const nextState = isOpen ? 'temp_off' : 'temp_on';
-                                        onUpdateFeatureState(feat.id, nextState);
+                                        const nextState = isOpen
+                                          ? "temp_off"
+                                          : "temp_on";
+                                        onUpdateFeatureState(
+                                          feat.id,
+                                          nextState,
+                                        );
                                       }}
                                       className={`w-8 h-4 rounded-full relative inline-flex items-center transition-colors ${isOpen ? "bg-emerald-500" : "bg-gray-300"}`}
                                     >
-                                      <span className={`w-3 h-3 rounded-full bg-white transition-transform ${isOpen ? "translate-x-4" : "translate-x-1"}`} />
+                                      <span
+                                        className={`w-3 h-3 rounded-full bg-white transition-transform ${isOpen ? "translate-x-4" : "translate-x-1"}`}
+                                      />
                                     </button>
                                   </td>
                                   <td className="py-2 px-3 text-center">
                                     <div className="flex items-center justify-center gap-1">
-                                      <span className="text-gray-400 font-extrabold">₹</span>
+                                      <span className="text-gray-400 font-extrabold">
+                                        ₹
+                                      </span>
                                       <input
                                         type="number"
                                         value={localPrices[feat.id] ?? 0}
                                         onChange={(e) => {
                                           const val = Number(e.target.value);
-                                          setLocalPrices(prev => ({ ...prev, [feat.id]: val }));
+                                          setLocalPrices((prev) => ({
+                                            ...prev,
+                                            [feat.id]: val,
+                                          }));
                                         }}
-                                        className="w-14 bg-slate-50 border border-gray-200 rounded px-1.5 py-0.5 text-center text-[#082c75] font-extrabold focus:outline-none focus:border-emerald-500 text-[10px]"
+                                        className="w-14 bg-slate-50 border border-gray-200 rounded px-1.5 py-0.5 text-center text-[#2563eb] font-extrabold focus:outline-none focus:border-emerald-500 text-[10px]"
                                       />
                                     </div>
                                   </td>
@@ -2017,15 +2566,18 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         </button>
                       </div>
                     </div>
-                  ) : featuresSubTab === 'postpaid' ? (
+                  ) : featuresSubTab === "postpaid" ? (
                     <div className="space-y-3 animate-fade-in">
                       <div className="bg-amber-50 border border-amber-200 p-3 rounded-xl space-y-1">
                         <h5 className="font-extrabold text-amber-950 flex items-center gap-1">
                           <Cpu className="w-4 h-4 text-amber-700" />
-                          <span>పోస్ట్‌పెయిడ్ సేవలు & నియంత్రణ (Postpaid Features)</span>
+                          <span>
+                            పోస్ట్‌పెయిడ్ సేవలు & నియంత్రణ (Postpaid Features)
+                          </span>
                         </h5>
                         <p className="text-[9px] text-amber-800 leading-normal font-medium">
-                          వినియోగదారులు ముందుగా సేవలను వాడుకొని తరువాత పేమెంట్ చేసే అధునాతన ఫీచర్లను ఇక్కడ ఆన్ లేదా ఆఫ్ చేసుకోవచ్చు.
+                          వినియోగదారులు ముందుగా సేవలను వాడుకొని తరువాత పేమెంట్
+                          చేసే అధునాతన ఫీచర్లను ఇక్కడ ఆన్ లేదా ఆఫ్ చేసుకోవచ్చు.
                         </p>
                       </div>
 
@@ -2033,48 +2585,88 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         <table className="w-full text-left border-collapse text-[10px]">
                           <thead>
                             <tr className="bg-slate-50 border-b border-gray-200 text-gray-500 font-extrabold sticky top-0">
-                              <th className="py-2 px-3 bg-slate-50">ఫీチャー పేరు</th>
-                              <th className="py-2 px-2 text-center bg-slate-50">స్టేటస్ (Status)</th>
-                              <th className="py-2 px-3 text-center bg-slate-50">రేట్/ఖర్చు (₹)</th>
+                              <th className="py-2 px-3 bg-slate-50">
+                                ఫీチャー పేరు
+                              </th>
+                              <th className="py-2 px-2 text-center bg-slate-50">
+                                స్టేటస్ (Status)
+                              </th>
+                              <th className="py-2 px-3 text-center bg-slate-50">
+                                రేట్/ఖర్చు (₹)
+                              </th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-gray-100 font-bold text-gray-700">
-                            {INITIAL_FEATURES.filter(f => [
-                              'feat_biopower',
-                              'feat_bp_sugar',
-                              'feat_doctor_scan',
-                              'feat_weather_report',
-                              'feat_invoice_generator'
-                            ].includes(f.id)).map((feat) => {
-                              const currState = featureStates[feat.id] || 'temp_on';
-                              const isOpen = currState !== 'temp_off' && currState !== 'perm_off';
+                            {INITIAL_FEATURES.filter((f) =>
+                              [
+                                "feat_biopower",
+                                "feat_bp_sugar",
+                                "feat_doctor_scan",
+                                "feat_weather_report",
+                                "feat_invoice_generator",
+                              ].includes(f.id),
+                            ).map((feat) => {
+                              const currState =
+                                featureStates[feat.id] || "temp_on";
+                              const isOpen =
+                                currState !== "temp_off" &&
+                                currState !== "perm_off";
 
                               return (
-                                <tr key={feat.id} className="hover:bg-slate-50/50 transition">
+                                <tr
+                                  key={feat.id}
+                                  className="hover:bg-slate-50/50 transition"
+                                >
                                   <td className="py-2 px-3">
                                     <div className="flex items-start gap-2">
                                       {FEATURE_ICONS[feat.id] && (
                                         <div className="w-8 h-8 shrink-0 bg-gradient-to-br from-white to-slate-50 rounded-lg shadow-[0_2px_4px_rgba(0,0,0,0.05)] border border-slate-100 flex items-center justify-center transform transition-transform hover:scale-105">
-                                          <span className="text-lg drop-shadow-sm">{FEATURE_ICONS[feat.id]}</span>
+                                          <span className="text-lg drop-shadow-sm">
+                                            {FEATURE_ICONS[feat.id]}
+                                          </span>
                                         </div>
                                       )}
                                       <div className="flex flex-col gap-1">
                                         <div>
-                                          <div className="font-extrabold text-gray-800 text-[10px] leading-tight">{feat.nameTe}</div>
-                                          <div className="text-[8px] text-gray-400 font-mono mt-0.5">{feat.nameEn}</div>
+                                          <div className="font-extrabold text-gray-800 text-[10px] leading-tight">
+                                            {feat.nameTe}
+                                          </div>
+                                          <div className="text-[8px] text-gray-400 font-mono mt-0.5">
+                                            {feat.nameEn}
+                                          </div>
                                         </div>
-                                        {currState === 'temp_on' && (
+                                        {currState === "temp_on" && (
                                           <div className="mt-0.5">
                                             <ManualFeatureTimer
                                               featureId={feat.id}
                                               type="postpaid"
-                                              initialHours={featureTimers?.[feat.id] ? Math.max(1, Math.round((featureTimers?.[feat.id] - Date.now()) / (1000 * 60 * 60))) : 24}
+                                              initialHours={
+                                                featureTimers?.[feat.id]
+                                                  ? Math.max(
+                                                      1,
+                                                      Math.round(
+                                                        (featureTimers?.[
+                                                          feat.id
+                                                        ] -
+                                                          Date.now()) /
+                                                          (1000 * 60 * 60),
+                                                      ),
+                                                    )
+                                                  : 24
+                                              }
                                               onSave={(hours, isOn) => {
                                                 if (onUpdateFeatureTimer) {
-                                                  onUpdateFeatureTimer(feat.id, hours, isOn);
+                                                  onUpdateFeatureTimer(
+                                                    feat.id,
+                                                    hours,
+                                                    isOn,
+                                                  );
                                                 }
                                                 if (!isOn) {
-                                                  onUpdateFeatureState(feat.id, 'temp_off');
+                                                  onUpdateFeatureState(
+                                                    feat.id,
+                                                    "temp_off",
+                                                  );
                                                 }
                                               }}
                                             />
@@ -2087,25 +2679,40 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                                     <button
                                       type="button"
                                       onClick={() => {
-                                        const nextState = isOpen ? 'temp_off' : 'temp_on';
-                                        onUpdateFeatureState(feat.id, nextState);
+                                        const nextState = isOpen
+                                          ? "temp_off"
+                                          : "temp_on";
+                                        onUpdateFeatureState(
+                                          feat.id,
+                                          nextState,
+                                        );
                                       }}
                                       className={`w-8 h-4 rounded-full relative inline-flex items-center transition-colors ${isOpen ? "bg-amber-500" : "bg-gray-300"}`}
                                     >
-                                      <span className={`w-3 h-3 rounded-full bg-white transition-transform ${isOpen ? "translate-x-4" : "translate-x-1"}`} />
+                                      <span
+                                        className={`w-3 h-3 rounded-full bg-white transition-transform ${isOpen ? "translate-x-4" : "translate-x-1"}`}
+                                      />
                                     </button>
                                   </td>
                                   <td className="py-2 px-3 text-center">
                                     <div className="flex items-center justify-center gap-1">
-                                      <span className="text-gray-400 font-extrabold">₹</span>
+                                      <span className="text-gray-400 font-extrabold">
+                                        ₹
+                                      </span>
                                       <input
                                         type="number"
                                         value={localPrices[feat.id] ?? 0}
                                         onChange={(e) => {
                                           const val = Number(e.target.value);
-                                          const updatedPrices = { ...localPrices, [feat.id]: val };
+                                          const updatedPrices = {
+                                            ...localPrices,
+                                            [feat.id]: val,
+                                          };
                                           setLocalPrices(updatedPrices);
-                                          localStorage.setItem('cwb_feature_prices', JSON.stringify(updatedPrices));
+                                          localStorage.setItem(
+                                            "cwb_feature_prices",
+                                            JSON.stringify(updatedPrices),
+                                          );
                                         }}
                                         className="w-14 bg-slate-50 border border-gray-200 rounded px-1.5 py-0.5 text-center text-amber-600 font-extrabold focus:outline-none focus:border-amber-500 text-[10px]"
                                       />
@@ -2121,11 +2728,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   ) : (
                     <div className="space-y-3 animate-fade-in">
                       <div className="flex justify-between items-center bg-slate-50 p-2 rounded-xl border border-gray-200">
-                        <div className="text-[10px] font-extrabold text-[#082c75] flex items-center gap-1.5">
+                        <div className="text-[10px] font-extrabold text-[#2563eb] flex items-center gap-1.5">
                           <Sparkles className="w-4 h-4 text-emerald-600 animate-pulse" />
-                          <span>ప్రీమియం ఫీచర్స్ కంట్రోల్ (Premium Features) - రేట్ ఫిక్సింగ్</span>
+                          <span>
+                            ప్రీమియం ఫీచర్స్ కంట్రోల్ (Premium Features) - రేట్
+                            ఫిక్సింగ్
+                          </span>
                         </div>
-                        <button 
+                        <button
                           type="button"
                           onClick={handleSaveLocalPrices}
                           className="text-[9px] bg-emerald-600 hover:bg-emerald-500 shadow-sm text-white font-bold px-3 py-1 rounded-lg transition active:scale-95"
@@ -2144,63 +2754,103 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         <table className="w-full text-left border-collapse text-[10px]">
                           <thead>
                             <tr className="bg-slate-50 border-b border-gray-200 text-gray-500 font-extrabold sticky top-0">
-                              <th className="py-2 px-3 bg-slate-50">ఫీచర్ పేరు</th>
-                              <th className="py-2 px-2 text-center bg-slate-50">స్టేటస్ (Status)</th>
-                              <th className="py-2 px-3 text-center bg-slate-50">నెలవారీ ధర (₹)</th>
+                              <th className="py-2 px-3 bg-slate-50">
+                                ఫీచర్ పేరు
+                              </th>
+                              <th className="py-2 px-2 text-center bg-slate-50">
+                                స్టేటస్ (Status)
+                              </th>
+                              <th className="py-2 px-3 text-center bg-slate-50">
+                                నెలవారీ ధర (₹)
+                              </th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-gray-100 font-bold text-gray-700">
                             {[
-                              'feat_hybrid_radio',
-                              'feat_biopower',
-                              'feat_bp_sugar',
-                              'feat_doctor_scan',
-                              'feat_weather_report',
-                              'feat_premium_assistant',
-                              'feat_premium_tracking',
-                              'feat_premium_radio',
-                              'feat_premium_invoicing',
-                              'feat_premium_payments',
-                              'feat_premium_escrow',
-                              'feat_premium_multilingual',
-                              'feat_premium_verification',
-                              'feat_premium_support',
-                              'feat_premium_analytics',
-                              'feat_premium_team',
-                              'feat_invisible_maintenance',
-                              'feat_brahmastra'
+                              "feat_hybrid_radio",
+                              "feat_biopower",
+                              "feat_bp_sugar",
+                              "feat_doctor_scan",
+                              "feat_weather_report",
+                              "feat_premium_assistant",
+                              "feat_premium_tracking",
+                              "feat_premium_radio",
+                              "feat_premium_invoicing",
+                              "feat_premium_payments",
+                              "feat_premium_escrow",
+                              "feat_premium_multilingual",
+                              "feat_premium_verification",
+                              "feat_premium_support",
+                              "feat_premium_analytics",
+                              "feat_premium_team",
+                              "feat_invisible_maintenance",
+                              "feat_brahmastra",
                             ].map((id) => {
-                              const feat = INITIAL_FEATURES.find(f => f.id === id);
+                              const feat = INITIAL_FEATURES.find(
+                                (f) => f.id === id,
+                              );
                               if (!feat) return null;
-                              const currState = featureStates[feat.id] || 'temp_on';
-                              const isOpen = currState !== 'temp_off' && currState !== 'perm_off';
+                              const currState =
+                                featureStates[feat.id] || "temp_on";
+                              const isOpen =
+                                currState !== "temp_off" &&
+                                currState !== "perm_off";
 
                               return (
-                                <tr key={feat.id} className="hover:bg-slate-50/50 transition">
+                                <tr
+                                  key={feat.id}
+                                  className="hover:bg-slate-50/50 transition"
+                                >
                                   <td className="py-2 px-3">
                                     <div className="flex items-start gap-2">
                                       {FEATURE_ICONS[feat.id] && (
                                         <div className="w-8 h-8 shrink-0 bg-gradient-to-br from-white to-slate-50 rounded-lg shadow-[0_2px_4px_rgba(0,0,0,0.05)] border border-slate-100 flex items-center justify-center transform transition-transform hover:scale-105">
-                                          <span className="text-lg drop-shadow-sm">{FEATURE_ICONS[feat.id]}</span>
+                                          <span className="text-lg drop-shadow-sm">
+                                            {FEATURE_ICONS[feat.id]}
+                                          </span>
                                         </div>
                                       )}
                                       <div className="flex flex-col gap-1">
                                         <div>
-                                          <div className="font-extrabold text-gray-800 text-[10px] leading-tight">{feat.nameTe}</div>
-                                          <div className="text-[8px] text-gray-400 font-mono mt-0.5">{feat.nameEn}</div>
+                                          <div className="font-extrabold text-gray-800 text-[10px] leading-tight">
+                                            {feat.nameTe}
+                                          </div>
+                                          <div className="text-[8px] text-gray-400 font-mono mt-0.5">
+                                            {feat.nameEn}
+                                          </div>
                                         </div>
-                                        {currState === 'temp_on' && (
+                                        {currState === "temp_on" && (
                                           <div className="mt-0.5">
                                             <ManualFeatureTimer
                                               featureId={feat.id}
                                               type="premium"
-                                              initialHours={featureTimers?.[feat.id] ? Math.max(1, Math.round((featureTimers?.[feat.id] - Date.now()) / (1000 * 60 * 60))) : 24}
+                                              initialHours={
+                                                featureTimers?.[feat.id]
+                                                  ? Math.max(
+                                                      1,
+                                                      Math.round(
+                                                        (featureTimers?.[
+                                                          feat.id
+                                                        ] -
+                                                          Date.now()) /
+                                                          (1000 * 60 * 60),
+                                                      ),
+                                                    )
+                                                  : 24
+                                              }
                                               onSave={(hours, isOn) => {
                                                 if (onUpdateFeatureTimer) {
-                                                  onUpdateFeatureTimer(feat.id, hours, isOn);
+                                                  onUpdateFeatureTimer(
+                                                    feat.id,
+                                                    hours,
+                                                    isOn,
+                                                  );
                                                 }
                                                 if (!isOn) {
-                                                  onUpdateFeatureState(feat.id, 'temp_off');
+                                                  onUpdateFeatureState(
+                                                    feat.id,
+                                                    "temp_off",
+                                                  );
                                                 }
                                               }}
                                             />
@@ -2213,25 +2863,37 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                                     <button
                                       type="button"
                                       onClick={() => {
-                                        const nextState = isOpen ? 'temp_off' : 'temp_on';
-                                        onUpdateFeatureState(feat.id, nextState);
+                                        const nextState = isOpen
+                                          ? "temp_off"
+                                          : "temp_on";
+                                        onUpdateFeatureState(
+                                          feat.id,
+                                          nextState,
+                                        );
                                       }}
                                       className={`w-8 h-4 rounded-full relative inline-flex items-center transition-colors ${isOpen ? "bg-emerald-500" : "bg-gray-300"}`}
                                     >
-                                      <span className={`w-3 h-3 rounded-full bg-white transition-transform ${isOpen ? "translate-x-4" : "translate-x-1"}`} />
+                                      <span
+                                        className={`w-3 h-3 rounded-full bg-white transition-transform ${isOpen ? "translate-x-4" : "translate-x-1"}`}
+                                      />
                                     </button>
                                   </td>
                                   <td className="py-2 px-3 text-center">
                                     <div className="flex items-center justify-center gap-1">
-                                      <span className="text-gray-400 font-extrabold">₹</span>
+                                      <span className="text-gray-400 font-extrabold">
+                                        ₹
+                                      </span>
                                       <input
                                         type="number"
                                         value={localPrices[feat.id] ?? 0}
                                         onChange={(e) => {
                                           const val = Number(e.target.value);
-                                          setLocalPrices(prev => ({ ...prev, [feat.id]: val }));
+                                          setLocalPrices((prev) => ({
+                                            ...prev,
+                                            [feat.id]: val,
+                                          }));
                                         }}
-                                        className="w-14 bg-slate-50 border border-gray-200 rounded px-1.5 py-0.5 text-center text-[#082c75] font-extrabold focus:outline-none focus:border-emerald-500 text-[10px]"
+                                        className="w-14 bg-slate-50 border border-gray-200 rounded px-1.5 py-0.5 text-center text-[#2563eb] font-extrabold focus:outline-none focus:border-emerald-500 text-[10px]"
                                       />
                                     </div>
                                   </td>
@@ -2239,30 +2901,38 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                               );
                             })}
                             <tr className="bg-slate-50 border-t border-gray-200">
-                              <td colSpan={2} className="py-3 px-3 text-right text-gray-600 font-black">
-                                ప్రీమియం ఫీచర్ల మొత్తం (అన్ని యాక్టివ్ ఉన్నప్పుడు):
+                              <td
+                                colSpan={2}
+                                className="py-3 px-3 text-right text-gray-600 font-black"
+                              >
+                                ప్రీమియం ఫీచర్ల మొత్తం (అన్ని యాక్టివ్
+                                ఉన్నప్పుడు):
                               </td>
                               <td className="py-3 px-2 text-center text-emerald-600 font-black text-[12px]">
-                                ₹{[
-                                  'feat_hybrid_radio',
-                                  'feat_biopower',
-                                  'feat_bp_sugar',
-                                  'feat_doctor_scan',
-                                  'feat_weather_report',
-                                  'feat_premium_assistant',
-                                  'feat_premium_tracking',
-                                  'feat_premium_radio',
-                                  'feat_premium_invoicing',
-                                  'feat_premium_payments',
-                                  'feat_premium_escrow',
-                                  'feat_premium_multilingual',
-                                  'feat_premium_verification',
-                                  'feat_premium_support',
-                                  'feat_premium_analytics',
-                                  'feat_premium_team',
-                                  'feat_invisible_maintenance',
-                                  'feat_brahmastra'
-                                ].reduce((acc, id) => acc + (localPrices[id] ?? 0), 0)}
+                                ₹
+                                {[
+                                  "feat_hybrid_radio",
+                                  "feat_biopower",
+                                  "feat_bp_sugar",
+                                  "feat_doctor_scan",
+                                  "feat_weather_report",
+                                  "feat_premium_assistant",
+                                  "feat_premium_tracking",
+                                  "feat_premium_radio",
+                                  "feat_premium_invoicing",
+                                  "feat_premium_payments",
+                                  "feat_premium_escrow",
+                                  "feat_premium_multilingual",
+                                  "feat_premium_verification",
+                                  "feat_premium_support",
+                                  "feat_premium_analytics",
+                                  "feat_premium_team",
+                                  "feat_invisible_maintenance",
+                                  "feat_brahmastra",
+                                ].reduce(
+                                  (acc, id) => acc + (localPrices[id] ?? 0),
+                                  0,
+                                )}
                               </td>
                             </tr>
                           </tbody>
@@ -2271,22 +2941,27 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     </div>
                   )}
                 </div>
-              ) : activeSubTab === 'vendor' ? (
+              ) : activeSubTab === "vendor" ? (
                 <div className="animate-fade-in space-y-4 max-h-[440px] overflow-y-auto pr-1 text-xs text-gray-700">
                   <EcommerceVendorDashboard />
                 </div>
-              ) : activeSubTab === 'registrations' ? (
+              ) : activeSubTab === "registrations" ? (
                 <RegistrationsManager />
-              ) : activeSubTab === 'gateways' ? (
+              ) : activeSubTab === "gateways" ? (
                 <div className="animate-fade-in space-y-4 max-h-[440px] overflow-y-auto pr-1 text-xs text-gray-700">
                   {/* Gateways and Coding Container */}
                   <div className="bg-emerald-50 border border-emerald-200 p-3 rounded-xl space-y-1.5">
                     <h5 className="font-extrabold text-emerald-950 flex items-center gap-1">
                       <CreditCard className="w-4 h-4 text-emerald-700" />
-                      <span>గేట్‌వేస్ & కోడింగ్ (Gateways & Custom Integration)</span>
+                      <span>
+                        గేట్‌వేస్ & కోడింగ్ (Gateways & Custom Integration)
+                      </span>
                     </h5>
                     <p className="text-[10px] text-emerald-800 leading-normal">
-                      మీరు తీసుకువచ్చే పేమెంట్ మరియు SMS గేట్‌వేల కోసం ఈ క్రింది సెక్షన్లు ప్రత్యేకంగా సిద్ధం చేయబడ్డాయి. API కీలు మరియు రూటింగ్‌ను ఇక్కడ డైరెక్ట్‌గా కాన్ఫిగర్ చేసుకొని కోడ్ లో వాడుకోవచ్చు.
+                      మీరు తీసుకువచ్చే పేమెంట్ మరియు SMS గేట్‌వేల కోసం ఈ క్రింది
+                      సెక్షన్లు ప్రత్యేకంగా సిద్ధం చేయబడ్డాయి. API కీలు మరియు
+                      రూటింగ్‌ను ఇక్కడ డైరెక్ట్‌గా కాన్ఫిగర్ చేసుకొని కోడ్ లో
+                      వాడుకోవచ్చు.
                     </p>
                   </div>
 
@@ -2304,7 +2979,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
                     <div className="space-y-2">
                       <div className="space-y-1">
-                        <label className="block text-[9px] font-extrabold text-gray-500 uppercase">SMS API URL / Endpoint</label>
+                        <label className="block text-[9px] font-extrabold text-gray-500 uppercase">
+                          SMS API URL / Endpoint
+                        </label>
                         <input
                           type="text"
                           value={smsGatewayUrl}
@@ -2315,7 +2992,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       </div>
 
                       <div className="space-y-1">
-                        <label className="block text-[9px] font-extrabold text-gray-500 uppercase">SMS API Authorization Key</label>
+                        <label className="block text-[9px] font-extrabold text-gray-500 uppercase">
+                          SMS API Authorization Key
+                        </label>
                         <input
                           type="password"
                           value={smsApiKey}
@@ -2333,16 +3012,22 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           setSmsStatus(null);
                           setTimeout(() => {
                             setIsSmsTesting(false);
-                            setSmsStatus('✓ API కనెక్షన్ విజయవంతమైంది! SMS పంపడానికి సిద్ధంగా ఉంది.');
+                            setSmsStatus(
+                              "✓ API కనెక్షన్ విజయవంతమైంది! SMS పంపడానికి సిద్ధంగా ఉంది.",
+                            );
                           }, 1200);
                         }}
                         disabled={isSmsTesting}
                         className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-[9px] rounded-lg transition active:scale-95 flex items-center gap-1"
                       >
-                        {isSmsTesting ? 'కనెక్ట్ అవుతోంది...' : 'కనెక్షన్ టెస్ట్ చేయి (Test Gateway)'}
+                        {isSmsTesting
+                          ? "కనెక్ట్ అవుతోంది..."
+                          : "కనెక్షన్ టెస్ట్ చేయి (Test Gateway)"}
                       </button>
 
-                      <span className="text-[8px] text-gray-400 font-bold">Fast2SMS/MSG91/Twilio Ready</span>
+                      <span className="text-[8px] text-gray-400 font-bold">
+                        Fast2SMS/MSG91/Twilio Ready
+                      </span>
                     </div>
 
                     {smsStatus && (
@@ -2357,12 +3042,29 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         <span>NODE.JS SMS GATEWAY PROXY CODE</span>
                         <Code className="w-3 h-3 text-cyan-400" />
                       </div>
-                      <p className="text-emerald-400">// SMS Gateway API Integration Code</p>
-                      <p className="text-cyan-300">async function <span className="text-yellow-300">sendOTPSMS</span>(phone, otp) &#123;</p>
-                      <p className="pl-3">const response = await fetch("<span className="text-amber-300">{smsGatewayUrl}</span>", &#123;</p>
+                      <p className="text-emerald-400">
+                        // SMS Gateway API Integration Code
+                      </p>
+                      <p className="text-cyan-300">
+                        async function{" "}
+                        <span className="text-yellow-300">sendOTPSMS</span>
+                        (phone, otp) &#123;
+                      </p>
+                      <p className="pl-3">
+                        const response = await fetch("
+                        <span className="text-amber-300">{smsGatewayUrl}</span>
+                        ", &#123;
+                      </p>
                       <p className="pl-6">method: "POST",</p>
-                      <p className="pl-6">headers: &#123; "Authorization": "<span className="text-amber-300">SECRET_KEY</span>", "Content-Type": "application/json" &#125;,</p>
-                      <p className="pl-6">body: JSON.stringify(&#123; route: "otp", variables_values: otp, numbers: phone &#125;)</p>
+                      <p className="pl-6">
+                        headers: &#123; "Authorization": "
+                        <span className="text-amber-300">SECRET_KEY</span>",
+                        "Content-Type": "application/json" &#125;,
+                      </p>
+                      <p className="pl-6">
+                        body: JSON.stringify(&#123; route: "otp",
+                        variables_values: otp, numbers: phone &#125;)
+                      </p>
                       <p className="pl-3">&#125;);</p>
                       <p className="pl-3">return await response.json();</p>
                       <p className="text-cyan-300">&#125;</p>
@@ -2374,7 +3076,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     <div className="flex items-center justify-between">
                       <h6 className="font-extrabold text-gray-800 flex items-center gap-1.5">
                         <CreditCard className="w-3.5 h-3.5 text-emerald-600" />
-                        <span>పేమెంట్ గేట్‌వే కాన్ఫిగరేషన్ (Payment Gateway)</span>
+                        <span>
+                          పేమెంట్ గేట్‌వే కాన్ఫిగరేషన్ (Payment Gateway)
+                        </span>
                       </h6>
                       <span className="text-[8px] bg-emerald-50 text-emerald-700 font-extrabold px-1.5 py-0.5 rounded">
                         PAYMENT PG
@@ -2383,21 +3087,31 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
                     <div className="grid grid-cols-2 gap-2">
                       <div className="space-y-1 col-span-2">
-                        <label className="block text-[9px] font-extrabold text-gray-500 uppercase">సెలెక్ట్ గేట్‌వే సర్వీస్ (Select PG Provider)</label>
+                        <label className="block text-[9px] font-extrabold text-gray-500 uppercase">
+                          సెలెక్ట్ గేట్‌వే సర్వీస్ (Select PG Provider)
+                        </label>
                         <select
                           value={paymentGateway}
                           onChange={(e) => setPaymentGateway(e.target.value)}
                           className="w-full bg-slate-50 border border-gray-200 rounded-lg p-2 text-[10px] font-bold text-gray-800 focus:outline-none"
                         >
-                          <option value="phonepe">PhonePe Payment Gateway (UPI Direct)</option>
-                          <option value="razorpay">Razorpay Checkout SDK</option>
-                          <option value="paytm">Paytm Business All-In-One</option>
+                          <option value="phonepe">
+                            PhonePe Payment Gateway (UPI Direct)
+                          </option>
+                          <option value="razorpay">
+                            Razorpay Checkout SDK
+                          </option>
+                          <option value="paytm">
+                            Paytm Business All-In-One
+                          </option>
                           <option value="gpay">Google Pay Business API</option>
                         </select>
                       </div>
 
                       <div className="space-y-1">
-                        <label className="block text-[9px] font-extrabold text-gray-500 uppercase">Merchant ID / Account ID</label>
+                        <label className="block text-[9px] font-extrabold text-gray-500 uppercase">
+                          Merchant ID / Account ID
+                        </label>
                         <input
                           type="text"
                           value={merchantId}
@@ -2407,7 +3121,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       </div>
 
                       <div className="space-y-1">
-                        <label className="block text-[9px] font-extrabold text-gray-500 uppercase">Salt Key / Auth Token</label>
+                        <label className="block text-[9px] font-extrabold text-gray-500 uppercase">
+                          Salt Key / Auth Token
+                        </label>
                         <input
                           type="password"
                           value={paymentSalt}
@@ -2425,16 +3141,22 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           setPayStatus(null);
                           setTimeout(() => {
                             setIsPayTesting(false);
-                            setPayStatus('✓ పేమెంట్ గేట్‌వే స్పేస్ యాక్టివేట్ అయింది! మీరు క్రెడెన్షియల్స్ ఇచ్చిన వెంటనే పేమెంట్స్ ఆటో-డైరెక్ట్ అవుతాయి.');
+                            setPayStatus(
+                              "✓ పేమెంట్ గేట్‌వే స్పేస్ యాక్టివేట్ అయింది! మీరు క్రెడెన్షియల్స్ ఇచ్చిన వెంటనే పేమెంట్స్ ఆటో-డైరెక్ట్ అవుతాయి.",
+                            );
                           }, 1200);
                         }}
                         disabled={isPayTesting}
                         className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-[9px] rounded-lg transition active:scale-95 flex items-center gap-1"
                       >
-                        {isPayTesting ? 'కనెక్ట్ అవుతోంది...' : 'పేమెంట్ గేట్‌వే టెస్ట్ చేయి'}
+                        {isPayTesting
+                          ? "కనెక్ట్ అవుతోంది..."
+                          : "పేమెంట్ గేట్‌వే టెస్ట్ చేయి"}
                       </button>
 
-                      <span className="text-[8px] text-gray-400 font-bold">UPI Redirect SDK ready</span>
+                      <span className="text-[8px] text-gray-400 font-bold">
+                        UPI Redirect SDK ready
+                      </span>
                     </div>
 
                     {payStatus && (
@@ -2449,19 +3171,36 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         <span>EXPRESS.JS PAYMENT CALLBACK ROUTE</span>
                         <Code className="w-3 h-3 text-emerald-400" />
                       </div>
-                      <p className="text-emerald-400">// Custom Gateway Router Handler</p>
-                      <p className="text-cyan-300">app.post("/api/gateway/pay", async (req, res) =&gt; &#123;</p>
-                      <p className="pl-3">const &#123; amount, txId, phone &#125; = req.body;</p>
-                      <p className="pl-3 text-gray-500">// Configure Pay-load matching {paymentGateway.toUpperCase()}</p>
-                      <p className="pl-3">const payload = &#123; merchantId: "<span className="text-amber-300">{merchantId}</span>", transactionId: txId, amount &#125;;</p>
-                      <p className="pl-3">res.json(&#123; success: true, redirectUrl: "https://pay.telugu.in/redirect" &#125;);</p>
+                      <p className="text-emerald-400">
+                        // Custom Gateway Router Handler
+                      </p>
+                      <p className="text-cyan-300">
+                        app.post("/api/gateway/pay", async (req, res) =&gt;
+                        &#123;
+                      </p>
+                      <p className="pl-3">
+                        const &#123; amount, txId, phone &#125; = req.body;
+                      </p>
+                      <p className="pl-3 text-gray-500">
+                        // Configure Pay-load matching{" "}
+                        {paymentGateway.toUpperCase()}
+                      </p>
+                      <p className="pl-3">
+                        const payload = &#123; merchantId: "
+                        <span className="text-amber-300">{merchantId}</span>",
+                        transactionId: txId, amount &#125;;
+                      </p>
+                      <p className="pl-3">
+                        res.json(&#123; success: true, redirectUrl:
+                        "https://pay.telugu.in/redirect" &#125;);
+                      </p>
                       <p className="text-cyan-300">&#125;);</p>
                     </div>
                   </div>
                 </div>
-              ) : activeSubTab === 'brahmastra' ? (
+              ) : activeSubTab === "brahmastra" ? (
                 <div className="animate-fade-in max-h-[440px] overflow-y-auto pr-1">
-                  <BrahmastraSystemComponent 
+                  <BrahmastraSystemComponent
                     isAgentToggleVisible={isAgentToggleVisible}
                     onToggleAgentVisibility={onToggleAgentVisibility}
                     isBrahmastraButtonVisible={isBrahmastraButtonVisible}
@@ -2472,14 +3211,21 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     onToggleHybridRadioMode={onToggleHybridRadioMode}
                   />
                 </div>
-              ) : activeSubTab === 'passwords' ? (
+              ) : activeSubTab === "passwords" ? (
                 <div className="animate-fade-in max-h-[440px] overflow-y-auto pr-1 space-y-4 text-xs text-gray-700">
                   <div className="p-3 bg-cyan-50 rounded-xl border border-cyan-100 flex items-start gap-2.5 shadow-xs">
                     <Shield className="w-5 h-5 text-cyan-600 shrink-0 mt-0.5" />
                     <div>
-                      <h4 className="font-extrabold text-cyan-900 text-[11px]">అడ్మిన్ సెక్యూరిటీ మేనేజ్‌మెంట్ (Admin Security & Credentials)</h4>
+                      <h4 className="font-extrabold text-cyan-900 text-[11px]">
+                        అడ్మిన్ సెక్యూరిటీ మేనేజ్‌మెంట్ (Admin Security &
+                        Credentials)
+                      </h4>
                       <p className="text-[9px] text-cyan-700/80 mt-0.5 leading-relaxed">
-                        అడ్మిన్ గారు (Admin garu), ఇక్కడ మీరు పాస్‌వర్డ్, బయోమెట్రిక్ ఫింగర్‌ప్రింట్ మరియు మాస్టర్ ఫోటో వెరిఫికేషన్ నిబంధనలను సెట్ చేసుకోవచ్చు. ఇవి ఆన్‌లైన్ Firebase Firestore మరియు లోకల్ యాప్‌లో పర్మనెంట్‌గా సింక్ అవుతాయి.
+                        అడ్మిన్ గారు (Admin garu), ఇక్కడ మీరు పాస్‌వర్డ్,
+                        బయోమెట్రిక్ ఫింగర్‌ప్రింట్ మరియు మాస్టర్ ఫోటో
+                        వెరిఫికేషన్ నిబంధనలను సెట్ చేసుకోవచ్చు. ఇవి ఆన్‌లైన్
+                        Firebase Firestore మరియు లోకల్ యాప్‌లో పర్మనెంట్‌గా
+                        సింక్ అవుతాయి.
                       </p>
                     </div>
                   </div>
@@ -2487,25 +3233,31 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   {cloudSyncStatus && (
                     <div className="p-2.5 text-[10px] bg-slate-900 text-cyan-300 rounded-xl font-mono border border-cyan-500/30 flex items-center justify-between">
                       <span>{cloudSyncStatus}</span>
-                      {isCloudSyncing && <span className="animate-pulse text-amber-400">సింక్ అవుతోంది...</span>}
+                      {isCloudSyncing && (
+                        <span className="animate-pulse text-amber-400">
+                          సింక్ అవుతోంది...
+                        </span>
+                      )}
                     </div>
                   )}
 
                   {/* 1. EXISTING PASSWORD MANAGEMENT */}
                   <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-3">
-                    <h4 className="font-extrabold text-[#082c75] text-xs border-b border-gray-100 pb-1.5 flex items-center gap-1.5">
-                      <Key className="w-4 h-4 text-[#082c75]" />
+                    <h4 className="font-extrabold text-[#2563eb] text-xs border-b border-gray-100 pb-1.5 flex items-center gap-1.5">
+                      <Key className="w-4 h-4 text-[#2563eb]" />
                       <span>పాస్‌వర్డ్ మేనేజ్‌మెంట్ (Password Settings)</span>
                     </h4>
-                    
+
                     <div className="space-y-3">
                       {/* Admin Password */}
                       <div className="space-y-1">
-                        <label className="block text-[10px] font-bold text-gray-700">అడ్మిన్ ప్యానెల్ పాస్‌వర్డ్ (Admin Password)</label>
-                        <form 
+                        <label className="block text-[10px] font-bold text-gray-700">
+                          అడ్మిన్ ప్యానెల్ పాస్‌వర్డ్ (Admin Password)
+                        </label>
+                        <form
                           onSubmit={(e) => {
                             e.preventDefault();
-                            handleSaveSinglePassword('admin');
+                            handleSaveSinglePassword("admin");
                           }}
                           className="flex gap-2"
                         >
@@ -2519,36 +3271,42 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                                 setAdminSaved(false);
                               }}
                               placeholder="కొత్త పాస్‌వర్డ్..."
-                              className="w-full text-xs pl-8.5 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-[#082c75] focus:outline-none"
+                              className="w-full text-xs pl-8.5 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-[#2563eb] focus:outline-none"
                             />
                             <button
                               type="button"
                               onClick={() => setShowAdminPwd(!showAdminPwd)}
                               className="absolute right-2.5 p-1 text-gray-400 hover:text-gray-600 transition"
                             >
-                              {showAdminPwd ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                              {showAdminPwd ? (
+                                <EyeOff className="w-3.5 h-3.5" />
+                              ) : (
+                                <Eye className="w-3.5 h-3.5" />
+                              )}
                             </button>
                           </div>
                           <button
                             type="submit"
                             className={`${
-                              adminSaved 
-                                ? "bg-emerald-600 hover:bg-emerald-700" 
-                                : "bg-[#082c75] hover:bg-[#001040]"
+                              adminSaved
+                                ? "bg-emerald-600 hover:bg-emerald-700"
+                                : "bg-[#2563eb] hover:bg-[#001040]"
                             } text-white px-4.5 py-2 rounded-lg font-extrabold text-[10px] transition active:scale-95 whitespace-nowrap cursor-pointer shadow-xs`}
                           >
-                            {adminSaved ? 'సేవ్ అయింది ✓' : 'సేవ్'}
+                            {adminSaved ? "సేవ్ అయింది ✓" : "సేవ్"}
                           </button>
                         </form>
                       </div>
 
                       {/* Brahmastra Code */}
                       <div className="space-y-1">
-                        <label className="block text-[10px] font-bold text-gray-700">బ్రహ్మాస్త్ర కోడ్ (Brahmastra Secret Code)</label>
-                        <form 
+                        <label className="block text-[10px] font-bold text-gray-700">
+                          బ్రహ్మాస్త్ర కోడ్ (Brahmastra Secret Code)
+                        </label>
+                        <form
                           onSubmit={(e) => {
                             e.preventDefault();
-                            handleSaveSinglePassword('brahmastra');
+                            handleSaveSinglePassword("brahmastra");
                           }}
                           className="flex gap-2"
                         >
@@ -2562,36 +3320,44 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                                 setBrahmastraSaved(false);
                               }}
                               placeholder="బ్రహ్మాస్త్ర కోడ్..."
-                              className="w-full text-xs pl-8.5 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-[#082c75] focus:outline-none"
+                              className="w-full text-xs pl-8.5 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-[#2563eb] focus:outline-none"
                             />
                             <button
                               type="button"
-                              onClick={() => setShowBrahmastraPwd(!showBrahmastraPwd)}
+                              onClick={() =>
+                                setShowBrahmastraPwd(!showBrahmastraPwd)
+                              }
                               className="absolute right-2.5 p-1 text-gray-400 hover:text-gray-600 transition"
                             >
-                              {showBrahmastraPwd ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                              {showBrahmastraPwd ? (
+                                <EyeOff className="w-3.5 h-3.5" />
+                              ) : (
+                                <Eye className="w-3.5 h-3.5" />
+                              )}
                             </button>
                           </div>
                           <button
                             type="submit"
                             className={`${
-                              brahmastraSaved 
-                                ? "bg-emerald-600 hover:bg-emerald-700" 
-                                : "bg-[#082c75] hover:bg-[#001040]"
+                              brahmastraSaved
+                                ? "bg-emerald-600 hover:bg-emerald-700"
+                                : "bg-[#2563eb] hover:bg-[#001040]"
                             } text-white px-4.5 py-2 rounded-lg font-extrabold text-[10px] transition active:scale-95 whitespace-nowrap cursor-pointer shadow-xs`}
                           >
-                            {brahmastraSaved ? 'సేవ్ అయింది ✓' : 'సేవ్'}
+                            {brahmastraSaved ? "సేవ్ అయింది ✓" : "సేవ్"}
                           </button>
                         </form>
                       </div>
 
                       {/* Vault PIN */}
                       <div className="space-y-1">
-                        <label className="block text-[10px] font-bold text-gray-700">సీక్రెట్ వాల్ట్ పిన్ (Secure Vault PIN)</label>
-                        <form 
+                        <label className="block text-[10px] font-bold text-gray-700">
+                          సీక్రెట్ వాల్ట్ పిన్ (Secure Vault PIN)
+                        </label>
+                        <form
                           onSubmit={(e) => {
                             e.preventDefault();
-                            handleSaveSinglePassword('vault');
+                            handleSaveSinglePassword("vault");
                           }}
                           className="flex gap-2"
                         >
@@ -2605,25 +3371,29 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                                 setVaultSaved(false);
                               }}
                               placeholder="వాల్ట్ పిన్..."
-                              className="w-full text-xs pl-8.5 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-[#082c75] focus:outline-none"
+                              className="w-full text-xs pl-8.5 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-[#2563eb] focus:outline-none"
                             />
                             <button
                               type="button"
                               onClick={() => setShowVaultPwd(!showVaultPwd)}
                               className="absolute right-2.5 p-1 text-gray-400 hover:text-gray-600 transition"
                             >
-                              {showVaultPwd ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                              {showVaultPwd ? (
+                                <EyeOff className="w-3.5 h-3.5" />
+                              ) : (
+                                <Eye className="w-3.5 h-3.5" />
+                              )}
                             </button>
                           </div>
                           <button
                             type="submit"
                             className={`${
-                              vaultSaved 
-                                ? "bg-emerald-600 hover:bg-emerald-700" 
-                                : "bg-[#082c75] hover:bg-[#001040]"
+                              vaultSaved
+                                ? "bg-emerald-600 hover:bg-emerald-700"
+                                : "bg-[#2563eb] hover:bg-[#001040]"
                             } text-white px-4.5 py-2 rounded-lg font-extrabold text-[10px] transition active:scale-95 whitespace-nowrap cursor-pointer shadow-xs`}
                           >
-                            {vaultSaved ? 'సేవ్ అయింది ✓' : 'సేవ్'}
+                            {vaultSaved ? "సేవ్ అయింది ✓" : "సేవ్"}
                           </button>
                         </form>
                       </div>
@@ -2632,21 +3402,30 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
                   {/* 2. FINGERPRINT / BIOMETRIC MANAGEMENT */}
                   <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-3">
-                    <h4 className="font-extrabold text-[#082c75] text-xs border-b border-gray-100 pb-1.5 flex items-center gap-1.5">
+                    <h4 className="font-extrabold text-[#2563eb] text-xs border-b border-gray-100 pb-1.5 flex items-center gap-1.5">
                       <Fingerprint className="w-4 h-4 text-cyan-600" />
-                      <span>ఫింగర్‌ప్రింట్ / బయోమెట్రిక్ మేనేజ్‌మెంట్ (Biometric Management)</span>
+                      <span>
+                        ఫింగర్‌ప్రింట్ / బయోమెట్రిక్ మేనేజ్‌మెంట్ (Biometric
+                        Management)
+                      </span>
                     </h4>
 
                     <div className="space-y-2.5">
                       <div className="flex items-center justify-between bg-slate-50 p-2.5 rounded-lg border border-gray-150">
                         <div>
-                          <p className="font-extrabold text-gray-800 text-[11px]">నమోదిత బయోమెట్రిక్ (Registered Fingerprint)</p>
+                          <p className="font-extrabold text-gray-800 text-[11px]">
+                            నమోదిత బయోమెట్రిక్ (Registered Fingerprint)
+                          </p>
                           <p className="text-[9px] font-mono text-gray-500 truncate max-w-[200px]">
-                            {biometricCredentialId ? `Cred ID: ${biometricCredentialId}` : 'ఫింగర్‌ప్రింట్ నమోదు కాలేదు'}
+                            {biometricCredentialId
+                              ? `Cred ID: ${biometricCredentialId}`
+                              : "ఫింగర్‌ప్రింట్ నమోదు కాలేదు"}
                           </p>
                         </div>
-                        <span className={`text-[9px] font-black px-2 py-0.5 rounded-full ${biometricCredentialId ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
-                          {biometricCredentialId ? 'ACTIVE' : 'NOT SET'}
+                        <span
+                          className={`text-[9px] font-black px-2 py-0.5 rounded-full ${biometricCredentialId ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"}`}
+                        >
+                          {biometricCredentialId ? "ACTIVE" : "NOT SET"}
                         </span>
                       </div>
 
@@ -2657,7 +3436,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           className="flex-1 py-2.5 bg-cyan-600 hover:bg-cyan-700 text-white font-black text-[10px] rounded-xl shadow-xs transition active:scale-95 flex items-center justify-center gap-1"
                         >
                           <Fingerprint className="w-3.5 h-3.5" />
-                          <span>Register New Fingerprint (కొత్తది నమోదు చేయి)</span>
+                          <span>
+                            Register New Fingerprint (కొత్తది నమోదు చేయి)
+                          </span>
                         </button>
                         <button
                           type="button"
@@ -2672,9 +3453,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
                   {/* 3. PHOTO VERIFICATION MANAGEMENT */}
                   <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-3">
-                    <h4 className="font-extrabold text-[#082c75] text-xs border-b border-gray-100 pb-1.5 flex items-center gap-1.5">
+                    <h4 className="font-extrabold text-[#2563eb] text-xs border-b border-gray-100 pb-1.5 flex items-center gap-1.5">
                       <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                      <span>మాస్టర్ ఫోటో & కెమెరా వెరిఫికేషన్ (Photo Verification Settings)</span>
+                      <span>
+                        మాస్టర్ ఫోటో & కెమెరా వెరిఫికేషన్ (Photo Verification
+                        Settings)
+                      </span>
                     </h4>
 
                     <div className="space-y-3">
@@ -2682,15 +3466,23 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       <div className="flex items-center justify-between gap-3 bg-slate-50 p-3 rounded-xl border border-gray-150">
                         <div className="flex items-center gap-3">
                           {masterPhotoUrl ? (
-                            <img src={masterPhotoUrl} alt="Master" className="w-11 h-11 rounded-full object-cover border-2 border-emerald-500 shadow-sm" />
+                            <img
+                              src={masterPhotoUrl}
+                              alt="Master"
+                              className="w-11 h-11 rounded-full object-cover border-2 border-emerald-500 shadow-sm"
+                            />
                           ) : (
                             <div className="w-11 h-11 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-bold text-xs">
                               📷
                             </div>
                           )}
                           <div>
-                            <p className="font-extrabold text-gray-800 text-[11px]">మాస్టర్ ఒరిజినల్ ఫోటో (Master Photo)</p>
-                            <p className="text-[9px] text-gray-500">లాగిన్ సమయంలో కెమెరా ఫోటో ఈ ఫోటోతో మ్యాచ్ కావాలి.</p>
+                            <p className="font-extrabold text-gray-800 text-[11px]">
+                              మాస్టర్ ఒరిజినల్ ఫోటో (Master Photo)
+                            </p>
+                            <p className="text-[9px] text-gray-500">
+                              లాగిన్ సమయంలో కెమెరా ఫోటో ఈ ఫోటోతో మ్యాచ్ కావాలి.
+                            </p>
                           </div>
                         </div>
                         <div className="flex items-center gap-1.5">
@@ -2698,11 +3490,21 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                             <button
                               type="button"
                               onClick={async () => {
-                                if (confirm('మాస్టర్ ఫోటోను తొలగించాలా? (Delete Master Photo)')) {
-                                  setMasterPhotoUrl('');
-                                  localStorage.removeItem('cwb_master_photo_url');
-                                  await saveSecurityToCloudAndLocal({ masterPhotoUrl: '' });
-                                  alert('✓ మాస్టర్ ఫోటో విజయవంతంగా తొలగించబడింది!');
+                                if (
+                                  confirm(
+                                    "మాస్టర్ ఫోటోను తొలగించాలా? (Delete Master Photo)",
+                                  )
+                                ) {
+                                  setMasterPhotoUrl("");
+                                  localStorage.removeItem(
+                                    "cwb_master_photo_url",
+                                  );
+                                  await saveSecurityToCloudAndLocal({
+                                    masterPhotoUrl: "",
+                                  });
+                                  alert(
+                                    "✓ మాస్టర్ ఫోటో విజయవంతంగా తొలగించబడింది!",
+                                  );
                                 }
                               }}
                               className="px-2.5 py-1.5 bg-rose-100 hover:bg-rose-200 text-rose-800 font-extrabold text-[9px] rounded-lg transition active:scale-95"
@@ -2711,9 +3513,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                               తొలగించు
                             </button>
                           )}
-                          <label className="px-3 py-1.5 bg-[#082c75] hover:bg-[#001040] text-white font-extrabold text-[9px] rounded-lg cursor-pointer shadow-xs transition active:scale-95 whitespace-nowrap">
+                          <label className="px-3 py-1.5 bg-[#2563eb] hover:bg-[#001040] text-white font-extrabold text-[9px] rounded-lg cursor-pointer shadow-xs transition active:scale-95 whitespace-nowrap">
                             అప్‌లోడ్ ఫోటో
-                            <input type="file" accept="image/*" onChange={handleMasterPhotoUpload} className="hidden" />
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={handleMasterPhotoUpload}
+                              className="hidden"
+                            />
                           </label>
                         </div>
                       </div>
@@ -2721,9 +3528,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       {/* Camera Verification Toggle Switch */}
                       <div className="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-gray-150">
                         <div className="space-y-0.5">
-                          <p className="font-extrabold text-gray-800 text-[11px]">కెమెరా వెరిఫికేషన్ మాస్టర్ స్విచ్ (Camera Verification Toggle)</p>
+                          <p className="font-extrabold text-gray-800 text-[11px]">
+                            కెమెరా వెరిఫికేషన్ మాస్టర్ స్విచ్ (Camera
+                            Verification Toggle)
+                          </p>
                           <p className="text-[9px] text-gray-500">
-                            {cameraVerificationEnabled ? 'లాగిన్ సమయంలో కెమెరా ఫోటో క్యాప్చర్ & వెరిఫికేషన్ ఆన్‌లో ఉంది' : 'కెమెరా వెరిఫికేషన్ డిసేబుల్ చేయబడింది'}
+                            {cameraVerificationEnabled
+                              ? "లాగిన్ సమయంలో కెమెరా ఫోటో క్యాప్చర్ & వెరిఫికేషన్ ఆన్‌లో ఉంది"
+                              : "కెమెరా వెరిఫికేషన్ డిసేబుల్ చేయబడింది"}
                           </p>
                         </div>
                         <button
@@ -2731,26 +3543,43 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           onClick={async () => {
                             const nextVal = !cameraVerificationEnabled;
                             setCameraVerificationEnabled(nextVal);
-                            await saveSecurityToCloudAndLocal({ cameraVerificationEnabled: nextVal });
-                            alert(nextVal ? '✓ కెమెరా వెరిఫికేషన్ ఆన్ చేయబడింది!' : '✓ కెమెరా వెరిఫికేషన్ ఆఫ్ చేయబడింది.');
+                            await saveSecurityToCloudAndLocal({
+                              cameraVerificationEnabled: nextVal,
+                            });
+                            alert(
+                              nextVal
+                                ? "✓ కెమెరా వెరిఫికేషన్ ఆన్ చేయబడింది!"
+                                : "✓ కెమెరా వెరిఫికేషన్ ఆఫ్ చేయబడింది.",
+                            );
                           }}
-                          className={`w-11 h-6 rounded-full transition-colors flex items-center px-0.5 ${cameraVerificationEnabled ? 'bg-emerald-600' : 'bg-gray-300'}`}
+                          className={`w-11 h-6 rounded-full transition-colors flex items-center px-0.5 ${cameraVerificationEnabled ? "bg-emerald-600" : "bg-gray-300"}`}
                         >
-                          <div className={`w-5 h-5 rounded-full bg-white transition-transform shadow-sm ${cameraVerificationEnabled ? 'translate-x-5' : 'translate-x-0'}`} />
+                          <div
+                            className={`w-5 h-5 rounded-full bg-white transition-transform shadow-sm ${cameraVerificationEnabled ? "translate-x-5" : "translate-x-0"}`}
+                          />
                         </button>
                       </div>
 
                       {/* View Login Photos Gallery (Audit Logs) */}
                       <div className="space-y-2 pt-1">
                         <div className="flex items-center justify-between">
-                          <span className="font-bold text-gray-700 text-[10px]">లాగిన్ ఆడిట్ లాగ్ గ్యాలరీ (Audit Log Login Photos): {loginAuditPhotos.length}</span>
+                          <span className="font-bold text-gray-700 text-[10px]">
+                            లాగిన్ ఆడిట్ లాగ్ గ్యాలరీ (Audit Log Login Photos):{" "}
+                            {loginAuditPhotos.length}
+                          </span>
                           {loginAuditPhotos.length > 0 && (
                             <button
                               type="button"
                               onClick={async () => {
-                                if (confirm('అన్ని లాగిన్ ఆడిట్ ఫోటోలను తొలగించాలా?')) {
+                                if (
+                                  confirm(
+                                    "అన్ని లాగిన్ ఆడిట్ ఫోటోలను తొలగించాలా?",
+                                  )
+                                ) {
                                   setLoginAuditPhotos([]);
-                                  await saveSecurityToCloudAndLocal({ loginAuditPhotos: [] });
+                                  await saveSecurityToCloudAndLocal({
+                                    loginAuditPhotos: [],
+                                  });
                                 }
                               }}
                               className="text-[9px] text-rose-600 font-bold hover:underline"
@@ -2761,21 +3590,34 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         </div>
                         {loginAuditPhotos.length === 0 ? (
                           <div className="p-3 bg-gray-50 rounded-lg text-center text-[9px] text-gray-400 border border-dashed border-gray-200">
-                            ఇంతవరకు లాగిన్ ఫోటోలు రికార్డ్ కాలేదు. (No login audit photos captured yet)
+                            ఇంతవరకు లాగిన్ ఫోటోలు రికార్డ్ కాలేదు. (No login
+                            audit photos captured yet)
                           </div>
                         ) : (
                           <div className="grid grid-cols-4 gap-2 max-h-32 overflow-y-auto p-1 bg-slate-100 rounded-lg">
                             {loginAuditPhotos.map((photo, idx) => (
                               <div key={idx} className="relative group">
-                                <img src={photo} alt={`Audit ${idx}`} className="w-full h-16 object-cover rounded border border-gray-300 shadow-xs" />
-                                <span className="absolute bottom-0.5 right-0.5 bg-black/70 text-white text-[7px] px-1 rounded">#{idx+1}</span>
+                                <img
+                                  src={photo}
+                                  alt={`Audit ${idx}`}
+                                  className="w-full h-16 object-cover rounded border border-gray-300 shadow-xs"
+                                />
+                                <span className="absolute bottom-0.5 right-0.5 bg-black/70 text-white text-[7px] px-1 rounded">
+                                  #{idx + 1}
+                                </span>
                                 <button
                                   type="button"
                                   onClick={async () => {
-                                    if (confirm(`ఫోటో #${idx+1} ని తొలగించాలా?`)) {
-                                      const updated = loginAuditPhotos.filter((_, i) => i !== idx);
+                                    if (
+                                      confirm(`ఫోటో #${idx + 1} ని తొలగించాలా?`)
+                                    ) {
+                                      const updated = loginAuditPhotos.filter(
+                                        (_, i) => i !== idx,
+                                      );
                                       setLoginAuditPhotos(updated);
-                                      await saveSecurityToCloudAndLocal({ loginAuditPhotos: updated });
+                                      await saveSecurityToCloudAndLocal({
+                                        loginAuditPhotos: updated,
+                                      });
                                     }
                                   }}
                                   className="absolute top-0.5 right-0.5 w-4 h-4 bg-rose-600 hover:bg-rose-700 text-white rounded-full flex items-center justify-center text-[8px] opacity-85 group-hover:opacity-100 transition shadow"
@@ -2795,30 +3637,42 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <button
                     type="button"
                     onClick={() => saveSecurityToCloudAndLocal({})}
-                    className={`w-full py-3 ${isSavedRecently ? 'bg-emerald-600 hover:bg-emerald-500 scale-[1.02]' : 'bg-[#082c75] hover:bg-[#001040]'} text-white font-black text-xs rounded-xl shadow-md transition-all duration-300 active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer`}
+                    className={`w-full py-3 ${isSavedRecently ? "bg-emerald-600 hover:bg-emerald-500 scale-[1.02]" : "bg-[#2563eb] hover:bg-[#001040]"} text-white font-black text-xs rounded-xl shadow-md transition-all duration-300 active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer`}
                   >
-                    <span>{isSavedRecently ? '✓ సేవ్ చేయబడింది! (Saved Successfully!)' : '☁️ Save All Security Settings to Firebase Cloud (క్లౌడ్‌కు సింక్ చేయి)'}</span>
+                    <span>
+                      {isSavedRecently
+                        ? "✓ సేవ్ చేయబడింది! (Saved Successfully!)"
+                        : "☁️ Save All Security Settings to Firebase Cloud (క్లౌడ్‌కు సింక్ చేయి)"}
+                    </span>
                   </button>
                 </div>
-              ) : activeSubTab === 'support' ? (
+              ) : activeSubTab === "support" ? (
                 <div className="animate-fade-in space-y-4 max-h-[440px] overflow-y-auto pr-1 text-xs text-gray-700">
                   <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-100 flex items-start gap-2.5">
                     <span className="text-base">📞</span>
                     <div>
-                      <h4 className="font-extrabold text-emerald-800 text-[11px]">కస్టమర్ కేర్ & సపోర్ట్ కాన్ఫిగరేషన్ (Support Setup)</h4>
+                      <h4 className="font-extrabold text-emerald-800 text-[11px]">
+                        కస్టమర్ కేర్ & సపోర్ట్ కాన్ఫిగరేషన్ (Support Setup)
+                      </h4>
                       <p className="text-[9px] text-emerald-700/80 mt-0.5 leading-relaxed">
-                        ఇక్కడ మీరు అప్లికేషన్‌లో కనిపించే కస్టమర్ కేర్ ఫోన్ నెంబర్ మరియు గూగుల్ ఫారం ఫీడ్‌బ్యాక్ లింకులను అప్డేట్ చేసుకోవచ్చు. అదనపు ఫోన్ నంబర్లను కూడా యాడ్ చేయవచ్చు.
+                        ఇక్కడ మీరు అప్లికేషన్‌లో కనిపించే కస్టమర్ కేర్ ఫోన్
+                        నెంబర్ మరియు గూగుల్ ఫారం ఫీడ్‌బ్యాక్ లింకులను అప్డేట్
+                        చేసుకోవచ్చు. అదనపు ఫోన్ నంబర్లను కూడా యాడ్ చేయవచ్చు.
                       </p>
                     </div>
                   </div>
 
                   {/* SECTION 1: Primary Controls */}
                   <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 space-y-3">
-                    <h3 className="font-bold text-[#082c75] uppercase tracking-wide text-[9px]">ప్రధాన లింకులు / Primary Links</h3>
-                    
+                    <h3 className="font-bold text-[#2563eb] uppercase tracking-wide text-[9px]">
+                      ప్రధాన లింకులు / Primary Links
+                    </h3>
+
                     <div className="space-y-3">
                       <div className="space-y-1">
-                        <label className="block text-[10px] font-bold text-gray-700">కస్టమర్ కేర్ మొబైల్ నెంబర్ / Customer Care Phone</label>
+                        <label className="block text-[10px] font-bold text-gray-700">
+                          కస్టమర్ కేర్ మొబైల్ నెంబర్ / Customer Care Phone
+                        </label>
                         <input
                           type="text"
                           className="w-full p-2 bg-white border border-gray-200 rounded-lg font-mono text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-none text-gray-800 font-bold"
@@ -2826,31 +3680,45 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           value={customerCarePhone}
                           onChange={(e) => setCustomerCarePhone(e.target.value)}
                         />
-                        <span className="text-[8px] text-gray-400 block">కస్టమర్ 'Care' బటన్ నొక్కినప్పుడు ఈ నంబర్‌కి నేరుగా డయల్ వెళ్తుంది.</span>
+                        <span className="text-[8px] text-gray-400 block">
+                          కస్టమర్ 'Care' బటన్ నొక్కినప్పుడు ఈ నంబర్‌కి నేరుగా
+                          డయల్ వెళ్తుంది.
+                        </span>
                       </div>
 
                       <div className="space-y-1">
-                        <label className="block text-[10px] font-bold text-gray-700">గూగుల్ ఫారం ఫీడ్‌బ్యాక్ లింక్ / Google Form Link</label>
+                        <label className="block text-[10px] font-bold text-gray-700">
+                          గూగుల్ ఫారం ఫీడ్‌బ్యాక్ లింక్ / Google Form Link
+                        </label>
                         <input
                           type="url"
                           className="w-full p-2 bg-white border border-gray-200 rounded-lg font-mono text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-none text-gray-800 font-bold"
                           placeholder="https://forms.gle/..."
                           value={feedbackGoogleForm}
-                          onChange={(e) => setFeedbackGoogleForm(e.target.value)}
+                          onChange={(e) =>
+                            setFeedbackGoogleForm(e.target.value)
+                          }
                         />
-                        <span className="text-[8px] text-gray-400 block">కస్టమర్ 'Feedback' బటన్ నొక్కినప్పుడు ఈ గూగుల్ ఫారం ఓపెన్ అవుతుంది.</span>
+                        <span className="text-[8px] text-gray-400 block">
+                          కస్టమర్ 'Feedback' బటన్ నొక్కినప్పుడు ఈ గూగుల్ ఫారం
+                          ఓపెన్ అవుతుంది.
+                        </span>
                       </div>
                     </div>
                   </div>
 
                   {/* SECTION 2: Add Additional Phone Numbers */}
                   <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 space-y-3">
-                    <h3 className="font-bold text-[#082c75] uppercase tracking-wide text-[9px]">అదనపు నంబర్లు / Add Other Phone Numbers</h3>
-                    
+                    <h3 className="font-bold text-[#2563eb] uppercase tracking-wide text-[9px]">
+                      అదనపు నంబర్లు / Add Other Phone Numbers
+                    </h3>
+
                     {/* Form to add */}
                     <div className="bg-white p-2.5 rounded-lg border border-slate-100 space-y-2">
                       <div className="space-y-1">
-                        <label className="block text-[9px] font-bold text-gray-500 uppercase">పేరు / Contact Name</label>
+                        <label className="block text-[9px] font-bold text-gray-500 uppercase">
+                          పేరు / Contact Name
+                        </label>
                         <input
                           type="text"
                           placeholder="ఉదా: సూపర్వైజర్ ప్రసాద్"
@@ -2860,7 +3728,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         />
                       </div>
                       <div className="space-y-1">
-                        <label className="block text-[9px] font-bold text-gray-500 uppercase">ఫోన్ నెంబర్ / Phone Number</label>
+                        <label className="block text-[9px] font-bold text-gray-500 uppercase">
+                          ఫోన్ నెంబర్ / Phone Number
+                        </label>
                         <input
                           type="text"
                           placeholder="ఉదా: 9876543210"
@@ -2875,17 +3745,22 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           const name = newContactName.trim();
                           const phone = newContactPhone.trim();
                           if (!name || !phone) {
-                            alert("దయచేసి పేరు మరియు సరైన ఫోన్ నెంబర్ రెండింటినీ ఎంటర్ చేయండి!");
+                            alert(
+                              "దయచేసి పేరు మరియు సరైన ఫోన్ నెంబర్ రెండింటినీ ఎంటర్ చేయండి!",
+                            );
                             return;
                           }
                           const newContact = {
-                            id: 'contact_' + Date.now(),
+                            id: "contact_" + Date.now(),
                             name,
-                            phone
+                            phone,
                           };
-                          setSupportNumbersList(prev => [...prev, newContact]);
-                          setNewContactName('');
-                          setNewContactPhone('');
+                          setSupportNumbersList((prev) => [
+                            ...prev,
+                            newContact,
+                          ]);
+                          setNewContactName("");
+                          setNewContactPhone("");
                         }}
                         className="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs rounded-lg transition active:scale-95 text-center cursor-pointer"
                       >
@@ -2895,7 +3770,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
                     {/* List of other numbers */}
                     <div className="space-y-1.5">
-                      <span className="block text-[9px] font-bold text-gray-500 uppercase tracking-wide">ప్రస్తుతం ఉన్న సహాయక నంబర్లు / Contact List</span>
+                      <span className="block text-[9px] font-bold text-gray-500 uppercase tracking-wide">
+                        ప్రస్తుతం ఉన్న సహాయక నంబర్లు / Contact List
+                      </span>
                       {supportNumbersList.length === 0 ? (
                         <div className="text-center py-3 text-[10px] text-gray-400 bg-white rounded-lg border border-dashed border-gray-200">
                           ఇతర సహాయక నంబర్లు ఏవీ లేవు.
@@ -2907,19 +3784,32 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                               <tr className="bg-slate-50 text-gray-500 font-bold border-b border-gray-150 uppercase text-[8px]">
                                 <th className="py-1.5 px-2">పేరు / Name</th>
                                 <th className="py-1.5 px-2">ఫోన్ / Phone</th>
-                                <th className="py-1.5 px-2 text-right">చర్య / Action</th>
+                                <th className="py-1.5 px-2 text-right">
+                                  చర్య / Action
+                                </th>
                               </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
                               {supportNumbersList.map((contact) => (
-                                <tr key={contact.id} className="hover:bg-slate-50/50 transition">
-                                  <td className="py-1.5 px-2 font-bold text-[#082c75]">{contact.name}</td>
-                                  <td className="py-1.5 px-2 font-mono text-gray-600">{contact.phone}</td>
+                                <tr
+                                  key={contact.id}
+                                  className="hover:bg-slate-50/50 transition"
+                                >
+                                  <td className="py-1.5 px-2 font-bold text-[#2563eb]">
+                                    {contact.name}
+                                  </td>
+                                  <td className="py-1.5 px-2 font-mono text-gray-600">
+                                    {contact.phone}
+                                  </td>
                                   <td className="py-1.5 px-2 text-right">
                                     <button
                                       type="button"
                                       onClick={() => {
-                                        setSupportNumbersList(prev => prev.filter(c => c.id !== contact.id));
+                                        setSupportNumbersList((prev) =>
+                                          prev.filter(
+                                            (c) => c.id !== contact.id,
+                                          ),
+                                        );
                                       }}
                                       className="px-2 py-0.5 bg-red-50 text-red-600 font-bold text-[8px] rounded-md hover:bg-red-100 transition border border-red-200/40"
                                     >
@@ -2935,16 +3825,21 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     </div>
                   </div>
                 </div>
-              ) : activeSubTab === 'maintenance' ? (
+              ) : activeSubTab === "maintenance" ? (
                 <div className="animate-fade-in space-y-4 max-h-[440px] overflow-y-auto pr-1 text-xs text-gray-700">
                   <div className="p-3.5 bg-indigo-50 rounded-2xl border border-indigo-100/60 flex items-start gap-2.5 shadow-xs">
                     <div className="p-1.5 bg-indigo-500 rounded-xl text-white shrink-0">
                       <Cpu className="w-4 h-4 animate-pulse" />
                     </div>
                     <div>
-                      <h4 className="font-extrabold text-indigo-900 text-[11px]">ఇన్విజిబుల్ మెయింటెనెన్స్ అసిస్టెంట్</h4>
+                      <h4 className="font-extrabold text-indigo-900 text-[11px]">
+                        ఇన్విజిబుల్ మెయింటెనెన్స్ అసిస్టెంట్
+                      </h4>
                       <p className="text-[9px] text-indigo-700/80 mt-1 leading-relaxed">
-                        ఈ ఫీచర్ పూర్తిగా బ్యాక్గ్రౌండ్‌లో మాత్రమే రన్ అవుతుంది. ఏ యూజర్‌కు కూడా దీని గురించి తెలియదు, నోటిఫికేషన్లు వెళ్ళవు. సిస్టమ్‌లోని బగ్స్ క్లీన్ చేయడం మరియు ఎర్రర్స్ ఆటో-ఫిక్స్ చేయడం దీని బాధ్యత.
+                        ఈ ఫీచర్ పూర్తిగా బ్యాక్గ్రౌండ్‌లో మాత్రమే రన్ అవుతుంది.
+                        ఏ యూజర్‌కు కూడా దీని గురించి తెలియదు, నోటిఫికేషన్లు
+                        వెళ్ళవు. సిస్టమ్‌లోని బగ్స్ క్లీన్ చేయడం మరియు ఎర్రర్స్
+                        ఆటో-ఫిక్స్ చేయడం దీని బాధ్యత.
                       </p>
                     </div>
                   </div>
@@ -2952,25 +3847,34 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   {/* Section 1: Activation Control */}
                   <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-100 flex items-center justify-between">
                     <div className="space-y-0.5">
-                      <span className="block font-extrabold text-gray-800 text-[11px]">అసిస్టెంట్ సర్వీస్ స్టేటస్</span>
-                      <span className="text-[9px] text-gray-500 block">బ్యాక్గ్రౌండ్ సెల్ఫ్-హీలింగ్ ఆన్/ఆఫ్ చేయండి</span>
+                      <span className="block font-extrabold text-gray-800 text-[11px]">
+                        అసిస్టెంట్ సర్వీస్ స్టేటస్
+                      </span>
+                      <span className="text-[9px] text-gray-500 block">
+                        బ్యాక్గ్రౌండ్ సెల్ఫ్-హీలింగ్ ఆన్/ఆఫ్ చేయండి
+                      </span>
                     </div>
-                    
+
                     <button
                       type="button"
                       onClick={onToggleMaintenance}
                       className={`w-12 h-6 rounded-full transition-all duration-300 flex items-center px-0.5 ${
-                        isMaintenanceEnabled ? 'bg-indigo-600 shadow-md shadow-indigo-600/20' : 'bg-gray-300'
+                        isMaintenanceEnabled
+                          ? "bg-indigo-600 shadow-md shadow-indigo-600/20"
+                          : "bg-gray-300"
                       }`}
                     >
-                      <div className={`w-5 h-5 rounded-full bg-white shadow-sm transition-all duration-300 flex items-center justify-center text-[8px] font-bold ${
-                        isMaintenanceEnabled ? 'translate-x-6 text-indigo-600' : 'translate-x-0 text-gray-400'
-                      }`}>
-                        {isMaintenanceEnabled ? 'ON' : 'OFF'}
+                      <div
+                        className={`w-5 h-5 rounded-full bg-white shadow-sm transition-all duration-300 flex items-center justify-center text-[8px] font-bold ${
+                          isMaintenanceEnabled
+                            ? "translate-x-6 text-indigo-600"
+                            : "translate-x-0 text-gray-400"
+                        }`}
+                      >
+                        {isMaintenanceEnabled ? "ON" : "OFF"}
                       </div>
                     </button>
                   </div>
-
 
                   {/* Invisible Agent Command Center */}
                   <div className="mt-4 p-3.5 bg-slate-900 rounded-2xl border border-gray-700 shadow-inner overflow-hidden relative">
@@ -2980,92 +3884,117 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     <div className="relative z-10 space-y-3">
                       <div className="flex items-center gap-2 mb-1">
                         <div className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                        <h4 className="font-extrabold text-white text-[11px] tracking-wide">ఇన్విజిబుల్ ఏజెంట్ కమాండ్ సెంటర్ (Invisible Agent Powers)</h4>
+                        <h4 className="font-extrabold text-white text-[11px] tracking-wide">
+                          ఇన్విజిబుల్ ఏజెంట్ కమాండ్ సెంటర్ (Invisible Agent
+                          Powers)
+                        </h4>
                       </div>
                       <p className="text-[9px] text-gray-400 leading-relaxed">
-                        అడ్మిన్ గారు (Admin garu), మీరు కోరినట్లుగా ఇన్విజిబుల్ ఏజెంట్‌కు అదనపు బాధ్యతలు (System Scan, Auto-Settings, User Management, Database Backup) యాడ్ చేయబడ్డాయి.
+                        అడ్మిన్ గారు (Admin garu), మీరు కోరినట్లుగా ఇన్విజిబుల్
+                        ఏజెంట్‌కు అదనపు బాధ్యతలు (System Scan, Auto-Settings,
+                        User Management, Database Backup) యాడ్ చేయబడ్డాయి.
                       </p>
-                      
+
                       <div className="grid grid-cols-2 gap-2 mt-2">
-                        <button 
+                        <button
                           type="button"
                           onClick={() => {
-                            setAgentCommandOutput('🛡️ సిస్టమ్ స్కానింగ్ ప్రారంభించబడింది...\n\n- నెట్‌వర్క్ భద్రత: సురక్షితం\n- ఫైర్‌బేస్ రూల్స్: కట్టుదిట్టం\n- ఏజెంట్ స్టేటస్: ఆన్‌లైన్ (100% హెల్త్)');
+                            setAgentCommandOutput(
+                              "🛡️ సిస్టమ్ స్కానింగ్ ప్రారంభించబడింది...\n\n- నెట్‌వర్క్ భద్రత: సురక్షితం\n- ఫైర్‌బేస్ రూల్స్: కట్టుదిట్టం\n- ఏజెంట్ స్టేటస్: ఆన్‌లైన్ (100% హెల్త్)",
+                            );
                           }}
                           className="flex flex-col items-center justify-center p-2.5 bg-gray-800 hover:bg-gray-700 border border-gray-600 rounded-xl transition active:scale-95 gap-1.5"
                         >
                           <ShieldAlert className="w-4 h-4 text-emerald-400" />
-                          <span className="text-[9px] font-black text-white text-center">సిస్టమ్ స్కానింగ్ (System Scan)</span>
+                          <span className="text-[9px] font-black text-white text-center">
+                            సిస్టమ్ స్కానింగ్ (System Scan)
+                          </span>
                         </button>
 
-                        <button 
+                        <button
                           type="button"
                           onClick={() => {
-                            setAgentCommandOutput('⚙️ ఆటోమేటిక్ సెట్టింగ్స్ కంట్రోల్...\n\nవాయిస్/టెక్స్ట్ ద్వారా కెమెరా, క్లాక్ మరియు అలారం ఫీచర్లను నియంత్రించడానికి ఏజెంట్ సిద్ధంగా ఉంది.');
+                            setAgentCommandOutput(
+                              "⚙️ ఆటోమేటిక్ సెట్టింగ్స్ కంట్రోల్...\n\nవాయిస్/టెక్స్ట్ ద్వారా కెమెరా, క్లాక్ మరియు అలారం ఫీచర్లను నియంత్రించడానికి ఏజెంట్ సిద్ధంగా ఉంది.",
+                            );
                           }}
                           className="flex flex-col items-center justify-center p-2.5 bg-gray-800 hover:bg-gray-700 border border-gray-600 rounded-xl transition active:scale-95 gap-1.5"
                         >
                           <Settings className="w-4 h-4 text-cyan-400" />
-                          <span className="text-[9px] font-black text-white text-center">ఆటో సెట్టింగ్స్ (Auto Controls)</span>
+                          <span className="text-[9px] font-black text-white text-center">
+                            ఆటో సెట్టింగ్స్ (Auto Controls)
+                          </span>
                         </button>
 
-                        <button 
+                        <button
                           type="button"
                           onClick={() => {
-                            setAgentCommandOutput('👥 యూజర్ మేనేజ్‌మెంట్...\n\n- ప్రస్తుత యాక్టివ్ యూజర్లు: 1 (Admin)\n- బ్లాక్ చేసిన అకౌంట్స్: 0\n- సెషన్ యాక్టివిటీ లాగ్ చెక్ చేయబడింది.');
+                            setAgentCommandOutput(
+                              "👥 యూజర్ మేనేజ్‌మెంట్...\n\n- ప్రస్తుత యాక్టివ్ యూజర్లు: 1 (Admin)\n- బ్లాక్ చేసిన అకౌంట్స్: 0\n- సెషన్ యాక్టివిటీ లాగ్ చెక్ చేయబడింది.",
+                            );
                           }}
                           className="flex flex-col items-center justify-center p-2.5 bg-gray-800 hover:bg-gray-700 border border-gray-600 rounded-xl transition active:scale-95 gap-1.5"
                         >
                           <Users className="w-4 h-4 text-purple-400" />
-                          <span className="text-[9px] font-black text-white text-center">యూజర్ ట్రాకింగ్ (User Mgmt)</span>
+                          <span className="text-[9px] font-black text-white text-center">
+                            యూజర్ ట్రాకింగ్ (User Mgmt)
+                          </span>
                         </button>
 
-                        <button 
+                        <button
                           type="button"
                           onClick={() => {
-                            setAgentCommandOutput('💾 ఫైర్‌బేస్ డేటాబేస్ బ్యాకప్...\n\n- లోకల్ బ్యాకప్: సక్సెస్\n- క్లౌడ్ స్టోరేజ్: సింక్ చేయబడింది (100% సురక్షితం)');
+                            setAgentCommandOutput(
+                              "💾 ఫైర్‌బేస్ డేటాబేస్ బ్యాకప్...\n\n- లోకల్ బ్యాకప్: సక్సెస్\n- క్లౌడ్ స్టోరేజ్: సింక్ చేయబడింది (100% సురక్షితం)",
+                            );
                           }}
                           className="flex flex-col items-center justify-center p-2.5 bg-gray-800 hover:bg-gray-700 border border-gray-600 rounded-xl transition active:scale-95 gap-1.5"
                         >
                           <Database className="w-4 h-4 text-amber-400" />
-                          <span className="text-[9px] font-black text-white text-center">డేటా బ్యాకప్ (DB Backup)</span>
+                          <span className="text-[9px] font-black text-white text-center">
+                            డేటా బ్యాకప్ (DB Backup)
+                          </span>
                         </button>
                       </div>
 
                       {agentCommandOutput && (
                         <div className="mt-2 p-2.5 bg-gray-950 border border-gray-700 rounded-xl relative group">
-                          <button 
+                          <button
                             onClick={() => setAgentCommandOutput(null)}
                             className="absolute top-1 right-1 text-gray-500 hover:text-gray-300"
                           >
                             <X className="w-3.5 h-3.5" />
                           </button>
-                          <pre className="text-[10px] text-emerald-400 font-mono whitespace-pre-wrap leading-relaxed">{agentCommandOutput}</pre>
+                          <pre className="text-[10px] text-emerald-400 font-mono whitespace-pre-wrap leading-relaxed">
+                            {agentCommandOutput}
+                          </pre>
                         </div>
                       )}
 
                       <div className="mt-3 flex gap-2">
-                        <input 
-                          type="text" 
+                        <input
+                          type="text"
                           placeholder="ఏజెంట్‌కు కమాండ్ ఇవ్వండి... (e.g. Turn off camera)"
                           value={agentCommandInput}
                           onChange={(e) => setAgentCommandInput(e.target.value)}
                           onKeyDown={(e) => {
-                            if (e.key === 'Enter' && agentCommandInput.trim()) {
+                            if (e.key === "Enter" && agentCommandInput.trim()) {
                               handleInvisibleAgentCommand(agentCommandInput);
                             }
                           }}
                           className="flex-1 bg-gray-950 border border-gray-700 rounded-lg px-2.5 py-1.5 text-[10px] text-emerald-400 font-mono focus:outline-none focus:border-emerald-500"
                         />
-                        <button 
+                        <button
                           type="button"
-                          disabled={isAgentProcessing || !agentCommandInput.trim()}
+                          disabled={
+                            isAgentProcessing || !agentCommandInput.trim()
+                          }
                           onClick={() => {
                             handleInvisibleAgentCommand(agentCommandInput);
                           }}
                           className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white px-3 py-1.5 rounded-lg text-[9px] font-black transition active:scale-95"
                         >
-                          {isAgentProcessing ? '...' : 'Send'}
+                          {isAgentProcessing ? "..." : "Send"}
                         </button>
                       </div>
                     </div>
@@ -3075,9 +4004,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1.5">
                         <Terminal className="w-3.5 h-3.5 text-indigo-600" />
-                        <span className="font-extrabold text-[#082c75] uppercase tracking-wide text-[10px]">సీక్రెట్ మెయింటెనెన్స్ లాగ్ (Secret Log)</span>
+                        <span className="font-extrabold text-[#2563eb] uppercase tracking-wide text-[10px]">
+                          సీక్రెట్ మెయింటెనెన్స్ లాగ్ (Secret Log)
+                        </span>
                       </div>
-                      
+
                       {maintenanceLogs.length > 0 && (
                         <button
                           type="button"
@@ -3092,29 +4023,51 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     <div className="bg-slate-900 text-slate-300 font-mono rounded-xl p-3 text-[9px] border border-slate-850 space-y-2 max-h-[220px] overflow-y-auto scrollbar-thin">
                       <div className="flex items-center gap-1.5 border-b border-slate-800 pb-1.5 text-[8px] text-slate-400">
                         <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping shrink-0" />
-                        <span>యాక్టివ్ మానిటరింగ్: {isMaintenanceEnabled ? 'సక్రియంగా ఉంది (ACTIVE)' : 'ఆఫ్‌లైన్ (DISABLED)'}</span>
+                        <span>
+                          యాక్టివ్ మానిటరింగ్:{" "}
+                          {isMaintenanceEnabled
+                            ? "సక్రియంగా ఉంది (ACTIVE)"
+                            : "ఆఫ్‌లైన్ (DISABLED)"}
+                        </span>
                       </div>
 
                       {maintenanceLogs.length === 0 ? (
                         <div className="text-center py-6 text-slate-500 italic text-[10px]">
-                          లాగ్స్ ఏవీ లేవు. సర్వీస్ ఆన్‌లో ఉన్నప్పుడు ఇక్కడ ఆటోమేటిక్‌గా రిపోర్ట్స్ జనరేట్ అవుతాయి.
+                          లాగ్స్ ఏవీ లేవు. సర్వీస్ ఆన్‌లో ఉన్నప్పుడు ఇక్కడ
+                          ఆటోమేటిక్‌గా రిపోర్ట్స్ జనరేట్ అవుతాయి.
                         </div>
                       ) : (
                         <div className="space-y-2.5 divide-y divide-slate-800/50">
                           {maintenanceLogs.map((log) => (
-                            <div key={log.id} className="pt-2 first:pt-0 space-y-1">
+                            <div
+                              key={log.id}
+                              className="pt-2 first:pt-0 space-y-1"
+                            >
                               <div className="flex items-center justify-between text-[8px] text-slate-400">
-                                <span className="font-bold text-[#FFC000]">{log.timestamp}</span>
-                                <span className={`px-1 rounded-sm uppercase font-extrabold text-[7px] ${
-                                  log.type === 'error' ? 'bg-red-950 text-red-400 border border-red-900/50' : 'bg-emerald-950 text-emerald-400 border border-emerald-900/50'
-                                }`}>
-                                  {log.type === 'error' ? '🔧 Fixed Error' : '🧹 Cleaned Bug'}
+                                <span className="font-bold text-[#FFC000]">
+                                  {log.timestamp}
+                                </span>
+                                <span
+                                  className={`px-1 rounded-sm uppercase font-extrabold text-[7px] ${
+                                    log.type === "error"
+                                      ? "bg-red-950 text-red-400 border border-red-900/50"
+                                      : "bg-emerald-950 text-emerald-400 border border-emerald-900/50"
+                                  }`}
+                                >
+                                  {log.type === "error"
+                                    ? "🔧 Fixed Error"
+                                    : "🧹 Cleaned Bug"}
                                 </span>
                               </div>
-                              <p className="text-[10px] leading-relaxed text-slate-200">{log.description}</p>
+                              <p className="text-[10px] leading-relaxed text-slate-200">
+                                {log.description}
+                              </p>
                               <div className="text-[8px] text-emerald-500 flex items-center gap-1">
                                 <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                                <span>పరిష్కరించబడింది (AUTO-RESOLVED & SILENTLY HEALED)</span>
+                                <span>
+                                  పరిష్కరించబడింది (AUTO-RESOLVED & SILENTLY
+                                  HEALED)
+                                </span>
                               </div>
                             </div>
                           ))}
@@ -3123,51 +4076,65 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     </div>
                   </div>
                 </div>
-              ) : activeSubTab === 'apikeys' ? (
+              ) : activeSubTab === "apikeys" ? (
                 <div className="animate-fade-in space-y-4 max-h-[440px] overflow-y-auto pr-1 text-xs text-gray-700">
                   <div className="bg-fuchsia-50 border border-fuchsia-200 p-3.5 rounded-xl space-y-1.5">
                     <h5 className="font-extrabold text-fuchsia-950 flex items-center gap-1.5">
                       <span>🔑 AI API Key Settings</span>
                     </h5>
                     <p className="text-[10px] text-fuchsia-800 leading-relaxed">
-                      బయటి నుండి తీసుకున్న ఏవైనా క్రొత్త AI (DeepSeek, OpenAI వగైరా) API Keys ను ఇక్కడ అప్‌డేట్ చేయండి. అడ్మిన్ కి మాత్రమే ఈ యాక్సెస్ ఉంటుంది.
+                      బయటి నుండి తీసుకున్న ఏవైనా క్రొత్త AI (DeepSeek, OpenAI
+                      వగైరా) API Keys ను ఇక్కడ అప్‌డేట్ చేయండి. అడ్మిన్ కి
+                      మాత్రమే ఈ యాక్సెస్ ఉంటుంది.
                     </p>
-                    
+
                     <div className="space-y-3 mt-4">
                       <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-gray-700">DeepSeek API Key</label>
+                        <label className="text-[10px] font-bold text-gray-700">
+                          DeepSeek API Key
+                        </label>
                         <div className="flex gap-2">
-                          <input 
+                          <input
                             type="password"
                             value={deepseekApiKey}
                             onChange={(e) => setDeepseekApiKey(e.target.value)}
                             placeholder="sk-..."
                             className="flex-1 bg-white border border-gray-300 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-fuchsia-500"
                           />
-                          <button 
+                          <button
                             type="button"
                             onClick={() => {
-                              localStorage.setItem('cwb_deepseek_api_key', deepseekApiKey);
-                              alert('DeepSeek API Key విజయవంతంగా సేవ్‌ చేయబడింది.');
+                              localStorage.setItem(
+                                "cwb_deepseek_api_key",
+                                deepseekApiKey,
+                              );
+                              alert(
+                                "DeepSeek API Key విజయవంతంగా సేవ్‌ చేయబడింది.",
+                              );
                             }}
                             className="bg-fuchsia-600 hover:bg-fuchsia-700 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold transition active:scale-95 whitespace-nowrap"
                           >
                             Save Key
                           </button>
                         </div>
-                        <p className="text-[9px] text-gray-500">యాప్‌లో DeepSeek ఏజెంట్ ఫీచర్లు సరిగ్గా పని చేయాలంటే ఈ కీ అవసరం.</p>
+                        <p className="text-[9px] text-gray-500">
+                          యాప్‌లో DeepSeek ఏజెంట్ ఫీచర్లు సరిగ్గా పని చేయాలంటే ఈ
+                          కీ అవసరం.
+                        </p>
                       </div>
                     </div>
                   </div>
                 </div>
-              ) : activeSubTab === 'pwa' ? (
+              ) : activeSubTab === "pwa" ? (
                 <div className="animate-fade-in space-y-4 max-h-[440px] overflow-y-auto pr-1 text-xs text-gray-700">
                   <div className="bg-cyan-50 border border-cyan-200 p-3.5 rounded-xl space-y-1.5">
                     <h5 className="font-extrabold text-cyan-950 flex items-center gap-1.5">
                       <span>📱 PWA (Progressive Web App) కంట్రోల్ సిస్టమ్</span>
                     </h5>
                     <p className="text-[10px] text-cyan-800 leading-relaxed">
-                      అడ్మిన్ ప్యానెల్ ద్వారా మీ వెబ్ యాప్ యొక్క PWA ఇన్స్టాల్ ప్రాంప్ట్లు, సర్వీస్ వర్కర్ మరియు ఆఫ్లైన్ క్యాచింగ్ సిస్టమ్‌ను ఎనేబుల్ లేదా డిసేబుల్ చేయండి.
+                      అడ్మిన్ ప్యానెల్ ద్వారా మీ వెబ్ యాప్ యొక్క PWA ఇన్స్టాల్
+                      ప్రాంప్ట్లు, సర్వీస్ వర్కర్ మరియు ఆఫ్లైన్ క్యాచింగ్
+                      సిస్టమ్‌ను ఎనేబుల్ లేదా డిసేబుల్ చేయండి.
                     </p>
                   </div>
 
@@ -3175,9 +4142,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <div className="bg-white p-4 rounded-xl border border-gray-150 space-y-3 shadow-xs">
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
-                        <h6 className="font-extrabold text-gray-800 text-xs">PWA మాస్టర్ స్విచ్ (PWA On/Off Toggle)</h6>
+                        <h6 className="font-extrabold text-gray-800 text-xs">
+                          PWA మాస్టర్ స్విచ్ (PWA On/Off Toggle)
+                        </h6>
                         <p className="text-[9px] text-gray-500">
-                          {pwaEnabled ? 'ప్రస్తుతం PWA ఆన్‌లో ఉంది (Install App ప్రాంప్ట్లు యాక్టివ్)' : 'ప్రస్తుతం PWA ఆఫ్‌లో ఉంది (డిసేబుల్ చేయబడింది)'}
+                          {pwaEnabled
+                            ? "ప్రస్తుతం PWA ఆన్‌లో ఉంది (Install App ప్రాంప్ట్లు యాక్టివ్)"
+                            : "ప్రస్తుతం PWA ఆఫ్‌లో ఉంది (డిసేబుల్ చేయబడింది)"}
                         </p>
                       </div>
                       <button
@@ -3185,20 +4156,33 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         onClick={() => {
                           const nextState = !pwaEnabled;
                           setPwaEnabled(nextState);
-                          localStorage.setItem('cwb_pwa_enabled', nextState ? 'true' : 'false');
-                          window.dispatchEvent(new Event('storage'));
-                          alert(nextState ? '✓ PWA ఆన్ చేయబడింది! యూజర్లకు Install App ఆప్షన్ యాక్టివేట్ అయింది.' : '✓ PWA ఆఫ్ చేయబడింది! సర్వీస్ వర్కర్ మరియు ప్రాంప్ట్లు డిసేబుల్ అయ్యాయి.');
+                          localStorage.setItem(
+                            "cwb_pwa_enabled",
+                            nextState ? "true" : "false",
+                          );
+                          window.dispatchEvent(new Event("storage"));
+                          alert(
+                            nextState
+                              ? "✓ PWA ఆన్ చేయబడింది! యూజర్లకు Install App ఆప్షన్ యాక్టివేట్ అయింది."
+                              : "✓ PWA ఆఫ్ చేయబడింది! సర్వీస్ వర్కర్ మరియు ప్రాంప్ట్లు డిసేబుల్ అయ్యాయి.",
+                          );
                         }}
-                        className={`w-12 h-6 rounded-full transition-colors flex items-center px-0.5 ${pwaEnabled ? 'bg-cyan-600' : 'bg-gray-300'}`}
+                        className={`w-12 h-6 rounded-full transition-colors flex items-center px-0.5 ${pwaEnabled ? "bg-cyan-600" : "bg-gray-300"}`}
                       >
-                        <div className={`w-5 h-5 rounded-full bg-white transition-transform shadow-sm ${pwaEnabled ? 'translate-x-6' : 'translate-x-0'}`} />
+                        <div
+                          className={`w-5 h-5 rounded-full bg-white transition-transform shadow-sm ${pwaEnabled ? "translate-x-6" : "translate-x-0"}`}
+                        />
                       </button>
                     </div>
 
                     <div className="pt-2 border-t border-gray-100 flex items-center justify-between text-[9px]">
-                      <span className="font-bold text-gray-500">స్టేటస్ (Status):</span>
-                      <span className={`font-black px-2 py-0.5 rounded-full ${pwaEnabled ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`}>
-                        {pwaEnabled ? '🟢 ACTIVE (ON)' : '🔴 DISABLED (OFF)'}
+                      <span className="font-bold text-gray-500">
+                        స్టేటస్ (Status):
+                      </span>
+                      <span
+                        className={`font-black px-2 py-0.5 rounded-full ${pwaEnabled ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800"}`}
+                      >
+                        {pwaEnabled ? "🟢 ACTIVE (ON)" : "🔴 DISABLED (OFF)"}
                       </span>
                     </div>
                   </div>
@@ -3207,9 +4191,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <div className="bg-white p-4 rounded-xl border border-gray-150 space-y-3 shadow-xs">
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
-                        <h6 className="font-extrabold text-gray-800 text-xs">📱 మొబైల్ యాప్ అడ్మిన్ ఐకాన్ స్విచ్ (Mobile App Admin Icon Control)</h6>
+                        <h6 className="font-extrabold text-gray-800 text-xs">
+                          📱 మొబైల్ యాప్ అడ్మిన్ ఐకాన్ స్విచ్ (Mobile App Admin
+                          Icon Control)
+                        </h6>
                         <p className="text-[9px] text-gray-500">
-                          {mobileSettingsIconVisible ? 'మొబైల్ యాప్‌లో సెట్టింగ్స్/అడ్మిన్ ఐకాన్ కనిపిస్తుంది (ON)' : 'మొబైల్ యాప్‌లో సెట్టింగ్స్/అడ్మిన్ ఐకాన్ దాచబడింది (OFF - Secure)'}
+                          {mobileSettingsIconVisible
+                            ? "మొబైల్ యాప్‌లో సెట్టింగ్స్/అడ్మిన్ ఐకాన్ కనిపిస్తుంది (ON)"
+                            : "మొబైల్ యాప్‌లో సెట్టింగ్స్/అడ్మిన్ ఐకాన్ దాచబడింది (OFF - Secure)"}
                         </p>
                       </div>
                       <button
@@ -3217,55 +4206,107 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         onClick={async () => {
                           const nextVal = !mobileSettingsIconVisible;
                           setMobileSettingsIconVisible(nextVal);
-                          localStorage.setItem('cwb_mobile_settings_icon_visible', String(nextVal));
-                          await saveSecurityToCloudAndLocal({ mobileSettingsIconVisible: nextVal });
+                          localStorage.setItem(
+                            "cwb_mobile_settings_icon_visible",
+                            String(nextVal),
+                          );
+                          await saveSecurityToCloudAndLocal({
+                            mobileSettingsIconVisible: nextVal,
+                          });
                           try {
                             if (db) {
-                              await setDoc(doc(db, 'settings', 'pwaConfig'), { showAdminIcon: nextVal, pwaAdminIconVisible: nextVal, mobileSettingsIconVisible: nextVal }, { merge: true });
-                              await setDoc(doc(db, 'settings', 'admin_security'), { mobileSettingsIconVisible: nextVal, showAdminIcon: nextVal, pwaAdminIconVisible: nextVal }, { merge: true });
+                              await setDoc(
+                                doc(db, "settings", "pwaConfig"),
+                                {
+                                  showAdminIcon: nextVal,
+                                  pwaAdminIconVisible: nextVal,
+                                  mobileSettingsIconVisible: nextVal,
+                                },
+                                { merge: true },
+                              );
+                              await setDoc(
+                                doc(db, "settings", "admin_security"),
+                                {
+                                  mobileSettingsIconVisible: nextVal,
+                                  showAdminIcon: nextVal,
+                                  pwaAdminIconVisible: nextVal,
+                                },
+                                { merge: true },
+                              );
                             }
                           } catch (e) {}
-                          alert(nextVal ? '✓ మొబైల్ యాప్‌లో సెట్టింగ్స్/అడ్మిన్ ఐకాన్ ఆన్ చేయబడింది!' : '✓ మొబైల్ యాప్‌లో సెట్టింగ్స్/అడ్మిన్ ఐకాన్ దాచబడింది (OFF).');
+                          alert(
+                            nextVal
+                              ? "✓ మొబైల్ యాప్‌లో సెట్టింగ్స్/అడ్మిన్ ఐకాన్ ఆన్ చేయబడింది!"
+                              : "✓ మొబైల్ యాప్‌లో సెట్టింగ్స్/అడ్మిన్ ఐకాన్ దాచబడింది (OFF).",
+                          );
                         }}
-                        className={`w-12 h-6 rounded-full transition-colors flex items-center px-0.5 ${mobileSettingsIconVisible ? 'bg-cyan-600' : 'bg-gray-300'}`}
+                        className={`w-12 h-6 rounded-full transition-colors flex items-center px-0.5 ${mobileSettingsIconVisible ? "bg-cyan-600" : "bg-gray-300"}`}
                       >
-                        <div className={`w-5 h-5 rounded-full bg-white transition-transform shadow-sm ${mobileSettingsIconVisible ? 'translate-x-6' : 'translate-x-0'}`} />
+                        <div
+                          className={`w-5 h-5 rounded-full bg-white transition-transform shadow-sm ${mobileSettingsIconVisible ? "translate-x-6" : "translate-x-0"}`}
+                        />
                       </button>
                     </div>
 
                     <div className="pt-2 border-t border-gray-100 flex items-center justify-between text-[9px]">
-                      <span className="font-bold text-gray-500">యాప్ ఐకాన్ డిస్‌ప్లే స్టేటస్:</span>
-                      <span className={`font-black px-2 py-0.5 rounded-full ${mobileSettingsIconVisible ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`}>
-                        {mobileSettingsIconVisible ? '🟢 VISIBLE (కనిపిస్తుంది)' : '🔴 HIDDEN (దాచబడింది)'}
+                      <span className="font-bold text-gray-500">
+                        యాప్ ఐకాన్ డిస్‌ప్లే స్టేటస్:
+                      </span>
+                      <span
+                        className={`font-black px-2 py-0.5 rounded-full ${mobileSettingsIconVisible ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800"}`}
+                      >
+                        {mobileSettingsIconVisible
+                          ? "🟢 VISIBLE (కనిపిస్తుంది)"
+                          : "🔴 HIDDEN (దాచబడింది)"}
                       </span>
                     </div>
                   </div>
 
                   {/* Publish Final PWA Update / Manual Control Feature */}
-                  <div className={`bg-white p-4 rounded-xl border border-gray-150 space-y-3 shadow-xs transition-opacity ${pwaEnabled ? 'opacity-100' : 'opacity-50 pointer-events-none'}`}>
+                  <div
+                    className={`bg-white p-4 rounded-xl border border-gray-150 space-y-3 shadow-xs transition-opacity ${pwaEnabled ? "opacity-100" : "opacity-50 pointer-events-none"}`}
+                  >
                     <div className="space-y-0.5">
-                      <h6 className="font-extrabold text-gray-800 text-xs">Publish Final PWA Update (ఫైనల్ PWA అప్‌డేట్)</h6>
+                      <h6 className="font-extrabold text-gray-800 text-xs">
+                        Publish Final PWA Update (ఫైనల్ PWA అప్‌డేట్)
+                      </h6>
                       <p className="text-[9px] text-gray-500">
-                        డెవలప్‌మెంట్ డ్రాఫ్ట్ మార్పులు ఆటోమేటిక్‌గా వెళ్లకుండా, అడ్మిన్ ప్యానెల్ ద్వారా మాన్యువల్‌గా పబ్లిష్ చేయండి.
+                        డెవలప్‌మెంట్ డ్రాఫ్ట్ మార్పులు ఆటోమేటిక్‌గా వెళ్లకుండా,
+                        అడ్మిన్ ప్యానెల్ ద్వారా మాన్యువల్‌గా పబ్లిష్ చేయండి.
                       </p>
                     </div>
 
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
                         <div className="flex flex-col gap-0.5">
-                          <span className="text-[9px] font-bold text-cyan-700">✨ లైవ్ వెర్షన్: <span className="text-emerald-600 font-black">{currentLiveVersion}</span></span>
-                          <span className="text-[8px] text-gray-400">మొబైల్ యాప్ ఈ వెర్షన్‌తో సింక్ అవుతుంది</span>
+                          <span className="text-[9px] font-bold text-cyan-700">
+                            ✨ లైవ్ వెర్షన్:{" "}
+                            <span className="text-emerald-600 font-black">
+                              {currentLiveVersion}
+                            </span>
+                          </span>
+                          <span className="text-[8px] text-gray-400">
+                            మొబైల్ యాప్ ఈ వెర్షన్‌తో సింక్ అవుతుంది
+                          </span>
                         </div>
                         <div className="flex gap-2">
                           <button
                             type="button"
                             onClick={() => {
                               // Try to parse the version number from string like 'v2.26' or 'CWRB-v2.26'
-                              const match = currentLiveVersion.match(/(\d+)(?!.*\d)/);
-                              const nextNum = match ? parseInt(match[0]) + 1 : 27;
+                              const match =
+                                currentLiveVersion.match(/(\d+)(?!.*\d)/);
+                              const nextNum = match
+                                ? parseInt(match[0]) + 1
+                                : 27;
                               const newVerStr = `v2.${nextNum}`;
-                              setPwaNotificationTitle(`CWRB Final Update ${newVerStr}`);
-                              setPwaNotificationBody(`కొత్త ఫీచర్లు మరియు సెక్యూరిటీ అప్‌డేట్స్‌తో కూడిన ఫైనల్ వెర్షన్ ${newVerStr} సిద్ధంగా ఉంది.`);
+                              setPwaNotificationTitle(
+                                `CWRB Final Update ${newVerStr}`,
+                              );
+                              setPwaNotificationBody(
+                                `కొత్త ఫీచర్లు మరియు సెక్యూరిటీ అప్‌డేట్స్‌తో కూడిన ఫైనల్ వెర్షన్ ${newVerStr} సిద్ధంగా ఉంది.`,
+                              );
                             }}
                             className="text-[9px] font-bold text-cyan-600 hover:text-cyan-800 underline bg-cyan-50 px-2 py-0.5 rounded-md"
                           >
@@ -3274,8 +4315,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           <button
                             type="button"
                             onClick={() => {
-                              setPwaNotificationTitle('');
-                              setPwaNotificationBody('');
+                              setPwaNotificationTitle("");
+                              setPwaNotificationBody("");
                             }}
                             className="text-[9px] font-bold text-rose-500 hover:text-rose-700 underline"
                           >
@@ -3286,7 +4327,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       <input
                         type="text"
                         value={pwaNotificationTitle}
-                        onChange={(e) => setPwaNotificationTitle(e.target.value)}
+                        onChange={(e) =>
+                          setPwaNotificationTitle(e.target.value)
+                        }
                         placeholder="అప్‌డేట్ వెర్షన్ టైటిల్ (e.g. CWRB Final Update v2.6)"
                         className="w-full bg-slate-50 border border-gray-200 rounded-lg p-2 text-[10px] font-semibold text-gray-800 focus:outline-none focus:ring-1 focus:ring-cyan-500"
                       />
@@ -3304,51 +4347,70 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       disabled={!pwaEnabled}
                       onClick={() => {
                         if (!pwaNotificationTitle.trim()) {
-                          alert('దయచేసి అప్‌డేట్ వెర్షన్ టైటిల్ ఎంటర్ చేయండి!');
+                          alert("దయచేసి అప్‌డేట్ వెర్షన్ టైటిల్ ఎంటర్ చేయండి!");
                           return;
                         }
                         setIsPushingUpdate(true);
-                        
+
                         // Use the title's version number as the token if it contains one, else use timestamp
-                        const verMatch = pwaNotificationTitle.match(/v\d+\.\d+/i) || pwaNotificationTitle.match(/\d+\.\d+/);
-                        const publishVersion = verMatch ? verMatch[0].toLowerCase() : 'v2.' + Date.now();
-                        
+                        const verMatch =
+                          pwaNotificationTitle.match(/v\d+\.\d+/i) ||
+                          pwaNotificationTitle.match(/\d+\.\d+/);
+                        const publishVersion = verMatch
+                          ? verMatch[0].toLowerCase()
+                          : "v2." + Date.now();
+
                         // 🔥 Post update to Firestore so all mobile apps sync
-                        setDoc(doc(db, 'settings', 'pwa_update'), {
-                          version: publishVersion,
-                          title: pwaNotificationTitle,
-                          body: pwaNotificationBody,
-                          timestamp: new Date().toISOString()
-                        }, { merge: true }).catch(err => console.error("PWA Sync Error:", err));
+                        setDoc(
+                          doc(db, "settings", "pwa_update"),
+                          {
+                            version: publishVersion,
+                            title: pwaNotificationTitle,
+                            body: pwaNotificationBody,
+                            timestamp: new Date().toISOString(),
+                          },
+                          { merge: true },
+                        ).catch((err) => console.error("PWA Sync Error:", err));
 
                         setTimeout(() => {
                           setIsPushingUpdate(false);
-                          alert(`🚀 "చెన్నై/తెలుగు CWRB" ఫైనల్ PWA అప్‌డేట్ విజయవంతంగా పబ్లిష్ చేయబడింది మరియు మొబైల్ యూజర్లకు పుష్ చేయబడింది!\n\nవెర్షన్ టోకెన్: ${publishVersion}\nశీర్షిక: ${pwaNotificationTitle}`);
-                          setPwaNotificationTitle('');
-                          setPwaNotificationBody('');
+                          alert(
+                            `🚀 "చెన్నై/తెలుగు CWRB" ఫైనల్ PWA అప్‌డేట్ విజయవంతంగా పబ్లిష్ చేయబడింది మరియు మొబైల్ యూజర్లకు పుష్ చేయబడింది!\n\nవెర్షన్ టోకెన్: ${publishVersion}\nశీర్షిక: ${pwaNotificationTitle}`,
+                          );
+                          setPwaNotificationTitle("");
+                          setPwaNotificationBody("");
                         }, 1500);
                       }}
                       className="w-full py-3 bg-cyan-600 hover:bg-cyan-700 text-white font-black text-xs rounded-xl shadow-md transition active:scale-95 flex items-center justify-center gap-1.5"
                     >
-                      {isPushingUpdate ? 'ఫైనల్ అప్‌డేట్ పబ్లిష్ అవుతోంది...' : '🚀 Publish Final PWA Update (ఫైనల్ అప్‌డేట్ పబ్లిష్ చేయి)'}
+                      {isPushingUpdate
+                        ? "ఫైనల్ అప్‌డేట్ పబ్లిష్ అవుతోంది..."
+                        : "🚀 Publish Final PWA Update (ఫైనల్ అప్‌డేట్ పబ్లిష్ చేయి)"}
                     </button>
                     {!pwaEnabled && (
                       <p className="text-[9px] text-rose-600 font-bold text-center">
-                        ⚠️ PWA స్విచ్ ఆఫ్ లో ఉంది కాబట్టి పబ్లిష్ అప్‌డేట్ బటన్ నిలిపివేయబడింది.
+                        ⚠️ PWA స్విచ్ ఆఫ్ లో ఉంది కాబట్టి పబ్లిష్ అప్‌డేట్ బటన్
+                        నిలిపివేయబడింది.
                       </p>
                     )}
                   </div>
                 </div>
-              ) : activeSubTab === 'agents' ? (
+              ) : activeSubTab === "agents" ? (
                 <div className="animate-fade-in space-y-4 max-h-[440px] overflow-y-auto pr-1 text-xs text-gray-700">
                   <div className="p-3.5 bg-purple-50 rounded-2xl border border-purple-100 flex items-start gap-2.5 shadow-xs">
                     <div className="p-1.5 bg-purple-600 rounded-xl text-white shrink-0">
                       <Bot className="w-4 h-4 animate-pulse" />
                     </div>
                     <div>
-                      <h4 className="font-extrabold text-purple-900 text-[11px]">అడ్మిన్ గారికి ఇష్టమైన ఏజెంట్ నిర్వహణ (Preferred Primary Agent Setup)</h4>
+                      <h4 className="font-extrabold text-purple-900 text-[11px]">
+                        అడ్మిన్ గారికి ఇష్టమైన ఏజెంట్ నిర్వహణ (Preferred Primary
+                        Agent Setup)
+                      </h4>
                       <p className="text-[9px] text-purple-700/80 mt-1 leading-relaxed">
-                        అడ్మిన్ గారు (Admin garu), మీరు ఇక్కడ మీ ఇష్టమైన ఏజెంటును ప్రధాన ఏజెంట్‌గా ఎంపిక చేసుకోవచ్చు. 48 గంటల రొటేషన్ సైకిల్ లేదా వ్యక్తిగత ప్రాధాన్యత ప్రకారం ఏజెంట్‌ను ఇక్కడ ఫిక్స్ చేయవచ్చు.
+                        అడ్మిన్ గారు (Admin garu), మీరు ఇక్కడ మీ ఇష్టమైన
+                        ఏజెంటును ప్రధాన ఏజెంట్‌గా ఎంపిక చేసుకోవచ్చు. 48 గంటల
+                        రొటేషన్ సైకిల్ లేదా వ్యక్తిగత ప్రాధాన్యత ప్రకారం
+                        ఏజెంట్‌ను ఇక్కడ ఫిక్స్ చేయవచ్చు.
                       </p>
                     </div>
                   </div>
@@ -3360,37 +4422,70 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   )}
 
                   <div className="space-y-3">
-                    <h3 className="font-bold text-[#082c75] uppercase tracking-wide text-[9px]">అందుబాటులో ఉన్న ఏజెంట్లు / Available AI Agents</h3>
-                    
+                    <h3 className="font-bold text-[#2563eb] uppercase tracking-wide text-[9px]">
+                      అందుబాటులో ఉన్న ఏజెంట్లు / Available AI Agents
+                    </h3>
+
                     {[
-                      { name: 'Gemini 3.1 Pro (ప్రధాన ఏజెంట్ / Primary Agent)', desc: 'గూగుల్ అత్యుత్తమ రీజనింగ్ & కోడింగ్ మోడల్', badge: 'ప్రస్తుత ఏజెంట్', color: 'border-blue-500 bg-blue-50/50' },
-                      { name: 'Gemini 3.5 Flash Lite (అసిస్టెంట్ మోడల్ / Fast Agent)', desc: 'అతి వేగవంతమైన రెస్పాన్స్ & లైట్ వెయిట్ మోడల్', badge: 'స్పీడ్ మోడ్', color: 'border-emerald-500 bg-emerald-50/50' },
-                      { name: 'Claude 3.5 Sonnet (అడ్వాన్స్‌డ్ రీజనింగ్ మోడల్)', desc: 'సృజనాత్మక కోడింగ్ మరియు లాజికల్ విశ్లేషణకు అద్భుతం', badge: 'ప్రో మోడల్', color: 'border-purple-500 bg-purple-50/50' },
-                      { name: 'Custom Personalized AI Agent (వ్యక్తిగత కస్టమ్ ఏజెంట్)', desc: 'అడ్మిన్ గారు ప్రత్యేకంగా సెట్ చేసుకున్న కస్టమ్ ప్రాంప్ట్ ఏజెంట్', badge: 'కస్టమ్', color: 'border-amber-500 bg-amber-50/50' }
+                      {
+                        name: "Gemini 3.1 Pro (ప్రధాన ఏజెంట్ / Primary Agent)",
+                        desc: "గూగుల్ అత్యుత్తమ రీజనింగ్ & కోడింగ్ మోడల్",
+                        badge: "ప్రస్తుత ఏజెంట్",
+                        color: "border-blue-500 bg-blue-50/50",
+                      },
+                      {
+                        name: "Gemini 3.5 Flash Lite (అసిస్టెంట్ మోడల్ / Fast Agent)",
+                        desc: "అతి వేగవంతమైన రెస్పాన్స్ & లైట్ వెయిట్ మోడల్",
+                        badge: "స్పీడ్ మోడ్",
+                        color: "border-emerald-500 bg-emerald-50/50",
+                      },
+                      {
+                        name: "Claude 3.5 Sonnet (అడ్వాన్స్‌డ్ రీజనింగ్ మోడల్)",
+                        desc: "సృజనాత్మక కోడింగ్ మరియు లాజికల్ విశ్లేషణకు అద్భుతం",
+                        badge: "ప్రో మోడల్",
+                        color: "border-purple-500 bg-purple-50/50",
+                      },
+                      {
+                        name: "Custom Personalized AI Agent (వ్యక్తిగత కస్టమ్ ఏజెంట్)",
+                        desc: "అడ్మిన్ గారు ప్రత్యేకంగా సెట్ చేసుకున్న కస్టమ్ ప్రాంప్ట్ ఏజెంట్",
+                        badge: "కస్టమ్",
+                        color: "border-amber-500 bg-amber-50/50",
+                      },
                     ].map((agent, idx) => {
                       const isSelected = preferredAgent === agent.name;
                       return (
-                        <div key={idx} className={`p-3 rounded-xl border transition-all flex items-center justify-between ${isSelected ? 'border-purple-600 bg-purple-50/80 shadow-sm' : 'border-gray-200 bg-white hover:border-gray-300'}`}>
+                        <div
+                          key={idx}
+                          className={`p-3 rounded-xl border transition-all flex items-center justify-between ${isSelected ? "border-purple-600 bg-purple-50/80 shadow-sm" : "border-gray-200 bg-white hover:border-gray-300"}`}
+                        >
                           <div className="space-y-1 pr-2">
                             <div className="flex items-center gap-2">
-                              <span className="font-extrabold text-gray-900 text-xs">{agent.name}</span>
-                              <span className={`text-[8px] font-black px-1.5 py-0.5 rounded ${isSelected ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-600'}`}>
+                              <span className="font-extrabold text-gray-900 text-xs">
+                                {agent.name}
+                              </span>
+                              <span
+                                className={`text-[8px] font-black px-1.5 py-0.5 rounded ${isSelected ? "bg-purple-600 text-white" : "bg-gray-100 text-gray-600"}`}
+                              >
                                 {agent.badge}
                               </span>
                             </div>
-                            <p className="text-[9px] text-gray-500">{agent.desc}</p>
+                            <p className="text-[9px] text-gray-500">
+                              {agent.desc}
+                            </p>
                           </div>
-                          
+
                           <button
                             type="button"
                             onClick={() => handleSavePreferredAgent(agent.name)}
                             className={`px-3.5 py-2 rounded-xl text-[10px] font-black transition active:scale-95 whitespace-nowrap shadow-xs ${
-                              isSelected 
-                                ? 'bg-purple-600 text-white' 
-                                : 'bg-slate-100 hover:bg-slate-200 text-gray-700'
+                              isSelected
+                                ? "bg-purple-600 text-white"
+                                : "bg-slate-100 hover:bg-slate-200 text-gray-700"
                             }`}
                           >
-                            {isSelected ? '✓ ప్రధాన ఏజెంట్' : 'ఎంచుకోండి (Select)'}
+                            {isSelected
+                              ? "✓ ప్రధాన ఏజెంట్"
+                              : "ఎంచుకోండి (Select)"}
                           </button>
                         </div>
                       );
@@ -3399,20 +4494,22 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
                   <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="font-extrabold text-gray-700 text-[10px]">48 గంటల రొటేషన్ టైమర్ (48-Hour Rotation Cycle)</span>
+                      <span className="font-extrabold text-gray-700 text-[10px]">
+                        48 గంటల రొటేషన్ టైమర్ (48-Hour Rotation Cycle)
+                      </span>
                       <span className="text-[9px] font-mono font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">
                         సక్రియం / Active
                       </span>
                     </div>
                     <p className="text-[9px] text-gray-500 leading-normal">
-                      అడ్మిన్ గారు, అదనపు 48 గంటల పాటు మీ అనుమతితో ఈ ఏజెంట్ సిస్టమ్ కోడింగ్ మరియు ఆటోమేషన్ బాధ్యతలను నిర్వర్తిస్తుంది.
+                      అడ్మిన్ గారు, అదనపు 48 గంటల పాటు మీ అనుమతితో ఈ ఏజెంట్
+                      సిస్టమ్ కోడింగ్ మరియు ఆటోమేషన్ బాధ్యతలను నిర్వర్తిస్తుంది.
                     </p>
                   </div>
                 </div>
               ) : null}
             </div>
           )}
-
         </div>
 
         {/* Modal persistent Bottom Actions */}
@@ -3427,12 +4524,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
           <button
             onClick={onClose}
-            className="px-5 py-2.5 bg-[#082c75] hover:bg-[#001040] text-[#FFC000] text-[10px] font-black rounded-xl shadow-md transition active:scale-95"
+            className="px-5 py-2.5 bg-[#2563eb] hover:bg-[#001040] text-[#FFC000] text-[10px] font-black rounded-xl shadow-md transition active:scale-95"
           >
             మూసివేయి (Close)
           </button>
         </div>
-
       </div>
 
       {/* LIVE CAMERA VERIFICATION POPUP MODAL */}
@@ -3442,27 +4538,46 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             <div className="w-12 h-12 bg-emerald-500/10 rounded-2xl flex items-center justify-center mx-auto text-emerald-400 border border-emerald-500/30">
               <Camera className="w-6 h-6 animate-pulse" />
             </div>
-            
+
             <div className="space-y-1">
-              <h4 className="font-extrabold text-sm text-white">ఆటోమేటిక్ లైవ్ కెమెరా వెరిఫికేషన్ (Auto Live Face Verify)</h4>
+              <h4 className="font-extrabold text-sm text-white">
+                ఆటోమేటిక్ లైవ్ కెమెరా వెరిఫికేషన్ (Auto Live Face Verify)
+              </h4>
               <p className="text-[10px] text-slate-400 leading-relaxed">
-                అడ్మిన్ గారు, కెమెరా ముఖాన్ని ఆటోమేటిక్‌గా స్కాన్ చేసి మాస్టర్ ఫోటోతో వెరిఫై చేస్తోంది. దయచేసి వేచి ఉండండి...
+                అడ్మిన్ గారు, కెమెరా ముఖాన్ని ఆటోమేటిక్‌గా స్కాన్ చేసి మాస్టర్
+                ఫోటోతో వెరిఫై చేస్తోంది. దయచేసి వేచి ఉండండి...
               </p>
             </div>
 
             {/* Video preview & Master Photo comparison */}
             <div className="grid grid-cols-2 gap-2 relative rounded-2xl overflow-hidden border border-slate-800 bg-slate-950 p-2">
               <div className="relative aspect-square rounded-xl overflow-hidden bg-black border border-slate-800">
-                <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
-                <span className="absolute bottom-1 left-1 bg-black/75 text-emerald-400 text-[8px] font-bold px-1.5 py-0.5 rounded">లైవ్ కెమెరా</span>
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  className="w-full h-full object-cover"
+                />
+                <span className="absolute bottom-1 left-1 bg-black/75 text-emerald-400 text-[8px] font-bold px-1.5 py-0.5 rounded">
+                  లైవ్ కెమెరా
+                </span>
               </div>
               <div className="relative aspect-square rounded-xl overflow-hidden bg-black border border-slate-800 flex flex-col items-center justify-center">
                 {masterPhotoUrl ? (
-                  <img src={masterPhotoUrl} alt="Master Photo" className="w-full h-full object-cover" />
+                  <img
+                    src={masterPhotoUrl}
+                    alt="Master Photo"
+                    className="w-full h-full object-cover"
+                  />
                 ) : (
-                  <div className="text-center p-2 text-slate-500 text-[9px]">మాస్టర్ ఫోటో సెట్ చేయలేదు</div>
+                  <div className="text-center p-2 text-slate-500 text-[9px]">
+                    మాస్టర్ ఫోటో సెట్ చేయలేదు
+                  </div>
                 )}
-                <span className="absolute bottom-1 left-1 bg-black/75 text-[#FFC000] text-[8px] font-bold px-1.5 py-0.5 rounded">మాస్టర్ ఫోటో</span>
+                <span className="absolute bottom-1 left-1 bg-black/75 text-[#FFC000] text-[8px] font-bold px-1.5 py-0.5 rounded">
+                  మాస్టర్ ఫోటో
+                </span>
               </div>
             </div>
 
@@ -3490,7 +4605,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </div>
         </div>
       )}
-
     </div>
   );
 };

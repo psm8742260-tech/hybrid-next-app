@@ -1,8 +1,8 @@
-import React from 'react';
-import { Clock } from 'lucide-react';
-import { ControlState } from '../types';
-import { INITIAL_FEATURES } from '../data';
-import { FeatureTimerBadge } from './FeatureTimerBadge';
+import React from "react";
+import { Clock } from "lucide-react";
+import { ControlState } from "../types";
+import { INITIAL_FEATURES } from "../data";
+import { FeatureTimerBadge } from "./FeatureTimerBadge";
 
 interface ActiveFeatureTimersWidgetProps {
   featureTimers: Record<string, number>;
@@ -10,14 +10,12 @@ interface ActiveFeatureTimersWidgetProps {
   onSimulateTimer?: (id: string) => void;
 }
 
-export const ActiveFeatureTimersWidget: React.FC<ActiveFeatureTimersWidgetProps> = ({ 
-  featureTimers, 
-  rawFeatureStates, 
-  onSimulateTimer 
-}) => {
-  const activeTimerIds = Object.keys(featureTimers).filter(id => {
+export const ActiveFeatureTimersWidget: React.FC<
+  ActiveFeatureTimersWidgetProps
+> = ({ featureTimers, rawFeatureStates, onSimulateTimer }) => {
+  const activeTimerIds = Object.keys(featureTimers).filter((id) => {
     const state = rawFeatureStates[id];
-    return state === 'temp_on';
+    return state === "temp_on";
   });
 
   if (activeTimerIds.length === 0) return null;
@@ -37,36 +35,44 @@ export const ActiveFeatureTimersWidget: React.FC<ActiveFeatureTimersWidgetProps>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-        {activeTimerIds.map(id => {
-          const feat = INITIAL_FEATURES.find(f => f.id === id);
+        {activeTimerIds.map((id) => {
+          const feat = INITIAL_FEATURES.find((f) => f.id === id);
           if (!feat) return null;
-          
+
           const isPostpaid = [
-            'feat_biopower',
-            'feat_bp_sugar',
-            'feat_doctor_scan',
-            'feat_weather_report',
-            'feat_invoice_generator'
+            "feat_biopower",
+            "feat_bp_sugar",
+            "feat_doctor_scan",
+            "feat_weather_report",
+            "feat_invoice_generator",
           ].includes(id);
 
           return (
-            <div 
-              key={id} 
+            <div
+              key={id}
               className="bg-slate-950/80 p-2 rounded-xl border border-slate-800/80 flex items-center justify-between gap-2 hover:border-slate-700 transition"
             >
               <div className="min-w-0 flex-1">
-                <div className="text-[9px] text-slate-200 font-extrabold truncate" title={feat.nameTe}>
+                <div
+                  className="text-[9px] text-slate-200 font-extrabold truncate"
+                  title={feat.nameTe}
+                >
                   {feat.nameTe}
                 </div>
-                <div className="text-[7.5px] text-slate-500 font-mono font-medium truncate" title={feat.nameEn}>
+                <div
+                  className="text-[7.5px] text-slate-500 font-mono font-medium truncate"
+                  title={feat.nameEn}
+                >
                   {feat.nameEn}
                 </div>
               </div>
               <div className="flex items-center gap-1 shrink-0">
-                <FeatureTimerBadge 
-                  expiresAt={featureTimers[id]} 
-                  type={isPostpaid ? 'postpaid' : 'premium'} 
-                  onSimulate={onSimulateTimer ? () => onSimulateTimer(id) : undefined}
+                <FeatureTimerBadge
+                  expiresAt={featureTimers[id]}
+                  type={isPostpaid ? "postpaid" : "premium"}
+                  onSimulate={
+                    onSimulateTimer ? () => onSimulateTimer(id) : undefined
+                  }
                 />
               </div>
             </div>
