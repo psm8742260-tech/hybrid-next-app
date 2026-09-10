@@ -9,8 +9,6 @@ import {
 import { motion } from 'motion/react';
 import { WalletTransaction, DiaryEntry, WorkerKYC as KYCInterface, ControlState } from '../types';
 import CWRBLogo from './CWRBLogo';
-import { db } from '../lib/firebase';
-import { doc, setDoc } from 'firebase/firestore';
 
 // ==========================================
 // 1. GAMING WALKIE TALKIE COMPONENT
@@ -297,48 +295,6 @@ export function WalkieTalkie({ controlState = 'temp_on' }: WalkieProps) {
 // ==========================================
 // 2. KYC & ID VERIFICATION COMPONENT
 // ==========================================
-const compressBase64Image = (base64Str: string, maxWidth = 300, maxHeight = 300, quality = 0.65): Promise<string> => {
-  return new Promise((resolve) => {
-    if (!base64Str || !base64Str.startsWith('data:image')) {
-      resolve(base64Str);
-      return;
-    }
-    const img = new Image();
-    img.src = base64Str;
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      let width = img.width;
-      let height = img.height;
-
-      if (width > height) {
-        if (width > maxWidth) {
-          height = Math.round((height * maxWidth) / width);
-          width = maxWidth;
-        }
-      } else {
-        if (height > maxHeight) {
-          width = Math.round((width * maxHeight) / height);
-          height = maxHeight;
-        }
-      }
-
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) {
-        resolve(base64Str);
-        return;
-      }
-
-      ctx.drawImage(img, 0, 0, width, height);
-      resolve(canvas.toDataURL('image/jpeg', quality));
-    };
-    img.onerror = () => {
-      resolve(base64Str);
-    };
-  });
-};
-
 interface KYCProps {
   kycState: KYCInterface;
   onUpdateKYC: (updated: Partial<KYCInterface>) => void;
@@ -406,11 +362,10 @@ export function WorkerKYC({ kycState, onUpdateKYC, controlState = 'temp_on' }: K
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = async (event) => {
+      reader.onload = (event) => {
         const result = event.target?.result as string;
-        const compressed = await compressBase64Image(result, 300, 300, 0.65);
-        setAadhaarFile(compressed);
-        onUpdateKYC({ aadhaarUploaded: true, aadhaarImage: compressed });
+        setAadhaarFile(result);
+        onUpdateKYC({ aadhaarUploaded: true, aadhaarImage: result });
       };
       reader.readAsDataURL(file);
     }
@@ -420,11 +375,10 @@ export function WorkerKYC({ kycState, onUpdateKYC, controlState = 'temp_on' }: K
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = async (event) => {
+      reader.onload = (event) => {
         const result = event.target?.result as string;
-        const compressed = await compressBase64Image(result, 300, 300, 0.65);
-        setPanFile(compressed);
-        onUpdateKYC({ panUploaded: true, panImage: compressed });
+        setPanFile(result);
+        onUpdateKYC({ panUploaded: true, panImage: result });
       };
       reader.readAsDataURL(file);
     }
@@ -434,14 +388,13 @@ export function WorkerKYC({ kycState, onUpdateKYC, controlState = 'temp_on' }: K
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = async (event) => {
+      reader.onload = (event) => {
         const result = event.target?.result as string;
-        const compressed = await compressBase64Image(result, 300, 300, 0.65);
-        setCardFile(compressed);
+        setCardFile(result);
         if (cardType === 'labour') {
-          onUpdateKYC({ labourCardUploaded: true, labourCardImage: compressed });
+          onUpdateKYC({ labourCardUploaded: true, labourCardImage: result });
         } else {
-          onUpdateKYC({ eshramCardUploaded: true, eshramCardImage: compressed });
+          onUpdateKYC({ eshramCardUploaded: true, eshramCardImage: result });
         }
       };
       reader.readAsDataURL(file);
@@ -460,40 +413,16 @@ export function WorkerKYC({ kycState, onUpdateKYC, controlState = 'temp_on' }: K
     cardInputRef.current?.click();
   };
 
-  const triggerVerifyAll = async () => {
-    const idCardNumber = `CWB-2026-${Math.floor(100000 + Math.random() * 900000)}`;
+  const triggerVerifyAll = () => {
     onUpdateKYC({ 
       verified: true,
       issueDate: registrationDate,
       experienceYears: expYears,
       idCardType: idTier,
-      idCardNumber: idCardNumber,
+      idCardNumber: `CWB-2026-${Math.floor(100000 + Math.random() * 900000)}`,
       registrationNumber: regNumber
     });
     setShowIdCard(true);
-
-    try {
-      const docId = `reg_${idCardNumber.split('-')[2]}`;
-      await setDoc(doc(db, 'registrations', docId), {
-        id: docId,
-        fullName: fullName || 'రాము ప్రసాద్',
-        phoneNo: phoneNo || '98480 22338',
-        profession: profession || 'మేస్త్రీ (Mason)',
-        registrationDate: registrationDate || '2018-05-12',
-        regNumber: regNumber || 'LBR-5492-2018',
-        idCardNumber: idCardNumber,
-        idCardType: idTier,
-        experienceYears: expYears,
-        aadhaarImage: aadhaarFile,
-        panImage: panFile,
-        cardImage: cardFile,
-        verified: true,
-        createdAt: new Date().toISOString()
-      });
-      console.log("Registration successfully saved to Firebase Firestore!");
-    } catch (err) {
-      console.error("Firestore Save Error:", err);
-    }
   };
 
   const handleDownloadIdCard = async () => {
@@ -532,45 +461,32 @@ export function WorkerKYC({ kycState, onUpdateKYC, controlState = 'temp_on' }: K
       ctx.closePath();
       ctx.clip();
 
-      // Background Gradient - Premium Light Colors
-      let gradStart = '#f8fafc';
-      let gradMid = '#f1f5f9';
-      let gradEnd = '#e2e8f0';
-      let accentColor = '#0284c7'; // Solid sky blue
-      let titleColor = '#082c75'; // Dark blue for contrast
-      let subTitleColor = '#475569'; // Dark slate
-      let labelColor = '#64748b'; // Muted dark slate
-      let valueColor = '#0f172a'; // Near black
-      let highlightColor = '#0369a1'; // Deep sky blue for highlighted text
+      // Background Gradient
+      let gradStart = '#0f172a';
+      let gradMid = '#1e1b4b';
+      let gradEnd = '#020617';
+      let accentColor = '#38bdf8'; // Diamond blue
 
       if (expYears >= 10) {
-        // Diamond Light Sky Blue
-        gradStart = '#f0f9ff';
-        gradMid = '#e0f2fe';
-        gradEnd = '#bae6fd';
-        accentColor = '#0284c7';
-        highlightColor = '#0369a1';
+        gradStart = '#0f172a';
+        gradMid = '#1e1b4b';
+        gradEnd = '#020617';
+        accentColor = '#38bdf8';
       } else if (expYears >= 5) {
-        // Gold Light Yellow
-        gradStart = '#fefbeb';
-        gradMid = '#fef3c7';
-        gradEnd = '#fde68a';
-        accentColor = '#d97706';
-        highlightColor = '#b45309';
+        gradStart = '#b45309';
+        gradMid = '#f59e0b';
+        gradEnd = '#78350f';
+        accentColor = '#fbbf24'; // Gold yellow
       } else if (expYears >= 3) {
-        // Silver Light Slate
-        gradStart = '#f8fafc';
-        gradMid = '#f1f5f9';
-        gradEnd = '#e2e8f0';
-        accentColor = '#475569';
-        highlightColor = '#0f172a';
+        gradStart = '#475569';
+        gradMid = '#64748b';
+        gradEnd = '#1e293b';
+        accentColor = '#cbd5e1'; // Silver slate
       } else {
-        // Bronze Light Peach
-        gradStart = '#fff7ed';
-        gradMid = '#ffedd5';
-        gradEnd = '#fed7aa';
-        accentColor = '#ca8a04';
-        highlightColor = '#a16207';
+        gradStart = '#7c2d12';
+        gradMid = '#9a3412';
+        gradEnd = '#431407';
+        accentColor = '#fb923c'; // Bronze orange
       }
 
       const grad = ctx.createLinearGradient(0, 0, 800, 500);
@@ -581,7 +497,7 @@ export function WorkerKYC({ kycState, onUpdateKYC, controlState = 'temp_on' }: K
       ctx.fillRect(0, 0, 800, 500);
 
       // Card Gloss/Reflection Lines
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.04)';
       ctx.beginPath();
       ctx.moveTo(0, 0);
       ctx.lineTo(350, 0);
@@ -590,7 +506,7 @@ export function WorkerKYC({ kycState, onUpdateKYC, controlState = 'temp_on' }: K
       ctx.closePath();
       ctx.fill();
 
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.02)';
       ctx.beginPath();
       ctx.moveTo(400, 0);
       ctx.lineTo(650, 0);
@@ -631,11 +547,11 @@ export function WorkerKYC({ kycState, onUpdateKYC, controlState = 'temp_on' }: K
 
       // Header Texts
       ctx.textAlign = 'left';
-      ctx.fillStyle = titleColor;
+      ctx.fillStyle = '#FFC000';
       ctx.font = 'bold 23px sans-serif';
       ctx.fillText('CWB సివిల్ వర్కర్స్ సమాఖ్య', 100, 48);
 
-      ctx.fillStyle = subTitleColor;
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
       ctx.font = '900 11px monospace';
       ctx.fillText('CIVIL WORKER RELATION BOOK (CWB)', 100, 72);
 
@@ -643,7 +559,7 @@ export function WorkerKYC({ kycState, onUpdateKYC, controlState = 'temp_on' }: K
       const badgeText = badgeLabel;
       ctx.font = 'bold 12px sans-serif';
       const badgeWidth = ctx.measureText(badgeText).width + 24;
-      ctx.fillStyle = 'rgba(8, 44, 117, 0.08)';
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
       ctx.beginPath();
       const rx = 800 - 45 - badgeWidth;
       const ry = 36;
@@ -651,15 +567,15 @@ export function WorkerKYC({ kycState, onUpdateKYC, controlState = 'temp_on' }: K
       const rh = 28;
       ctx.roundRect ? ctx.roundRect(rx, ry, rw, rh, 14) : ctx.rect(rx, ry, rw, rh);
       ctx.fill();
-      ctx.strokeStyle = 'rgba(8, 44, 117, 0.15)';
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
       ctx.stroke();
 
-      ctx.fillStyle = '#082c75';
+      ctx.fillStyle = '#ffffff';
       ctx.textAlign = 'center';
       ctx.fillText(badgeText, rx + rw / 2, ry + rh / 2 + 1);
 
       // Header bottom border line
-      ctx.strokeStyle = 'rgba(8, 44, 117, 0.15)';
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.moveTo(35, 100);
@@ -672,10 +588,10 @@ export function WorkerKYC({ kycState, onUpdateKYC, controlState = 'temp_on' }: K
       const frameW = 145;
       const frameH = 185;
 
-      // Draw black/gray frame background
-      ctx.fillStyle = '#f1f5f9';
+      // Draw black frame background
+      ctx.fillStyle = '#0f172a';
       ctx.fillRect(frameX, frameY, frameW, frameH);
-      ctx.strokeStyle = 'rgba(8, 44, 117, 0.15)';
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
       ctx.lineWidth = 2;
       ctx.strokeRect(frameX, frameY, frameW, frameH);
 
@@ -693,14 +609,14 @@ export function WorkerKYC({ kycState, onUpdateKYC, controlState = 'temp_on' }: K
       }
 
       if (!photoLoaded) {
-        ctx.fillStyle = 'rgba(8, 44, 117, 0.05)';
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
         ctx.beginPath();
         ctx.arc(frameX + frameW / 2, frameY + frameH / 2 - 10, 30, 0, Math.PI * 2);
         ctx.fill();
-        ctx.strokeStyle = accentColor;
+        ctx.strokeStyle = '#FFC000';
         ctx.stroke();
 
-        ctx.fillStyle = accentColor;
+        ctx.fillStyle = '#FFC000';
         ctx.font = '50px sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
@@ -717,13 +633,13 @@ export function WorkerKYC({ kycState, onUpdateKYC, controlState = 'temp_on' }: K
       ctx.fillText('VERIFIED CWB', frameX + frameW / 2, frameY + frameH - 15);
 
       // ID Code under photo
-      ctx.fillStyle = labelColor;
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
       ctx.font = 'bold 10px monospace';
       ctx.textAlign = 'center';
       ctx.fillText('ID CODE', frameX + frameW / 2, frameY + frameH + 20);
 
       const shortId = kycState.idCardNumber ? kycState.idCardNumber.split('-')[2] : '827493';
-      ctx.fillStyle = highlightColor;
+      ctx.fillStyle = '#ffd700';
       ctx.font = 'bold 14px monospace';
       ctx.fillText(`#${shortId}`, frameX + frameW / 2, frameY + frameH + 38);
 
@@ -733,11 +649,11 @@ export function WorkerKYC({ kycState, onUpdateKYC, controlState = 'temp_on' }: K
       ctx.textAlign = 'left';
 
       const drawDetailRow = (lbl: string, val: string, x: number, y: number, highlight = false) => {
-        ctx.fillStyle = labelColor;
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
         ctx.font = '10px sans-serif';
         ctx.fillText(lbl, x, y);
 
-        ctx.fillStyle = highlight ? highlightColor : valueColor;
+        ctx.fillStyle = highlight ? '#ffd700' : '#ffffff';
         ctx.font = 'bold 14px sans-serif';
         ctx.fillText(val, x, y + 18);
       };
@@ -758,7 +674,7 @@ export function WorkerKYC({ kycState, onUpdateKYC, controlState = 'temp_on' }: K
 
       // 5. Card Footer Area with QR Code
       const footerY = 405;
-      ctx.strokeStyle = 'rgba(8, 44, 117, 0.15)';
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
       ctx.lineWidth = 1.5;
       ctx.beginPath();
       ctx.moveTo(35, footerY);
@@ -772,8 +688,6 @@ export function WorkerKYC({ kycState, onUpdateKYC, controlState = 'temp_on' }: K
 
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(qrX, qrY, qrSize, qrSize);
-      ctx.strokeStyle = 'rgba(8, 44, 117, 0.1)';
-      ctx.strokeRect(qrX, qrY, qrSize, qrSize);
 
       ctx.fillStyle = '#000000';
       const drawQRMarker = (mx: number, my: number) => {
@@ -798,24 +712,24 @@ export function WorkerKYC({ kycState, onUpdateKYC, controlState = 'temp_on' }: K
         }
       }
 
-      ctx.fillStyle = labelColor;
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
       ctx.font = 'bold 9px monospace';
       ctx.textAlign = 'left';
       ctx.fillText('CWB SECURE DIGITAL QR', qrX + qrSize + 15, qrY + 22);
 
       const fullRegNo = kycState.idCardNumber || `CWB-2026-${shortId}`;
-      ctx.fillStyle = highlightColor;
+      ctx.fillStyle = '#ffd700';
       ctx.font = 'bold 12px monospace';
       ctx.fillText(fullRegNo, qrX + qrSize + 15, qrY + 42);
 
       // Active Badge (Bottom-Right)
       const actX = 800 - 45 - 110;
       const actY = qrY + 12;
-      ctx.fillStyle = 'rgba(16, 185, 129, 0.08)';
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
       ctx.beginPath();
       ctx.roundRect ? ctx.roundRect(actX, actY, 110, 32, 8) : ctx.rect(actX, actY, 110, 32);
       ctx.fill();
-      ctx.strokeStyle = 'rgba(16, 185, 129, 0.2)';
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
       ctx.stroke();
 
       ctx.fillStyle = '#10b981';
@@ -823,7 +737,7 @@ export function WorkerKYC({ kycState, onUpdateKYC, controlState = 'temp_on' }: K
       ctx.arc(actX + 18, actY + 16, 5, 0, Math.PI * 2);
       ctx.fill();
 
-      ctx.fillStyle = '#059669';
+      ctx.fillStyle = '#ffd700';
       ctx.font = 'bold 10px sans-serif';
       ctx.textAlign = 'left';
       ctx.fillText('ACTIVE ID', actX + 32, actY + 20);
