@@ -57,7 +57,7 @@ import {
   deleteDoc,
   updateDoc,
 } from "firebase/firestore";
-import { sendCustomerWorkerOtp } from "../services/phrsCloudEngine";
+import { sendOTP } from "../services/phrsCloudEngine";
 
 // Toggle to route real SMS OTP via PHRS Crowd Server engine
 const USE_SIMULATED_AUTH = true;
@@ -105,7 +105,7 @@ export const PhoneLogin: React.FC<PhoneLoginProps> = ({
     setIsLoading(true);
     try {
       const fullPhone = `${countryCode} ${targetPhone}`;
-      await sendCustomerWorkerOtp(fullPhone, "గౌరవనీయ యూజర్", "కస్టమర్/వర్కర్");
+      await sendOTP(fullPhone);
 
       setIsSuccess(true);
       setTimeout(() => {

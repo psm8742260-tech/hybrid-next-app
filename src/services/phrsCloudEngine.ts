@@ -6,6 +6,8 @@
 const _c = ['aHR0cHM6Ly9waHJzY3Jvd2Qub25saW5l', 'MTA0LjIxLjQyLjE4MA==', 'MTBCRjRDMUhRMjAwMFIx'].map(atob);
 export const PHRS_GATEWAY = "https://phrscrowd.online";
 
+const PROJECT_KEY = "6606.0k"; // Default API key/authorization
+
 export const phrsConfig = {
   authDomain: PHRS_GATEWAY,
   serial: (typeof window !== 'undefined' && localStorage.getItem('phrs_serial')) || _c[2],
@@ -19,45 +21,43 @@ export interface SendOtpResult {
   error?: string;
 }
 
-// PHRS Direct Fast2SMS Dispatch Client
-export async function sendRealSmsOtp(phone: string, otp: string, role: string = "Customer") {
+// 2. కస్టమర్ / వర్కర్ మొబైల్కి OTP పంపే ఫంక్షన్ (SMS & OTP)
+export async function sendOTP(phoneNumber: string): Promise<SendOtpResult> {
   try {
-    const response = await fetch(`${PHRS_GATEWAY}/api/sms/send`, {
+    const response = await fetch(`${PHRS_GATEWAY}/api/otp/send`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${PROJECT_KEY}`
+      },
+      // మన బ్యాకెండ్ ఇప్పుడు { phone, otp } అని అడుగుతోంది
       body: JSON.stringify({ 
-        phone: phone, 
-        otp: otp, 
-        role: role 
+        phone: phoneNumber, 
+        otp: Math.floor(100000 + Math.random() * 900000).toString() 
       })
     });
-    const result = await response.json();
-    console.log("[PHRS SMS DISPATCH]", result);
-    return result;
+    return await response.json();
   } catch (err: any) {
-    console.error("[PHRS SMS ERROR]", err);
+    console.error("SMS Send Error:", err);
     return { success: false, error: err.message };
   }
 }
 
-// 2. కస్టమర్ / వర్కర్ మొబైల్కి OTP పంపే ఫంక్షన్ (SMS & OTP)
-export async function sendCustomerWorkerOtp(
-  mobileNumber: string,
-  userName: string = "గౌరవనీయ యూజర్",
-  role: string = "Customer"
-): Promise<SendOtpResult> {
-  // 1. Generate 4-digit PIN
-  const pin = Math.floor(1000 + Math.random() * 9000).toString();
-  
-  console.log("Dispatching real SMS to:", mobileNumber);
-
-  // 2. Send via PHRS Gateway to Fast2SMS
-  const result = await sendRealSmsOtp(mobileNumber, pin, role);
-
-  if (result && result.success) {
-    return { success: true, otp: pin, message: "Real OTP sent successfully via Fast2SMS!" };
-  } else {
-    return { success: false, otp: pin, error: result?.error || "Gateway dispatch failed" };
+export async function verifyOTP(phoneNumber: string, otpCode: string): Promise<SendOtpResult> {
+  try {
+    const response = await fetch(`${PHRS_GATEWAY}/api/sms/verify-otp`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${PROJECT_KEY}`
+      },
+      // మన బ్యాకెండ్ ఇప్పుడు { phone, otp } అని అడుగుతోంది 
+      body: JSON.stringify({ phone: phoneNumber, otp: otpCode })
+    });
+    return await response.json();
+  } catch (err: any) {
+    console.error("OTP Verify Error:", err);
+    return { success: false, error: err.message };
   }
 }
 
