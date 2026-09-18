@@ -1268,7 +1268,7 @@ export function WorkerKYC({
       <div className="grid grid-cols-2 gap-4">
         {/* Aadhaar */}
         <div className="space-y-1.5">
-          <span className="text-xs font-bold text-gray-600 flex items-center min-h-[32px] leading-tight">
+          <span className="text-xs font-bold text-gray-600 block">
             ఆధార్ కార్డు / Aadhaar Card
           </span>
           <div
@@ -1313,8 +1313,8 @@ export function WorkerKYC({
 
         {/* PAN */}
         <div className="space-y-1.5">
-          <span className="text-xs font-bold text-gray-600 flex items-center min-h-[32px] leading-tight">
-            పాస్‌పోర్ట్ ఫోటో / Passport Photo
+          <span className="text-xs font-bold text-gray-600 block">
+            పాన్ కార్డు / PAN Card
           </span>
           <div
             className={`h-24 rounded-xl border-2 border-dashed flex flex-col items-center justify-center overflow-hidden bg-gray-50 relative ${
