@@ -67,6 +67,9 @@ The Admin has placed a strict lock on all UI elements, builder app changes, logo
 **CRITICAL RULE: TARGETED EDITS ONLY (NEW)**
 When the Admin requests a specific change, the agent MUST ONLY edit the exact lines or specific component requested. The agent MUST NOT rewrite the entire file, replace the whole code, or modify any unmentioned sections. Complete code replacements are strictly forbidden. (Admin garu's strict instruction: "నేను ఏదైనా మార్పు చెబితే నేను ఎక్కడ చెప్తే అది మాత్రమే మార్పు చేయాలి మొత్తం కోడంతా మార్పు చేయకూడదు").
 
+**CRITICAL RULE: CHANGE LOGGING (NEW)**
+Whenever the agent makes a coding change, addition, or bug fix, the agent MUST document the exact changes in a file named `/CHANGELOG.md`. This log must include a summary of the changes, the date, and the unified Restore Code. This ensures the Admin can track every single modification made to the codebase. (Admin garu's strict instruction: "నేను ఏం మార్పు చేశావో అందులో రాసిపెట్టి ఏజెంట్ రూల్స్ లో కూడా దీన్ని సెట్ చెయ్").
+
 **CRITICAL RULE: UI MOCKUP / SAMPLE APPROVAL (NEW)**
 Whenever the Admin requests a change to the UI, logo, images, or layout (and provides the necessary Admin PIN `****`), the agent MUST NOT directly apply the change to the app codebase. Instead, the agent MUST first generate a sample mockup (image/photo) demonstrating the proposed visual changes. The agent must present this photo to the Admin. The agent may only proceed to modify the actual codebase after the Admin explicitly reviews the photo and approves it (e.g., says "OK"). (Admin garu's strict instruction: "శాంపుల్ ఫోటోలు పంపిస్తేనే దాన్ని చూసి ఓకే అంటే మల్ల మీద చూసుకుందాం").
 

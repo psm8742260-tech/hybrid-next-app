@@ -13,6 +13,21 @@ const PORT = 3000;
 
 app.use(express.json());
 
+// Enable CORS for PWA Manifest and Assets (Required for PWABuilder analysis)
+app.use((req, res, next) => {
+  if (req.path === '/manifest.json') {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    res.setHeader('Content-Type', 'application/manifest+json');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+  } else if (req.path.startsWith('/icon-') || req.path === '/cwrb-logo.png') {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Cache-Control', 'public, max-age=3600'); // Cache icons for an hour
+  }
+  next();
+});
+
 // Lazy-initialized Gemini client
 let aiClient: GoogleGenAI | null = null;
 
