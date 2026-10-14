@@ -1,6 +1,0 @@
-deployment:
-  tasks:
-    - export Deployment=$PWD
-    - /bin/mkdir -p /home/phrscrow/cwrb.phrscrowd.online
-    - /bin/cp -R * /home/phrscrow/cwrb.phrscrowd.online/
-    
