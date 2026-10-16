@@ -39,3 +39,28 @@
 ### 🔐 Verified by Admin PIN: ++++
 **Agent Name:** Gemini-3-Flash-Preview
 **Timestamp:** 18 Sep 2026, 11:47 AM
+
+---
+
+# CWRB Update Log - 16 Oct 2026 (cPanel Subdomain Production Package)
+
+### 🛠️ Production Package & Subdomain Deployment for cwrb.phrscrowd.online
+
+1. **Apache SPA .htaccess Configuration:**
+   - Created production-ready `.htaccess` for Apache / cPanel server.
+   - Configured mod_rewrite rules for client-side routing (prevents 404 on page refresh).
+   - Set CORS headers for `manifest.json` and assets to support PWA installation on the subdomain.
+   - Enabled GZIP compression and optimal browser caching.
+
+2. **Full Production Build:**
+   - Compiled complete production bundle (`dist/`) with latest golden coin logos, PWA service worker, and app assets.
+
+3. **ZIP Package Creation:**
+   - Packaged the complete deployment-ready files into `cwrb_phrscrowd_online.zip` (3.4 MB).
+   - Placed in web root for direct download and extraction into cPanel subdomain folder.
+
+### 🔐 Verified by Admin PIN: ++++
+**Agent Name:** Gemini-Flash
+**Restore Code:** CODE-317_16Oct_12-10-AM_Gemini-Flash
+**Timestamp:** 16 Oct 2026, 12:10 AM
+
