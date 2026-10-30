@@ -435,7 +435,7 @@ app.post("/api/db/sync", express.json(), (req: express.Request, res: express.Res
 });
 
 async function start() {
-  const isProd = process.env.NODE_ENV === "production" || process.argv[1]?.includes("server.cjs");
+  const isProd = process.env.NODE_ENV === "production" || process.argv[1]?.includes("server.js") || process.argv[1]?.includes("server.cjs") || process.argv[1]?.includes("app.js");
   if (!isProd) {
     const vite = await createViteServer({
       server: { middlewareMode: true },
@@ -446,7 +446,9 @@ async function start() {
       res.sendFile(path.join(process.cwd(), "index.html"));
     });
   } else {
-    const distPath = path.join(process.cwd(), "dist");
+    const distPath = fs.existsSync(path.join(process.cwd(), "dist", "index.html"))
+      ? path.join(process.cwd(), "dist")
+      : process.cwd();
     app.use(express.static(distPath, { dotfiles: "allow" }));
     app.use((req, res) => {
       res.sendFile(path.join(distPath, "index.html"));

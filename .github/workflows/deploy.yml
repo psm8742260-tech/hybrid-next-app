@@ -25,6 +25,17 @@ jobs:
       - name: Build Production Bundle
         run: npm run build
 
+      - name: Prepare cPanel Node.js Application Root Package
+        run: |
+          # Copy package.json to dist so cPanel Node.js app manager detects it in root
+          cp package.json dist/package.json
+          # Copy .htaccess to dist for Apache/LiteSpeed SPA routing
+          cp public/.htaccess dist/.htaccess 2>/dev/null || true
+          # Create universal cPanel Node.js entry point aliases (app.js, index.js, server.cjs)
+          echo "require('./server.js');" > dist/app.js
+          echo "require('./server.js');" > dist/index.js
+          cp dist/server.js dist/server.cjs 2>/dev/null || true
+
       - name: Sync Files to cwrb.phrscrowd.online via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:

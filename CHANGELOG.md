@@ -107,5 +107,51 @@
 **Restore Code:** CODE-322_30Oct_09-15-AM_Gemini-3.8-Flash
 **Timestamp:** 30 Oct 2026, 09:15 AM
 
+---
+
+# CWRB Update Log - 30 Oct 2026 (Update 2: cPanel Node.js App Root Sync)
+
+### 🛠️ cPanel Node.js App Root Architecture & GitHub Actions Sync
+
+1. **GitHub Actions Stage cPanel Root Files:**
+   - Updated `.github/workflows/deploy.yml` with a dedicated preparation step before FTP sync.
+   - Automatically copies `package.json`, `.htaccess`, and creates `app.js` (alias to `server.cjs`) into `dist/`.
+   - When synced to `/cwrb.phrscrowd.online/`, cPanel Node.js Selector immediately finds `package.json` and startup file `app.js` right in the application root.
+
+2. **Package.json cPanel Entry:**
+   - Added `"main": "server.cjs"` to root `package.json` for instant runtime detection.
+
+3. **Dynamic Path Resolution in server.ts:**
+   - Configured `server.ts` to dynamically serve static files from `process.cwd()` when executed from root in cPanel production.
+
+### 🔐 Verified by Admin PIN: ++++
+**Agent Name:** Gemini-3.8-Flash
+**Restore Code:** CODE-324_30Oct_09-44-AM_Gemini-3.8-Flash
+**Timestamp:** 30 Oct 2026, 09:44 AM
+
+---
+
+# CWRB Update Log - 30 Oct 2026 (Update 3: Compiled JS server.js & app.js Startup Confirmation)
+
+### 🛠️ cPanel Production Startup Configuration
+
+1. **Compiled JavaScript Execution:**
+   - Confirmed that cPanel Node.js cannot run TypeScript (`server.ts`) directly and requires compiled JavaScript.
+   - Updated `package.json` to produce `dist/server.js` (with `server.cjs` backwards compatibility) and updated `"main": "server.js"` and `"start": "NODE_ENV=production node dist/server.js"`.
+
+2. **Universal Startup Aliases:**
+   - Configured `.github/workflows/deploy.yml` to stage both `server.js` and `app.js` (cPanel default) into the root of `/cwrb.phrscrowd.online/`.
+   - cPanel "Setup Node.js App" can use either `app.js` or `server.js` as the Application startup file.
+
+3. **Runtime Compatibility in server.ts:**
+   - Added `server.js` and `app.js` to the `isProd` runtime check in `server.ts`.
+
+### 🔐 Verified by Admin PIN: ++++
+**Agent Name:** Gemini-3.8-Flash
+**Restore Code:** CODE-325_30Oct_09-51-AM_Gemini-3.8-Flash
+**Timestamp:** 30 Oct 2026, 09:51 AM
+
+
+
 
 
