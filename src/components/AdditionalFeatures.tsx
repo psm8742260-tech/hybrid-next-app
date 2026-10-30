@@ -832,7 +832,7 @@ export function WorkerKYC({
       let logoLoaded = false;
       try {
         const logoImg = await loadImage(
-          "https://i.ibb.co/7JnVZGLw/1784961900190.png",
+          "/cwrb-logo.png",
         );
         ctx.save();
         ctx.beginPath();
@@ -1582,7 +1582,7 @@ export function WorkerKYC({
               {/* Logo (Bigger to match Mockup: w-14 h-14) */}
               <div className="w-14 h-14 rounded-full overflow-hidden bg-white border-2 border-amber-400 flex-shrink-0 flex items-center justify-center shadow-sm">
                 <img
-                  src="https://i.ibb.co/7JnVZGLw/1784961900190.png"
+                  src="/cwrb-logo.png"
                   alt="CWRB Logo"
                   className="w-full h-full object-contain scale-[1.1]"
                   referrerPolicy="no-referrer"

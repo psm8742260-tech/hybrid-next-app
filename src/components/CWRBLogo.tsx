@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import logoImg from "../assets/logo.png";
 
 interface CWRBLogoProps {
   className?: string;
@@ -22,9 +23,9 @@ export default function CWRBLogo({
       >
         {!imgError ? (
           <img
-            src="https://i.ibb.co/7JnVZGLw/1784961900190.png"
+            src={logoImg}
             alt="CWRB Logo"
-            className="w-full h-full object-contain object-center bg-white scale-[1.24]"
+            className="w-full h-full object-cover object-center scale-[1.04]"
             onError={() => setImgError(true)}
           />
         ) : (

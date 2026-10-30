@@ -2,5 +2,6 @@ deployment:
   tasks:
     - export Deployment=$PWD
     - /bin/mkdir -p /home/phrscrow/cwrb.phrscrowd.online
-    - /bin/cp -R * /home/phrscrow/cwrb.phrscrowd.online
+    - /bin/cp -R dist/* /home/phrscrow/cwrb.phrscrowd.online/
+    - /bin/cp dist/.htaccess /home/phrscrow/cwrb.phrscrowd.online/ 2>/dev/null || true
     

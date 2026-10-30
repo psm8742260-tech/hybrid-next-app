@@ -64,3 +64,48 @@
 **Restore Code:** CODE-317_16Oct_12-10-AM_Gemini-Flash
 **Timestamp:** 16 Oct 2026, 12:10 AM
 
+---
+
+# CWRB Update Log - 16 Oct 2026 (Update 2: cPanel Separation & Fresh Build)
+
+### 🛠️ Subdomain Separation & .cpanel.yml Configuration
+
+1. **.cpanel.yml Optimization:**
+   - Configured automated deployment tasks to target `/home/phrscrow/cwrb.phrscrowd.online` with compiled `dist/*` files and `.htaccess`.
+   - Prevented deploying uncompiled repo source files directly to cPanel document root.
+
+2. **Dedicated Fresh Production ZIP:**
+   - Rebuilt full production bundle with SPA `.htaccess` routing.
+   - Refreshed `public/cwrb_phrscrowd_online.zip` for manual extraction or automated cPanel Git deployment.
+
+### 🔐 Verified by Admin PIN: ++++
+**Agent Name:** Gemini-Flash
+**Restore Code:** CODE-318_16Oct_12-21-AM_Gemini-Flash
+**Timestamp:** 16 Oct 2026, 12:21 AM
+
+---
+
+# CWRB Update Log - 30 Oct 2026 (GitHub Actions & Full Logo Restoration)
+
+### 🛠️ Continuous Deployment Workflow & Uncorrupted CWRB Logo Fix
+
+1. **GitHub Actions Auto-Deployment Workflow:**
+   - Created `.github/workflows/deploy.yml` for automated FTP synchronization to `/cwrb.phrscrowd.online/` on server `65.108.76.42`.
+   - On every push to `main`, Node.js 20 environment installs dependencies, compiles production bundle (`npm run build`), and syncs directly to the VPS directory.
+
+2. **Uncorrupted CWRB Original Logo Restored:**
+   - Switched from truncated/corrupted third-party `ibb.co` image to the local, uncorrupted full backup `src/assets/logo.png` in `src/components/CWRBLogo.tsx` and `/cwrb-logo.png` in `src/components/AdditionalFeatures.tsx`.
+   - Removed `bg-white` class that caused the white cut-off semicircle in the lower half of the badge.
+   - The original gold architectural skyline and full circular badge now render 100% complete without truncation.
+
+3. **Fresh Production Build & ZIP Package:**
+   - Compiled production bundle with the full resolution bundled logo asset.
+   - Generated fresh `public/cwrb_phrscrowd_online.zip` (4.1 MB) containing all compiled assets and SPA `.htaccess`.
+
+### 🔐 Verified by Admin PIN: ++++
+**Agent Name:** Gemini-3.8-Flash
+**Restore Code:** CODE-322_30Oct_09-15-AM_Gemini-3.8-Flash
+**Timestamp:** 30 Oct 2026, 09:15 AM
+
+
+
