@@ -151,6 +151,50 @@
 **Restore Code:** CODE-325_30Oct_09-51-AM_Gemini-3.8-Flash
 **Timestamp:** 30 Oct 2026, 09:51 AM
 
+---
+
+# CWRB Update Log - 30 Oct 2026 (Update 4: Auto-Deploy to cPanel Server Workflow)
+
+### 🛠️ GitHub Actions Auto-Deploy to cPanel & Smart Build Staging
+
+1. **Auto-Deploy Workflow (`.github/workflows/deploy.yml`):**
+   - Configured exact workflow matching Admin garu's specification:
+     - Branch triggers: `main`, `master`, and manual `workflow_dispatch`.
+     - Universal Node.js environment setup with cache.
+     - Dependency install with `--legacy-peer-deps`.
+     - FTP synchronization via `SamKirkland/FTP-Deploy-Action@v4.3.5` to server `65.108.76.42`, user `phrscrow`, server-dir `'/cwrb.phrscrowd.online/'`.
+
+2. **Autonomous Build Staging (`package.json`):**
+   - Built directly into `npm run build` script: automatically generates `dist/package.json`, `dist/app.js`, `dist/index.js`, and `dist/.htaccess`.
+   - Guaranteed that `dist/` is always 100% complete for cPanel Node.js root synchronization without missing files.
+
+### 🔐 Verified by Admin PIN: ++++
+**Agent Name:** Gemini-3.8-Flash
+**Restore Code:** CODE-327_30Oct_10-38-AM_Gemini-3.8-Flash
+**Timestamp:** 30 Oct 2026, 10:38 AM
+
+---
+
+# CWRB Update Log - 30 Oct 2026 (Update 5: Cloud Run Rollout Fix with server.cjs)
+
+### 🛠️ Production Start Script & Cloud Run Rollout Fix
+
+1. **Resolution of "require is not defined in ES module scope":**
+   - Cloud Run failed rollout because `package.json` had `"type": "module"` which caused `node dist/server.js` to be evaluated as an ES Module instead of CommonJS.
+   - Restored `"start": "NODE_ENV=production node dist/server.cjs"` in `package.json`.
+   - Node.js natively respects `.cjs` extension as CommonJS regardless of the root `"type": "module"` configuration.
+
+2. **Universal Compatibility for Cloud Run and cPanel:**
+   - Bundled output targets `dist/server.cjs`.
+   - `dist/app.js` and `dist/index.js` employ dynamic `import('./server.cjs')` which is compatible across both ESM and CommonJS loaders.
+
+### 🔐 Verified by Admin PIN: ++++
+**Agent Name:** Gemini-3.8-Flash
+**Restore Code:** CODE-328_30Oct_10-44-AM_Gemini-3.8-Flash
+**Timestamp:** 30 Oct 2026, 10:44 AM
+
+
+
 
 
 

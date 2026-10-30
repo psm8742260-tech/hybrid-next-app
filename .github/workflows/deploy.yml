@@ -1,47 +1,41 @@
-name: Build and Deploy CWRB App
+name: Auto-Deploy to cPanel Server
 
 on:
   push:
     branches:
       - main
+      - master
+  workflow_dispatch:
 
 jobs:
-  deploy:
+  build-and-deploy:
+    name: Build & Auto Deploy to cPanel
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository code
+      - name: 📦 1. Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js Environment
+      - name: ⚙️ 2. Setup Node.js Environment
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: '*'
           cache: 'npm'
 
-      - name: Install Dependencies
-        run: npm install
-
-      - name: Build Production Bundle
-        run: npm run build
-
-      - name: Prepare cPanel Node.js Application Root Package
+      - name: 📦 3. Install Dependencies
         run: |
-          # Copy package.json to dist so cPanel Node.js app manager detects it in root
-          cp package.json dist/package.json
-          # Copy .htaccess to dist for Apache/LiteSpeed SPA routing
-          cp public/.htaccess dist/.htaccess 2>/dev/null || true
-          # Create universal cPanel Node.js entry point aliases (app.js, index.js, server.cjs)
-          echo "require('./server.js');" > dist/app.js
-          echo "require('./server.js');" > dist/index.js
-          cp dist/server.js dist/server.cjs 2>/dev/null || true
+          npm install --legacy-peer-deps
 
-      - name: Sync Files to cwrb.phrscrowd.online via FTP
+      - name: 🔨 4. Build Production Bundle
+        run: |
+          npm run build
+
+      - name: 🚀 5. Sync to cPanel Server via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
-          server: ${{ secrets.FTP_SERVER || '65.108.76.42' }}
-          username: ${{ secrets.FTP_USERNAME || 'phrscrow' }}
+          server: '65.108.76.42'
+          username: 'phrscrow'
           password: ${{ secrets.PHRSCROW }}
-          server-dir: /cwrb.phrscrowd.online/
-          local-dir: ./dist/
+          local-dir: dist/
+          server-dir: '/cwrb.phrscrowd.online/'
           dangerous-clean-slate: false
