@@ -1584,7 +1584,7 @@ export function WorkerKYC({
                 <img
                   src="/cwrb-logo.png"
                   alt="CWRB Logo"
-                  className="w-full h-full object-contain scale-[1.1]"
+                  className="w-full h-full object-cover scale-[1.25]"
                   referrerPolicy="no-referrer"
                 />
               </div>

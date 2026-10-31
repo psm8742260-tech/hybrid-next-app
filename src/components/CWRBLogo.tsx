@@ -25,7 +25,7 @@ export default function CWRBLogo({
           <img
             src={logoImg}
             alt="CWRB Logo"
-            className="w-full h-full object-cover object-center scale-[1.04]"
+            className="w-full h-full object-cover object-center scale-[1.25]"
             onError={() => setImgError(true)}
           />
         ) : (
