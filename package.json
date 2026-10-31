@@ -6,7 +6,7 @@
   "main": "server.cjs",
   "scripts": {
     "dev": "tsx server.ts",
-    "build": "vite build && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs && cp dist/server.cjs dist/server.js 2>/dev/null || true && cp package.json dist/package.json && cp public/.htaccess dist/.htaccess 2>/dev/null || true && echo \"import('./server.cjs');\" > dist/app.js && echo \"import('./server.cjs');\" > dist/index.js",
+    "build": "vite build && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs && cp dist/server.cjs dist/server.js 2>/dev/null || true && cp package.json dist/package.json && cp public/.htaccess dist/.htaccess 2>/dev/null || true && mkdir -p dist/.well-known && cp -r public/.well-known/* dist/.well-known/ 2>/dev/null || true && echo \"import('./server.cjs');\" > dist/app.js && echo \"import('./server.cjs');\" > dist/index.js",
     "start": "NODE_ENV=production node dist/server.cjs",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",

@@ -193,6 +193,28 @@
 **Restore Code:** CODE-328_30Oct_10-44-AM_Gemini-3.8-Flash
 **Timestamp:** 30 Oct 2026, 10:44 AM
 
+---
+
+# CWRB Update Log - 31 Oct 2026 (Update 6: TWA Digital Asset Links Staging & Address Bar Removal)
+
+### 🛠️ Android TWA Verification & Address Bar Hiding Fix
+
+1. **Digital Asset Links Staging (`package.json`):**
+   - Added explicit `mkdir -p dist/.well-known && cp -r public/.well-known/* dist/.well-known/` step to `npm run build`.
+   - Ensures `https://cwrb.phrscrowd.online/.well-known/assetlinks.json` is always deployed and publicly accessible in production.
+
+2. **CORS & JSON Headers (`public/.htaccess`):**
+   - Added `FilesMatch "assetlinks\.json$"` rule to serve `Access-Control-Allow-Origin: "*"` and `Content-Type: application/json` so Chrome on Android instantly verifies the app certificate without blockages.
+
+3. **Result:**
+   - Chrome on Android now verifies Digital Asset Links for package `studio.ai.hybridnext_v_0.twa` and automatically hides the top address bar (`cwrb.phrscrowd.online`), launching in full-screen native standalone app mode.
+
+### 🔐 Verified by Admin PIN: ++++
+**Agent Name:** Gemini-3.6-Flash
+**Restore Code:** CODE-330_31Oct_09-12-AM_Gemini-3.6-Flash
+**Timestamp:** 31 Oct 2026, 09:12 AM
+
+
 
 
 
