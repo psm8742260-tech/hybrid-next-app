@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { APP_VERSION_NAME, getAppVersionDisplay } from "../version";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Phone,
@@ -1150,13 +1151,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     return localStorage.getItem("cwb_pwa_enabled") !== "false";
   });
   const [pwaNotificationTitle, setPwaNotificationTitle] = useState(
-    "CWRB Final Update v2.6",
+    "CWRB Update HYBRID VERSION",
   );
   const [pwaNotificationBody, setPwaNotificationBody] = useState(
-    "కోడ్, లోగో మరియు మేనిఫెస్టో అప్డేట్స్ తో కూడిన ఫైనల్ PWA వెర్షన్ పబ్లిష్ చేయబడింది.",
+    "కోడ్, లోగో మరియు మేనిఫెస్టో అప్డేట్స్ తో కూడిన HYBRID VERSION పబ్లిష్ చేయబడింది.",
   );
   const [isPushingUpdate, setIsPushingUpdate] = useState(false);
-  const [currentLiveVersion, setCurrentLiveVersion] = useState<string>("v2.0");
+  const [currentLiveVersion, setCurrentLiveVersion] = useState<string>(APP_VERSION_NAME);
 
   // Sync with Firestore for PWA live version
   useEffect(() => {
@@ -4294,18 +4295,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           <button
                             type="button"
                             onClick={() => {
-                              // Try to parse the version number from string like 'v2.26' or 'CWRB-v2.26'
-                              const match =
-                                currentLiveVersion.match(/(\d+)(?!.*\d)/);
-                              const nextNum = match
-                                ? parseInt(match[0]) + 1
-                                : 27;
-                              const newVerStr = `v2.${nextNum}`;
+                              const newVerStr = APP_VERSION_NAME;
                               setPwaNotificationTitle(
-                                `CWRB Final Update ${newVerStr}`,
+                                `CWRB Update ${newVerStr}`,
                               );
                               setPwaNotificationBody(
-                                `కొత్త ఫీచర్లు మరియు సెక్యూరిటీ అప్‌డేట్స్‌తో కూడిన ఫైనల్ వెర్షన్ ${newVerStr} సిద్ధంగా ఉంది.`,
+                                `కొత్త ఫీచర్లు మరియు సెక్యూరిటీ అప్‌డేట్స్‌తో కూడిన ${newVerStr} సిద్ధంగా ఉంది.`,
                               );
                             }}
                             className="text-[9px] font-bold text-cyan-600 hover:text-cyan-800 underline bg-cyan-50 px-2 py-0.5 rounded-md"

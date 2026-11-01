@@ -248,6 +248,25 @@
 **Restore Code:** CODE-333_31Oct_09-31-AM_Gemini-3.6-Flash
 **Timestamp:** 31 Oct 2026, 09:31 AM
 
+---
+
+# CWRB Update Log - 01 Nov 2026 (Update 9: Centralized src/version.ts & HYBRID VERSION Mode)
+
+### 🛠️ Centralized Hybrid Version Control
+
+1. **Centralized Version Source (`src/version.ts`):**
+   - Created `src/version.ts` exporting `APP_VERSION_NAME = "HYBRID VERSION"`, `APP_BUILD_MODEL = "PHRS CROWD HYBRID MODEL"`, and `getAppVersionDisplay()`.
+
+2. **UI & Settings Integration (`src/components/AuthAndSettings.tsx`):**
+   - Removed all hardcoded numeric version digits (`v2.0`, `v2.26`, etc.) from UI state and update notification triggers.
+   - All live version displays and PWA update messages now dynamically source `"HYBRID VERSION"` from `src/version.ts`.
+
+### 🔐 Verified by Admin PIN: ++++
+**Agent Name:** Gemini-3.6-Flash
+**Restore Code:** CODE-334_01Nov_07-36-AM_Gemini-3.6-Flash
+**Timestamp:** 01 Nov 2026, 07:36 AM
+
+
 
 
 
